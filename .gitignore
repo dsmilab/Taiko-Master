@@ -4,3 +4,5 @@
 wearable-motion-sensors/
 
 data/
+
+ipynb/\.ipynb_checkpoints/
