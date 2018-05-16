@@ -18,6 +18,8 @@ from tqdm import tqdm
 
 
 class Sensor(object):
+    TAILED_ADDITIONAL_TIME = 15
+
     def __init__(self, verbose=0):
         self._verbose = verbose
         self._left_df = None
@@ -59,7 +61,7 @@ class Sensor(object):
         tmp_df = pd.read_csv(tkconfig.TABLE_PATH + 'taiko_drummer.csv')
         df = df.merge(tmp_df, how='left', left_on='drummer_id', right_on='id')
         df['hw_start_time'] = df['start_time'].apply(Sensor.get_hwclock_time)
-        df['hw_end_time'] = df['hw_start_time'] + df['song_length']
+        df['hw_end_time'] = df['hw_start_time'] + df['song_length'] + Sensor.TAILED_ADDITIONAL_TIME
         return df
 
     @staticmethod
@@ -83,7 +85,7 @@ class Sensor(object):
 
 class Performance(object):
     DROPPED_COLUMNS = ['#', 'separator']
-    RENAMED_COLUMNS = ['bar', 'bpm', 'time_unit', 'timestamp', 'label', 'continuous', 'value']
+    RENAMED_COLUMNS = ['bar', 'bpm', 'time_unit', 'timestamp', 'label', 'continuous']
 
     def __init__(self, sensor, who_id, song_id, order_id):
         self._sensor = sensor
@@ -121,6 +123,7 @@ class Performance(object):
                 (df['song_id'] == self._song_id) &
                 (df['performance_order'] == self._order_id)]
         assert len(df) > 0, logging.error('No matched performances.')
+
         row = df.iloc[0]
         return row['hw_start_time'], row['hw_end_time']
 
@@ -149,7 +152,7 @@ class Performance(object):
 
     def plot_global_event(self):
         # !!
-        first_hit_time = self._start_time + 20
+        first_hit_time = self._start_time + 14
         for col in tkconfig.ALL_COLUMNS:
             if col != 'timestamp' and col != 'wall_time':
                 plt.figure(figsize=(25, 8))
