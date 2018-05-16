@@ -8,6 +8,7 @@ import os
 import time
 import sys
 import math
+import gc
 
 from scipy.stats import mode
 from matplotlib.ticker import FormatStrFormatter
@@ -21,13 +22,20 @@ class Sensor(object):
         self._verbose = verbose
         self._left_df = None
         self._right_df = None
+        self._drummer_df = None
+
         self.__setup()
+        gc.collect()
 
     def __setup(self):
         self._left_df = self.__load_arm_csv(tkconfig.LEFT_PATH)
         self._right_df = self.__load_arm_csv(tkconfig.RIGHT_PATH)
         if self._verbose > 0:
             logging.info("load arm CSV.")
+
+        self._drummer_df = self.__load_drummer_csv()
+        if self._verbose > 0:
+            logging.info("load drummer CSV.")
 
     @staticmethod
     def __load_arm_csv(arm_csv_path):
@@ -41,6 +49,25 @@ class Sensor(object):
         merged_df.drop('key', axis=1, inplace=True)
         return merged_df
 
+    @staticmethod
+    def __load_drummer_csv():
+        df = pd.read_csv(tkconfig.TABLE_PATH + 'taiko_play.csv')
+        tmp_df = pd.read_csv(tkconfig.TABLE_PATH + 'taiko_song.csv', dtype={
+            'song_length': np.int16
+        })
+        df = df.merge(tmp_df, how='left', left_on='song_id', right_on='song_id')
+        tmp_df = pd.read_csv(tkconfig.TABLE_PATH + 'taiko_drummer.csv')
+        df = df.merge(tmp_df, how='left', left_on='drummer_id', right_on='id')
+        df['hw_start_time'] = df['start_time'].apply(Sensor.get_hwclock_time)
+        df['hw_end_time'] = df['hw_start_time'] + df['song_length']
+        return df
+
+    @staticmethod
+    def get_hwclock_time(local_time, delta=0):
+        d = datetime.strptime(local_time, "%m/%d/%Y %H:%M:%S")
+        d = d + timedelta(seconds=int(delta))
+        return time.mktime(d.timetuple())
+
     @property
     def left_df(self):
         return self._left_df
@@ -49,12 +76,17 @@ class Sensor(object):
     def right_df(self):
         return self._right_df
 
+    @property
+    def drummer_df(self):
+        return self._drummer_df
+
 
 class Performance(object):
     DROPPED_COLUMNS = ['#', 'separator']
     RENAMED_COLUMNS = ['bar', 'bpm', 'time_unit', 'timestamp', 'label', 'continuous', 'value']
 
     def __init__(self, sensor, who_id, song_id, order_id):
+        self._sensor = sensor
         self._who_id = who_id
         self._song_id = song_id
         self._order_id = order_id
@@ -69,18 +101,28 @@ class Performance(object):
         self._right_play_df, self._right_modes = None, None
 
         # duration of a song
-        # !!
-        self._start_time = 1522220627.1636708
-        self._end_time = self._start_time + 110
+        self._start_time, self._end_time = None, None
 
-        self.__setup(sensor)
+        self.__setup()
 
-    def __setup(self, sensor):
+    def __setup(self):
         self._song_df = pd.read_csv(tkconfig.TABLE_PATH + 'taiko_song_' + str(self._song_id) + '_info.csv')
         self._song_df.drop(Performance.DROPPED_COLUMNS, axis=1, inplace=True)
         self._song_df.columns = Performance.RENAMED_COLUMNS
-        self._left_play_df, self._left_modes = self.__build_play_df(sensor.left_df)
-        self._right_play_df, self._right_modes = self.__build_play_df(sensor.right_df)
+
+        self._start_time, self._end_time = self.__get_play_duration()
+
+        self._left_play_df, self._left_modes = self.__build_play_df(self._sensor.left_df)
+        self._right_play_df, self._right_modes = self.__build_play_df(self._sensor.right_df)
+
+    def __get_play_duration(self):
+        df = self._sensor.drummer_df
+        df = df[(df['drummer_id'] == self._who_id) &
+                (df['song_id'] == self._song_id) &
+                (df['performance_order'] == self._order_id)]
+        assert len(df) > 0, logging.error('No matched performances.')
+        row = df.iloc[0]
+        return row['hw_start_time'], row['hw_end_time']
 
     def __build_play_df(self, df):
         play_df = df[(df['timestamp'] >= self._start_time) & (df['timestamp'] <= self._end_time)]
@@ -107,7 +149,7 @@ class Performance(object):
 
     def plot_global_event(self):
         # !!
-        first_hit_time = 1522220639.08
+        first_hit_time = self._start_time + 20
         for col in tkconfig.ALL_COLUMNS:
             if col != 'timestamp' and col != 'wall_time':
                 plt.figure(figsize=(25, 8))
