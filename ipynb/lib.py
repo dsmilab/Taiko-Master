@@ -103,7 +103,7 @@ class Performance(object):
         self._right_play_df, self._right_modes = None, None
 
         # duration of a song
-        self._start_time, self._end_time = None, None
+        self._start_time, self._end_time, self._first_hit_time = None, None, None
 
         self.__setup()
 
@@ -112,7 +112,7 @@ class Performance(object):
         self._song_df.drop(Performance.DROPPED_COLUMNS, axis=1, inplace=True)
         self._song_df.columns = Performance.RENAMED_COLUMNS
 
-        self._start_time, self._end_time = self.__get_play_duration()
+        self._start_time, self._end_time, self._first_hit_time = self.__get_play_duration()
 
         self._left_play_df, self._left_modes = self.__build_play_df(self._sensor.left_df)
         self._right_play_df, self._right_modes = self.__build_play_df(self._sensor.right_df)
@@ -125,7 +125,7 @@ class Performance(object):
         assert len(df) > 0, logging.error('No matched performances.')
 
         row = df.iloc[0]
-        return row['hw_start_time'], row['hw_end_time']
+        return row['hw_start_time'], row['hw_end_time'], row['first_hit_time']
 
     def __build_play_df(self, df):
         play_df = df[(df['timestamp'] >= self._start_time) & (df['timestamp'] <= self._end_time)]
@@ -151,8 +151,6 @@ class Performance(object):
         return modes
 
     def plot_global_event(self):
-        # !!
-        first_hit_time = self._start_time + 14
         for col in tkconfig.ALL_COLUMNS:
             if col != 'timestamp' and col != 'wall_time':
                 plt.figure(figsize=(25, 8))
@@ -168,7 +166,7 @@ class Performance(object):
                     row = self._song_df.iloc[i]
                     hit_type = int(row['label'])
                     if hit_type > 0:
-                        plt.axvline(first_hit_time + row['timestamp'], color=tkconfig.COLORS[hit_type], lw=0.5)
+                        plt.axvline(self._first_hit_time + row['timestamp'], color=tkconfig.COLORS[hit_type], lw=0.5)
 
                 plt.legend()
                 save_name = '%s who_id:%d song_id:%d order:%d' % (col, self._who_id, self._song_id, self._order_id)
