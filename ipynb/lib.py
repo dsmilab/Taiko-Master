@@ -16,6 +16,11 @@ from datetime import datetime, timedelta
 from collections import deque
 from tqdm import tqdm
 
+from sklearn import preprocessing
+from sklearn.cluster import KMeans
+from sklearn.svm import SVC
+import itertools
+
 
 class Sensor(object):
     TAILED_ADDITIONAL_TIME = 15
@@ -86,8 +91,10 @@ class Sensor(object):
 class Performance(object):
     DROPPED_COLUMNS = ['#', 'separator']
     RENAMED_COLUMNS = ['bar', 'bpm', 'time_unit', 'timestamp', 'label', 'continuous']
+    DELTA_T_DIVIDED_COUNT = 4
+    TIME_UNIT_DIVIDED_COUNT = 8
 
-    def __init__(self, sensor, who_id, song_id, order_id):
+    def __init__(self, sensor, who_id, song_id, order_id, left_modes=None, right_modes=None):
         self._sensor = sensor
         self._who_id = who_id
         self._song_id = song_id
@@ -99,9 +106,10 @@ class Performance(object):
 
         # importance dataframes as global sense
         self._song_df = None
-        self._feat_df = None
-        self._left_play_df, self._left_modes = None, None
-        self._right_play_df, self._right_modes = None, None
+        self._primitive_df = None
+        self._events = []
+        self._left_play_df, self._left_modes = None, left_modes
+        self._right_play_df, self._right_modes = None, right_modes
 
         # duration of a song
         self._start_time, self._end_time, self._first_hit_time = None, None, None
@@ -119,15 +127,16 @@ class Performance(object):
 
         self._start_time, self._end_time, self._first_hit_time = self.__get_play_duration()
 
-        self._left_play_df, self._left_modes = self.__build_play_df(self._sensor.left_df)
-        self._right_play_df, self._right_modes = self.__build_play_df(self._sensor.right_df)
+        self._events = self.__retrieve_event()
+        self._left_play_df, self._left_modes = self.__build_play_df(self._sensor.left_df, self._left_modes)
+        self._right_play_df, self._right_modes = self.__build_play_df(self._sensor.right_df, self._right_modes)
 
         self._time_unit = self._song_df['time_unit'].min()
         self._bar_unit = self._time_unit * 8
-        self._delta_t = self._bar_unit / 4
-        self._unit_time_interval = self._delta_t / 16
+        self._delta_t = self._bar_unit / Performance.DELTA_T_DIVIDED_COUNT
+        self._unit_time_interval = self._delta_t / Performance.TIME_UNIT_DIVIDED_COUNT
 
-        self.__build_feature_df()
+        self.__build_primitive_df()
 
     def __get_play_duration(self):
         df = self._sensor.drummer_df
@@ -139,14 +148,15 @@ class Performance(object):
         row = df.iloc[0]
         return row['hw_start_time'], row['hw_end_time'], row['first_hit_time']
 
-    def __build_play_df(self, df):
+    def __build_play_df(self, df, modes=None):
         play_df = df[(df['timestamp'] >= self._start_time) & (df['timestamp'] <= self._end_time)]
-        modes = self.__get_modes_dict(play_df)
+        if modes is None:
+            modes = self.__get_modes_dict(play_df)
         play_df = self.__adjust_zero(play_df, modes)
         return play_df, modes
 
-    def __build_feature_df(self):
-        feat_df = pd.DataFrame(columns=['hand_side'] + tkconfig.STAT_COLS)
+    def __build_primitive_df(self):
+        primitive_df = pd.DataFrame(columns=['hand_side'] + tkconfig.STAT_COLS)
         now_time = self._start_time
         id_ = 0
         while now_time + self._unit_time_interval <= self._end_time:
@@ -154,17 +164,17 @@ class Performance(object):
             local_end_time = now_time + self._unit_time_interval
 
             # left arm
-            left_features = self.__get_statistical_features(self._left_play_df, local_start_time, local_end_time)
-            feat_df.loc[id_] = [tkconfig.LEFT_HAND] + left_features
+            left_features = self.get_statistical_features(self._left_play_df, local_start_time, local_end_time)
+            primitive_df.loc[id_] = [tkconfig.LEFT_HAND] + left_features
             id_ += 1
 
             # right arm
-            right_features = self.__get_statistical_features(self._right_play_df, local_start_time, local_end_time)
-            feat_df.loc[id_] = [tkconfig.RIGHT_HAND] + right_features
+            right_features = self.get_statistical_features(self._right_play_df, local_start_time, local_end_time)
+            primitive_df.loc[id_] = [tkconfig.RIGHT_HAND] + right_features
             id_ += 1
 
             now_time += self._unit_time_interval
-        self._feat_df = feat_df.copy()
+        self._primitive_df = primitive_df.dropna()
 
     @staticmethod
     def __do_fft(data):
@@ -172,7 +182,8 @@ class Performance(object):
         energy = np.sum(np.abs(freqx) ** 2)
         return energy
 
-    def __get_statistical_features(self, play_df, start_time, end_time):
+    @staticmethod
+    def get_statistical_features(play_df, start_time, end_time):
         play_df = play_df[(play_df['timestamp'] >= start_time) & (play_df['timestamp'] <= end_time)]
         if len(play_df) == 0:
             return [np.nan] * len(tkconfig.STAT_COLS)
@@ -208,10 +219,10 @@ class Performance(object):
                rms_df['imu_az'].apply(lambda x: abs(x)).sum()) / len(rms_df)
 
         # averaged acceleration energy
-        aae = self.__do_fft(rms_df['a_rms']) / len(rms_df)
+        aae = Performance.__do_fft(rms_df['a_rms']) / len(rms_df)
 
         # averaged rotation energy
-        are = self.__do_fft(rms_df['g_rms']) / len(rms_df)
+        are = Performance.__do_fft(rms_df['g_rms']) / len(rms_df)
 
         return [ai, vi, sma, aae, are]
 
@@ -232,6 +243,17 @@ class Performance(object):
             modes[col] = mode_
         return modes
 
+    def __retrieve_event(self):
+        events = []
+
+        # spot vertical mark lines
+        for i in range(len(self._song_df)):
+            row = self._song_df.iloc[i]
+            hit_type = int(row['label'])
+            events.append((self._first_hit_time + row['timestamp'], hit_type))
+
+        return events
+
     def plot_global_event(self):
         for col in tkconfig.ALL_COLUMNS:
             if col != 'timestamp' and col != 'wall_time':
@@ -244,11 +266,9 @@ class Performance(object):
                 plt.plot(self._right_play_df['timestamp'], self._right_play_df[col], label='right')
 
                 # draw vertical mark line
-                for i in range(len(self._song_df)):
-                    row = self._song_df.iloc[i]
-                    hit_type = int(row['label'])
+                for tm, hit_type in self._events:
                     if hit_type > 0:
-                        plt.axvline(self._first_hit_time + row['timestamp'], color=tkconfig.COLORS[hit_type], lw=0.5)
+                        plt.axvline(tm, color=tkconfig.COLORS[hit_type], lw=0.5)
 
                 plt.legend()
                 save_name = '%s who_id:%d song_id:%d order:%d' % (col, self._who_id, self._song_id, self._order_id)
@@ -258,18 +278,143 @@ class Performance(object):
                 plt.close()
 
     @property
-    def feat_df(self):
-        return self._feat_df
+    def primitive_df(self):
+        return self._primitive_df
+
+    @property
+    def events(self):
+        return self._events
+
+    @property
+    def delta_t(self):
+        return self._delta_t
+
+    @property
+    def left_play_df(self):
+        return self._left_play_df
+
+    @property
+    def right_play_df(self):
+        return self._right_play_df
+
+    @property
+    def left_modes(self):
+        return self._left_modes
+
+    @property
+    def right_modes(self):
+        return self._right_modes
+
+    @property
+    def unit_time_interval(self):
+        return self._unit_time_interval
 
 
 class Model(object):
+    """
+    consider training "only one" performance to predict other performance with the same song_id
+    """
+    _K = 50
+    _C = 1000
 
-    def __init__(self, performance):
-        self._performance = performance
+    def __init__(self, k_centroid, tolerance=1000):
+        self._K = k_centroid
+        self._C = tolerance
 
-        # parameter
+        self._left_vocab_kmeans, self._left_max_abs_scaler = None, None
+        self._right_vocab_kmeans, self._right_max_abs_scaler = None, None
+        self._left_clf = None
+        self._right_clf = None
 
-        # self.__build_feature_df()
+    def fit(self, performance):
+        left_vocab_kmeans, left_max_abs_scaler = self.__build_vocabulary_kmeans(performance, tkconfig.LEFT_HAND)
+        self._left_vocab_kmeans, self._left_max_abs_scaler = left_vocab_kmeans, left_max_abs_scaler
 
-    def __build_feature_df(self):
-        pass
+        right_vocab_kmeans, right_max_abs_scaler = self.__build_vocabulary_kmeans(performance, tkconfig.RIGHT_HAND)
+        self._right_vocab_kmeans, self._right_max_abs_scaler = right_vocab_kmeans, right_max_abs_scaler
+
+        left_x, right_x, y = self.retrieve_primitive_space(performance)
+        self._left_clf = SVC(C=self._C)
+        self._left_clf.fit(left_x, y)
+
+        self._right_clf = SVC(C=self._C)
+        self._right_clf.fit(right_x, y)
+
+    def retrieve_primitive_space(self, performance):
+        pf = performance
+        left_x = []
+        right_x = []
+        y = []
+
+        sys.stdout.flush()
+        for id_, tm in tqdm(enumerate(pf.events), total=len(pf.events)):
+            event_time = pf.events[id_][0]
+            hit_type = pf.events[id_][1]
+            local_start_time = event_time - pf.delta_t
+            local_end_time = event_time + pf.delta_t
+
+            # left arm
+            hist = self.get_local_primitive_hist(pf.left_play_df, local_start_time, local_end_time,
+                                                 self._left_vocab_kmeans, self._left_max_abs_scaler,
+                                                 pf.unit_time_interval)
+            left_x.append(hist)
+
+            # right arm
+            hist = self.get_local_primitive_hist(pf.right_play_df, local_start_time, local_end_time,
+                                                 self._right_vocab_kmeans, self._right_max_abs_scaler,
+                                                 pf.unit_time_interval)
+            right_x.append(hist)
+
+            y.append(hit_type)
+
+        return left_x, right_x, y
+
+    @staticmethod
+    def __build_vocabulary_kmeans(performance, hand_side):
+        pf = performance
+        max_abs_scaler = preprocessing.MaxAbsScaler()
+        subset = pf.primitive_df[pf.primitive_df['hand_side'] == hand_side][tkconfig.STAT_COLS]
+        train_x = [tuple(x) for x in subset.values]
+        train_x = max_abs_scaler.fit_transform(train_x)
+        vocab_kmeans = KMeans(n_clusters=Model._K, random_state=0).fit(train_x)
+        return vocab_kmeans, max_abs_scaler
+
+    def predict(self, performance, true_label=True):
+        left_x, right_x, y = self.retrieve_primitive_space(performance)
+        left_pred_y = self._left_clf.predict(left_x)
+        right_pred_y = self._right_clf.predict(right_x)
+        if true_label:
+            return left_pred_y, right_pred_y, y
+        else:
+            return left_pred_y, right_pred_y
+
+    @staticmethod
+    def get_local_primitive_hist(play_df, start_time, end_time, vocab_kmeans, max_abs_scaler, unit_time_interval):
+        local_play_df = play_df[(play_df['timestamp'] >= start_time) & (play_df['timestamp'] <= end_time)]
+
+        # unit_time_interval was set
+        local_stat_df = pd.DataFrame(columns=tkconfig.STAT_COLS)
+        now_time = start_time
+        id_ = 0
+
+        # feature extraction
+        while now_time + unit_time_interval <= end_time:
+            unit_start_time = now_time
+            unit_end_time = now_time + unit_time_interval
+
+            local_stat_df.loc[id_] = Performance.get_statistical_features(local_play_df, unit_start_time, unit_end_time)
+            id_ += 1
+
+            now_time += unit_time_interval
+
+        local_stat_df.dropna(inplace=True)
+
+        # build freq histogram
+        vec = np.zeros(Model._K)
+        subset = local_stat_df[tkconfig.STAT_COLS]
+        train_x = [tuple(x) for x in subset.values]
+        train_x = max_abs_scaler.transform(train_x)
+        for group_num in vocab_kmeans.predict(train_x):
+            vec[group_num] += 1
+
+        return vec
