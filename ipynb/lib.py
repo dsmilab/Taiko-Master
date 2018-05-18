@@ -99,11 +99,16 @@ class Performance(object):
 
         # importance dataframes as global sense
         self._song_df = None
+        self._feat_df = None
         self._left_play_df, self._left_modes = None, None
         self._right_play_df, self._right_modes = None, None
 
         # duration of a song
         self._start_time, self._end_time, self._first_hit_time = None, None, None
+
+        # related primitive params
+        self._delta_t = 0
+        self._unit_time_interval = 0
 
         self.__setup()
 
@@ -116,6 +121,13 @@ class Performance(object):
 
         self._left_play_df, self._left_modes = self.__build_play_df(self._sensor.left_df)
         self._right_play_df, self._right_modes = self.__build_play_df(self._sensor.right_df)
+
+        self._time_unit = self._song_df['time_unit'].min()
+        self._bar_unit = self._time_unit * 8
+        self._delta_t = self._bar_unit / 4
+        self._unit_time_interval = self._delta_t / 16
+
+        self.__build_feature_df()
 
     def __get_play_duration(self):
         df = self._sensor.drummer_df
@@ -132,6 +144,76 @@ class Performance(object):
         modes = self.__get_modes_dict(play_df)
         play_df = self.__adjust_zero(play_df, modes)
         return play_df, modes
+
+    def __build_feature_df(self):
+        feat_df = pd.DataFrame(columns=['hand_side'] + tkconfig.STAT_COLS)
+        now_time = self._start_time
+        id_ = 0
+        while now_time + self._unit_time_interval <= self._end_time:
+            local_start_time = now_time
+            local_end_time = now_time + self._unit_time_interval
+
+            # left arm
+            left_features = self.__get_statistical_features(self._left_play_df, local_start_time, local_end_time)
+            feat_df.loc[id_] = [tkconfig.LEFT_HAND] + left_features
+            id_ += 1
+
+            # right arm
+            right_features = self.__get_statistical_features(self._right_play_df, local_start_time, local_end_time)
+            feat_df.loc[id_] = [tkconfig.RIGHT_HAND] + right_features
+            id_ += 1
+
+            now_time += self._unit_time_interval
+        self._feat_df = feat_df.copy()
+
+    @staticmethod
+    def __do_fft(data):
+        freqx = np.fft.fft(data) / math.sqrt(len(data))
+        energy = np.sum(np.abs(freqx) ** 2)
+        return energy
+
+    def __get_statistical_features(self, play_df, start_time, end_time):
+        play_df = play_df[(play_df['timestamp'] >= start_time) & (play_df['timestamp'] <= end_time)]
+        if len(play_df) == 0:
+            return [np.nan] * len(tkconfig.STAT_COLS)
+
+        rms_df = play_df[['timestamp', 'imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz']].copy()
+
+        # acceleration movement intensity
+        rms_df['a_rms'] = (
+            play_df['imu_ax'] * play_df['imu_ax'] +
+            play_df['imu_ay'] * play_df['imu_ay'] +
+            play_df['imu_az'] * play_df['imu_az']).apply(lambda x: math.sqrt(x))
+
+        # gyroscope movement intensity
+        rms_df['g_rms'] = (
+            play_df['imu_gx'] * play_df['imu_gx'] +
+            play_df['imu_gy'] * play_df['imu_gy'] +
+            play_df['imu_gz'] * play_df['imu_gz']).apply(lambda x: math.sqrt(x))
+
+        # average intensity
+        ai = rms_df['a_rms'].sum() / len(rms_df)
+
+        # variance intensity
+        vi = 0
+        for i in range(len(rms_df)):
+            row = rms_df.iloc[i]
+            mit = float(row['a_rms'])
+            vi += (mit - ai) ** 2
+        vi /= len(rms_df)
+
+        # normalized signal magnitude area
+        sma = (rms_df['imu_ax'].apply(lambda x: abs(x)).sum() +
+               rms_df['imu_ay'].apply(lambda x: abs(x)).sum() +
+               rms_df['imu_az'].apply(lambda x: abs(x)).sum()) / len(rms_df)
+
+        # averaged acceleration energy
+        aae = self.__do_fft(rms_df['a_rms']) / len(rms_df)
+
+        # averaged rotation energy
+        are = self.__do_fft(rms_df['g_rms']) / len(rms_df)
+
+        return [ai, vi, sma, aae, are]
 
     @staticmethod
     def __adjust_zero(df, modes_dict=None):
@@ -175,7 +257,19 @@ class Performance(object):
                 plt.show()
                 plt.close()
 
+    @property
+    def feat_df(self):
+        return self._feat_df
+
 
 class Model(object):
-    def __init__(self):
+
+    def __init__(self, performance):
+        self._performance = performance
+
+        # parameter
+
+        # self.__build_feature_df()
+
+    def __build_feature_df(self):
         pass
