@@ -5,7 +5,7 @@ This is a project teaching a newbie how to perform better in the video game [**T
 <br/>
 
 ## Flowchart
-In general, follow the paper [Motion Primitive-Based Human Activity Recognition Using a Bag-of-Features Approach](docs/p631-zhang.pdf).
+In general, follow the paper [Motion Primitive-Based Human Activity Recognition Using a Bag-of-Features Approach](https://dl.acm.org/citation.cfm?id=2110433).
 
 ![](docs/flowchart.png)
 
