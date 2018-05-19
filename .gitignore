@@ -1,0 +1,10 @@
+
+\.idea/
+
+wearable-motion-sensors/
+
+data/
+
+ipynb/\.ipynb_checkpoints/
+
+ipynb/__pycache__/
