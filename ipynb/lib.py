@@ -1,28 +1,34 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 import tkconfig
 import logging
-import matplotlib.pyplot as plt
-import matplotlib.ticker as mtick
 import os
 import time
 import sys
 import math
 import gc
 
-from scipy.stats import mode
-from matplotlib.ticker import FormatStrFormatter
-from datetime import datetime, timedelta
-from collections import deque
 from tqdm import tqdm
+from scipy.stats import mode
+from datetime import datetime, timedelta
 
 from sklearn import preprocessing
 from sklearn.cluster import KMeans
 from sklearn.svm import SVC
-import itertools
 
 
 class Sensor(object):
+    """
+    Handle output from wearable devices.
+
+    :protected attributes:
+        verbose: default 0, otherwise will output loading message
+        left_df: dataframe about left arm
+        right_df: dataframe about right arm
+        drummer_df: dataframe about performance of drummers
+    """
+
     TAILED_ADDITIONAL_TIME = 15
 
     def __init__(self, verbose=0):
@@ -35,6 +41,12 @@ class Sensor(object):
         gc.collect()
 
     def __setup(self):
+        """
+        Assist initial process.
+
+        :return:
+        """
+
         self._left_df = self.__load_arm_csv(tkconfig.LEFT_PATH)
         self._right_df = self.__load_arm_csv(tkconfig.RIGHT_PATH)
         if self._verbose > 0:
@@ -46,33 +58,67 @@ class Sensor(object):
 
     @staticmethod
     def __load_arm_csv(arm_csv_path):
+        """
+        Load CSV files which contain information about arms.
+
+        :param arm_csv_path: the directory path of arm CSV stored
+        :return: merged dataframe inside the directory
+        """
+
+        # trace the directory and read all of them
         files = next(os.walk(arm_csv_path))[2]
         script_df = [
             pd.read_csv(arm_csv_path + filename, dtype={
                 'timestamp': np.float64
             }) for filename in files
         ]
+
+        # merge them into a dataframe
         merged_df = pd.DataFrame(pd.concat(script_df, ignore_index=True))
         merged_df.drop('key', axis=1, inplace=True)
+
         return merged_df
 
     @staticmethod
     def __load_drummer_csv():
+        """
+        Load CSV files which contain information about drummers' performance.
+
+        :return: performance dataframe being in additional of timestamp pre-processing.
+        """
+
+        # read drummers' plays
         df = pd.read_csv(tkconfig.TABLE_PATH + 'taiko_play.csv')
+
+        # read song's information and merge it
         tmp_df = pd.read_csv(tkconfig.TABLE_PATH + 'taiko_song.csv', dtype={
             'song_length': np.int16
         })
         df = df.merge(tmp_df, how='left', left_on='song_id', right_on='song_id')
+
+        # read drummers' personal information and merge it
         tmp_df = pd.read_csv(tkconfig.TABLE_PATH + 'taiko_drummer.csv')
         df = df.merge(tmp_df, how='left', left_on='drummer_id', right_on='id')
+
+        # translate UTC timestamp into hardware timestamp
         df['hw_start_time'] = df['start_time'].apply(Sensor.get_hwclock_time)
         df['hw_end_time'] = df['hw_start_time'] + df['song_length'] + Sensor.TAILED_ADDITIONAL_TIME
+
         return df
 
     @staticmethod
     def get_hwclock_time(local_time, delta=0):
+        """
+        Given UTC time, translate it into hardware time.
+
+        :param local_time: UTC time in specific string format
+        :param delta: pass UTC time in # seconds
+        :return: required hardware time.
+        """
+
         d = datetime.strptime(local_time, "%m/%d/%Y %H:%M:%S")
         d = d + timedelta(seconds=int(delta))
+
         return time.mktime(d.timetuple())
 
     @property
@@ -89,6 +135,34 @@ class Sensor(object):
 
 
 class Performance(object):
+    """
+    Handle the specific play.
+
+    :protected attributes:
+        sensor: the output of wearable device
+        who_id: # of drummer
+        song_id: # of song
+        order_id: # of performance repetitively
+
+        time_unit: the minimum time interval between two notes depending on BPM of a song
+        bar_unit: default is "time_unit x 8"
+
+        song_df: dataframe containing music of the song
+        primitive_df: dataframe containing primitives of this play
+        events: the 2D array which element (time, label) represents a note type "label" occurs at "time"
+
+        left_play_df: dataframe about play of left arm
+        left_modes: a list containing all attributes' mode of "left_play_df"
+        right_play_df: dataframe about play of right arm
+        right_modes: a list containing all attributes' mode of "right_play_df"
+
+        start_time: timestamp where the song starts
+        end_time: timestamp where the song ends
+        first_hit_time: timestamp where the first note occurs
+        delta_t: time interval we consider a local event
+        unit_time_interval: time interval we consider a primitive
+    """
+
     DROPPED_COLUMNS = ['#', 'separator']
     RENAMED_COLUMNS = ['bar', 'bpm', 'time_unit', 'timestamp', 'label', 'continuous']
     DELTA_T_DIVIDED_COUNT = 4
@@ -121,6 +195,12 @@ class Performance(object):
         self.__setup()
 
     def __setup(self):
+        """
+        Assist initial process.
+
+        :return:
+        """
+
         self._song_df = pd.read_csv(tkconfig.TABLE_PATH + 'taiko_song_' + str(self._song_id) + '_info.csv')
         self._song_df.drop(Performance.DROPPED_COLUMNS, axis=1, inplace=True)
         self._song_df.columns = Performance.RENAMED_COLUMNS
@@ -139,26 +219,53 @@ class Performance(object):
         self.__build_primitive_df()
 
     def __get_play_duration(self):
+        """
+        Get duration of the song we interested.
+
+        :return: "start_time", "end_time", "first_hit_time".
+        """
+
         df = self._sensor.drummer_df
         df = df[(df['drummer_id'] == self._who_id) &
                 (df['song_id'] == self._song_id) &
                 (df['performance_order'] == self._order_id)]
         assert len(df) > 0, logging.error('No matched performances.')
 
+        # assume matched case is unique
         row = df.iloc[0]
+
         return row['hw_start_time'], row['hw_end_time'], row['first_hit_time']
 
     def __build_play_df(self, df, modes=None):
+        """
+        After setting duration of the song, build dataframe of a play.
+
+        :param df: original dataframe
+        :param modes: default is "None", adjust zero by this own case, otherwise will by this param
+        :return: cropped and zero-adjusted dataframe, attributes' modes
+        """
+
         play_df = df[(df['timestamp'] >= self._start_time) & (df['timestamp'] <= self._end_time)]
+
+        # "modes" param isn't set, then get this own modes
         if modes is None:
             modes = self.__get_modes_dict(play_df)
+
         play_df = self.__adjust_zero(play_df, modes)
         return play_df, modes
 
     def __build_primitive_df(self):
+        """
+        After setting play's dataframe, build dataframe of primitives in this play.
+
+        :return: dataframe of primitives
+        """
+
         primitive_df = pd.DataFrame(columns=['hand_side'] + tkconfig.STAT_COLS)
-        now_time = self._start_time
+
+        # split interval [start_time, end_time] with gap "unit_time_interval"
         id_ = 0
+        now_time = self._start_time
         while now_time + self._unit_time_interval <= self._end_time:
             local_start_time = now_time
             local_end_time = now_time + self._unit_time_interval
@@ -174,38 +281,55 @@ class Performance(object):
             id_ += 1
 
             now_time += self._unit_time_interval
+
         self._primitive_df = primitive_df.dropna()
 
     @staticmethod
     def __do_fft(data):
+        """
+        Implement fast fourier transformation.
+
+        :param data: a numeric series in time domain
+        :return: the energy of this data in frequency domain
+        """
+
         freqx = np.fft.fft(data) / math.sqrt(len(data))
         energy = np.sum(np.abs(freqx) ** 2)
         return energy
 
     @staticmethod
     def get_statistical_features(play_df, start_time, end_time):
+        """
+        Retrieve feature space in given time interval.
+
+        :param play_df: dataframe of a play
+        :param start_time: cropped feature space where to start
+        :param end_time: cropped feature space where to end
+        :return: feature space with 1D array
+        """
+
         play_df = play_df[(play_df['timestamp'] >= start_time) & (play_df['timestamp'] <= end_time)]
         if len(play_df) == 0:
             return [np.nan] * len(tkconfig.STAT_COLS)
 
         rms_df = play_df[['timestamp', 'imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz']].copy()
 
-        # acceleration movement intensity
+        # acceleration movement intensity (MI)
         rms_df['a_rms'] = (
             play_df['imu_ax'] * play_df['imu_ax'] +
             play_df['imu_ay'] * play_df['imu_ay'] +
             play_df['imu_az'] * play_df['imu_az']).apply(lambda x: math.sqrt(x))
 
-        # gyroscope movement intensity
+        # gyroscope movement intensity (MI)
         rms_df['g_rms'] = (
             play_df['imu_gx'] * play_df['imu_gx'] +
             play_df['imu_gy'] * play_df['imu_gy'] +
             play_df['imu_gz'] * play_df['imu_gz']).apply(lambda x: math.sqrt(x))
 
-        # average intensity
+        # average intensity (AI)
         ai = rms_df['a_rms'].sum() / len(rms_df)
 
-        # variance intensity
+        # variance intensity (VI)
         vi = 0
         for i in range(len(rms_df)):
             row = rms_df.iloc[i]
@@ -213,29 +337,46 @@ class Performance(object):
             vi += (mit - ai) ** 2
         vi /= len(rms_df)
 
-        # normalized signal magnitude area
+        # normalized signal magnitude area (SMA)
         sma = (rms_df['imu_ax'].apply(lambda x: abs(x)).sum() +
                rms_df['imu_ay'].apply(lambda x: abs(x)).sum() +
                rms_df['imu_az'].apply(lambda x: abs(x)).sum()) / len(rms_df)
 
-        # averaged acceleration energy
+        # averaged acceleration energy (AAE)
         aae = Performance.__do_fft(rms_df['a_rms']) / len(rms_df)
 
-        # averaged rotation energy
+        # averaged rotation energy (ARE)
         are = Performance.__do_fft(rms_df['g_rms']) / len(rms_df)
 
         return [ai, vi, sma, aae, are]
 
     @staticmethod
-    def __adjust_zero(df, modes_dict=None):
+    def __adjust_zero(df, modes_dict):
+        """
+        Implement zero adjust.
+
+        :param df: dataframe needed zero adjust
+        :param modes_dict: dictionary containing all attributes in {"attribute": "mode"} sense
+        :return: zero-adjusted dataframe
+        """
+
         copy_df = df.copy()
+
+        # only considered attributes need zero adjust
         for col in tkconfig.ZERO_ADJ_COL:
-            mode_ = mode(copy_df[col])[0] if modes_dict is None else modes_dict[col]
-            copy_df[col] = copy_df[col] - mode_
+            copy_df[col] = copy_df[col] - modes_dict[col]
+
         return copy_df
 
     @staticmethod
     def __get_modes_dict(df):
+        """
+        Create mode dictionary of the play dataframe.
+
+        :param df: considered dataframe
+        :return: dictionary containing all attributes in {"attribute": "mode"} sense
+        """
+
         modes = {}
         copy_df = df.copy()
         for col in tkconfig.ZERO_ADJ_COL:
@@ -244,6 +385,12 @@ class Performance(object):
         return modes
 
     def __retrieve_event(self):
+        """
+        Retrieve event which means note occurs of the song.
+
+        :return: 2D array
+        """
+
         events = []
 
         # spot vertical mark lines
@@ -255,7 +402,14 @@ class Performance(object):
         return events
 
     def plot_global_event(self):
+        """
+        Plot time series of the song decorated vertical lines represents events with different colors.
+
+        :return:
+        """
+
         for col in tkconfig.ALL_COLUMNS:
+            # skip these two columns with no sense
             if col != 'timestamp' and col != 'wall_time':
                 plt.figure(figsize=(25, 8))
 
@@ -312,8 +466,17 @@ class Performance(object):
 
 class Model(object):
     """
-    consider training "only one" performance to predict other performance with the same song_id
+    consider training "only one" performance to predict other performance with the same 'song_id'.
+
+    :protected attributes:
+        K: set # numbers of centroid in k-means algorithm
+        C: set param 'C' in SVM classifier
+        left_vocab_kmeans: vocabulary category model of left arm
+        right_vocab_kmeans: vocabulary category model of right arm
+        left_clf: classifier handles histogram coming from left arm
+        right_clf: classifier handles histogram coming from right arm
     """
+
     _K = 50
     _C = 1000
 
@@ -327,6 +490,13 @@ class Model(object):
         self._right_clf = None
 
     def fit(self, performance):
+        """
+        Given the performance, use it to train the model.
+
+        :param performance: training set
+        :return:
+        """
+
         left_vocab_kmeans, left_max_abs_scaler = self.__build_vocabulary_kmeans(performance, tkconfig.LEFT_HAND)
         self._left_vocab_kmeans, self._left_max_abs_scaler = left_vocab_kmeans, left_max_abs_scaler
 
@@ -334,6 +504,7 @@ class Model(object):
         self._right_vocab_kmeans, self._right_max_abs_scaler = right_vocab_kmeans, right_max_abs_scaler
 
         left_x, right_x, y = self.retrieve_primitive_space(performance)
+
         self._left_clf = SVC(C=self._C)
         self._left_clf.fit(left_x, y)
 
@@ -341,6 +512,16 @@ class Model(object):
         self._right_clf.fit(right_x, y)
 
     def retrieve_primitive_space(self, performance):
+        """
+        Given performance, extract all primitives.
+
+        :param performance: training set
+        :return: left_x, right_x, y
+            left_x: 2D array whose element (c1, c2, ..., cK) means frequency in left arm
+            right_x: 2D array whose element (c1, c2, ..., cK) means frequency in right arm
+            y: 1D array, true label
+        """
+
         pf = performance
         left_x = []
         right_x = []
@@ -371,6 +552,16 @@ class Model(object):
 
     @staticmethod
     def __build_vocabulary_kmeans(performance, hand_side):
+        """
+        Implement k-means algorithm to build vocabulary.
+
+        :param performance: training set
+        :param hand_side: right arm or left arm
+        :return:
+            vocab_kmeans: k-means model
+            max_abs_scaler: normalize numeric data
+        """
+
         pf = performance
         max_abs_scaler = preprocessing.MaxAbsScaler()
         subset = pf.primitive_df[pf.primitive_df['hand_side'] == hand_side][tkconfig.STAT_COLS]
@@ -380,9 +571,21 @@ class Model(object):
         return vocab_kmeans, max_abs_scaler
 
     def predict(self, performance, true_label=True):
+        """
+        Given a test set, predict all events which they belongs to.
+
+        :param performance: testing set
+        :param true_label: if "True", return true label "y" in addition
+        :return:
+            left_pred_y: predicting result of left arm
+            right_pred_y: predicting result of right arm
+            y: true label
+        """
+
         left_x, right_x, y = self.retrieve_primitive_space(performance)
         left_pred_y = self._left_clf.predict(left_x)
         right_pred_y = self._right_clf.predict(right_x)
+
         if true_label:
             return left_pred_y, right_pred_y, y
         else:
@@ -390,6 +593,18 @@ class Model(object):
 
     @staticmethod
     def get_local_primitive_hist(play_df, start_time, end_time, vocab_kmeans, max_abs_scaler, unit_time_interval):
+        """
+        Given a dataframe of a play with specific time interval, use trained model to label local event.
+
+        :param play_df: dataframe of a play
+        :param start_time: timestamp of the local event starts
+        :param end_time: timestamp of the local event ends
+        :param vocab_kmeans: trained vocabulary
+        :param max_abs_scaler: trained scaler to normalize numeric
+        :param unit_time_interval: time interval of a primitive considered
+        :return: frequency vector represents histogram with a primitive
+        """
+
         local_play_df = play_df[(play_df['timestamp'] >= start_time) & (play_df['timestamp'] <= end_time)]
 
         # unit_time_interval was set
