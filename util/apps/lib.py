@@ -326,21 +326,33 @@ class Performance(object):
             play_df['imu_gy'] * play_df['imu_gy'] +
             play_df['imu_gz'] * play_df['imu_gz']).apply(lambda x: math.sqrt(x))
 
-        # average intensity (AI)
-        ai = rms_df['a_rms'].sum() / len(rms_df)
+        # average intensity (xAI)
+        aai = rms_df['a_rms'].sum() / len(rms_df)
+        gai = rms_df['g_rms'].sum() / len(rms_df)
 
-        # variance intensity (VI)
-        vi = 0
+        # variance intensity (xVI)
+        avi = 0
         for i in range(len(rms_df)):
             row = rms_df.iloc[i]
             mit = float(row['a_rms'])
-            vi += (mit - ai) ** 2
-        vi /= len(rms_df)
+            avi += (mit - aai) ** 2
+        avi /= len(rms_df)
+
+        gvi = 0
+        for i in range(len(rms_df)):
+            row = rms_df.iloc[i]
+            mit = float(row['g_rms'])
+            gvi += (mit - gai) ** 2
+        gvi /= len(rms_df)
 
         # normalized signal magnitude area (SMA)
-        sma = (rms_df['imu_ax'].apply(lambda x: abs(x)).sum() +
-               rms_df['imu_ay'].apply(lambda x: abs(x)).sum() +
-               rms_df['imu_az'].apply(lambda x: abs(x)).sum()) / len(rms_df)
+        asma = (rms_df['imu_ax'].apply(lambda x: abs(x)).sum() +
+                rms_df['imu_ay'].apply(lambda x: abs(x)).sum() +
+                rms_df['imu_az'].apply(lambda x: abs(x)).sum()) / len(rms_df)
+
+        gsma = (rms_df['imu_gx'].apply(lambda x: abs(x)).sum() +
+                rms_df['imu_gy'].apply(lambda x: abs(x)).sum() +
+                rms_df['imu_gz'].apply(lambda x: abs(x)).sum()) / len(rms_df)
 
         # averaged acceleration energy (AAE)
         aae = Performance.__do_fft(rms_df['a_rms']) / len(rms_df)
@@ -348,7 +360,7 @@ class Performance(object):
         # averaged rotation energy (ARE)
         are = Performance.__do_fft(rms_df['g_rms']) / len(rms_df)
 
-        return [ai, vi, sma, aae, are]
+        return [aai, avi, asma, gai, gvi, gsma, aae, are]
 
     @staticmethod
     def __adjust_zero(df, modes_dict):

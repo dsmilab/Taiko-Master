@@ -19,5 +19,5 @@ ALL_COLUMNS = ['timestamp', 'wall_time', 'imu_temp',
                'msu_ax', 'msu_ay', 'msu_az',
                'baro_temp', 'baro']
 ZERO_ADJ_COL = ['imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz', 'msu_ax', 'msu_ay', 'msu_az']
-STAT_COLS = ['AI', 'VI', 'SMA', 'AAE', 'ARE']
+STAT_COLS = ['AAI', 'AVI', 'ASMA', 'GAI', 'GVI', 'GSMA', 'AAE', 'ARE']
 COLORS = ['black', 'red', 'blue', 'yellow', 'green', 'cyan', 'purple']
