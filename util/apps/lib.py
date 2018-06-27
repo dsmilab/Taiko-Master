@@ -496,10 +496,8 @@ class Model(object):
         self._K = k_centroid
         self._C = tolerance
 
-        self._left_vocab_kmeans, self._left_max_abs_scaler = None, None
-        self._right_vocab_kmeans, self._right_max_abs_scaler = None, None
-        self._left_clf = None
-        self._right_clf = None
+        self._vocab_kmeans, self._max_abs_scaler = None, None
+        self._clf = None
 
     def fit(self, performance):
         """
@@ -509,19 +507,13 @@ class Model(object):
         :return:
         """
 
-        left_vocab_kmeans, left_max_abs_scaler = self.__build_vocabulary_kmeans(performance, tkconfig.LEFT_HAND)
-        self._left_vocab_kmeans, self._left_max_abs_scaler = left_vocab_kmeans, left_max_abs_scaler
+        vocab_kmeans, max_abs_scaler = self.__build_vocabulary_kmeans(performance)
+        self._vocab_kmeans, self._max_abs_scaler = vocab_kmeans, max_abs_scaler
 
-        right_vocab_kmeans, right_max_abs_scaler = self.__build_vocabulary_kmeans(performance, tkconfig.RIGHT_HAND)
-        self._right_vocab_kmeans, self._right_max_abs_scaler = right_vocab_kmeans, right_max_abs_scaler
+        x, y = self.retrieve_primitive_space(performance)
 
-        left_x, right_x, y = self.retrieve_primitive_space(performance)
-
-        self._left_clf = SVC(C=self._C)
-        self._left_clf.fit(left_x, y)
-
-        self._right_clf = SVC(C=self._C)
-        self._right_clf.fit(right_x, y)
+        self._clf = SVC(C=self._C)
+        self._clf.fit(x, y)
 
     def retrieve_primitive_space(self, performance):
         """
@@ -535,8 +527,7 @@ class Model(object):
         """
 
         pf = performance
-        left_x = []
-        right_x = []
+        x = []
         y = []
 
         sys.stdout.flush()
@@ -548,27 +539,27 @@ class Model(object):
 
             # left arm
             hist = self.get_local_primitive_hist(pf.left_play_df, local_start_time, local_end_time,
-                                                 self._left_vocab_kmeans, self._left_max_abs_scaler,
+                                                 self._vocab_kmeans, self._max_abs_scaler,
                                                  pf.unit_time_interval)
-            left_x.append(hist)
+            x.append(hist)
 
             # right arm
             hist = self.get_local_primitive_hist(pf.right_play_df, local_start_time, local_end_time,
-                                                 self._right_vocab_kmeans, self._right_max_abs_scaler,
+                                                 self._vocab_kmeans, self._max_abs_scaler,
                                                  pf.unit_time_interval)
-            right_x.append(hist)
+            x.append(hist)
 
             y.append(hit_type)
+            y.append(hit_type)
 
-        return left_x, right_x, y
+        return x, y
 
     @staticmethod
-    def __build_vocabulary_kmeans(performance, hand_side):
+    def __build_vocabulary_kmeans(performance):
         """
         Implement k-means algorithm to build vocabulary.
 
         :param performance: training set
-        :param hand_side: right arm or left arm
         :return:
             vocab_kmeans: k-means model
             max_abs_scaler: normalize numeric data
@@ -576,7 +567,7 @@ class Model(object):
 
         pf = performance
         max_abs_scaler = preprocessing.MaxAbsScaler()
-        subset = pf.primitive_df[pf.primitive_df['hand_side'] == hand_side][tkconfig.STAT_COLS]
+        subset = pf.primitive_df[tkconfig.STAT_COLS]
         train_x = [tuple(x) for x in subset.values]
         train_x = max_abs_scaler.fit_transform(train_x)
         vocab_kmeans = KMeans(n_clusters=Model._K, random_state=0).fit(train_x)
@@ -594,14 +585,13 @@ class Model(object):
             y: true label
         """
 
-        left_x, right_x, y = self.retrieve_primitive_space(performance)
-        left_pred_y = self._left_clf.predict(left_x)
-        right_pred_y = self._right_clf.predict(right_x)
+        x, y = self.retrieve_primitive_space(performance)
+        pred_y = self._clf.predict(x)
 
         if true_label:
-            return left_pred_y, right_pred_y, y
+            return pred_y, y
         else:
-            return left_pred_y, right_pred_y
+            return pred_y
 
     @staticmethod
     def get_local_primitive_hist(play_df, start_time, end_time, vocab_kmeans, max_abs_scaler, unit_time_interval):
