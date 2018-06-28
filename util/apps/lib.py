@@ -261,10 +261,11 @@ class Performance(object):
         :return: dataframe of primitives
         """
 
-        primitive_df = pd.DataFrame(columns=['hand_side'] + tkconfig.STAT_COLS)
+        primitive_df = pd.DataFrame(columns=['seq_id', 'hand_side'] + tkconfig.STAT_COLS)
 
         # split interval [start_time, end_time] with gap "unit_time_interval"
         id_ = 0
+        seq_id = 0
         now_time = self._start_time
         while now_time + self._unit_time_interval <= self._end_time:
             local_start_time = now_time
@@ -272,17 +273,29 @@ class Performance(object):
 
             # left arm
             left_features = self.get_statistical_features(self._left_play_df, local_start_time, local_end_time)
-            primitive_df.loc[id_] = [tkconfig.LEFT_HAND] + left_features
+            primitive_df.loc[id_] = [seq_id, tkconfig.LEFT_HAND] + left_features
             id_ += 1
 
             # right arm
             right_features = self.get_statistical_features(self._right_play_df, local_start_time, local_end_time)
-            primitive_df.loc[id_] = [tkconfig.RIGHT_HAND] + right_features
+            primitive_df.loc[id_] = [seq_id, tkconfig.RIGHT_HAND] + right_features
             id_ += 1
 
             now_time += self._unit_time_interval
+            seq_id += 1
 
-        self._primitive_df = primitive_df.dropna()
+        primitive_df.dropna(inplace=True)
+
+        # merge left and right hand depends on the same time
+        left_primitive_df = primitive_df[primitive_df['hand_side'] == tkconfig.LEFT_HAND][['seq_id'] +
+                                                                                          tkconfig.STAT_COLS]
+        right_primitive_df = primitive_df[primitive_df['hand_side'] == tkconfig.RIGHT_HAND][['seq_id'] +
+                                                                                            tkconfig.STAT_COLS]
+        for col in tkconfig.STAT_COLS:
+            left_primitive_df.rename(columns={col: 'L_' + col}, inplace=True)
+            right_primitive_df.rename(columns={col: 'R_' + col}, inplace=True)
+
+        self._primitive_df = left_primitive_df.merge(right_primitive_df, on='seq_id').drop('seq_id', axis=1)
 
     @staticmethod
     def __do_fft(data):
@@ -489,10 +502,10 @@ class Model(object):
         right_clf: classifier handles histogram coming from right arm
     """
 
-    _K = 50
+    _K = 150
     _C = 1000
 
-    def __init__(self, k_centroid, tolerance=1000):
+    def __init__(self, k_centroid=_K, tolerance=_C):
         self._K = k_centroid
         self._C = tolerance
 
@@ -537,19 +550,12 @@ class Model(object):
             local_start_time = event_time - pf.delta_t
             local_end_time = event_time + pf.delta_t
 
-            # left arm
-            hist = self.get_local_primitive_hist(pf.left_play_df, local_start_time, local_end_time,
+            hist = self.get_local_primitive_hist(pf.left_play_df, pf.right_play_df,
+                                                 local_start_time, local_end_time,
                                                  self._vocab_kmeans, self._max_abs_scaler,
                                                  pf.unit_time_interval)
-            x.append(hist)
 
-            # right arm
-            hist = self.get_local_primitive_hist(pf.right_play_df, local_start_time, local_end_time,
-                                                 self._vocab_kmeans, self._max_abs_scaler,
-                                                 pf.unit_time_interval)
             x.append(hist)
-
-            y.append(hit_type)
             y.append(hit_type)
 
         return x, y
@@ -566,10 +572,11 @@ class Model(object):
         """
 
         pf = performance
-        max_abs_scaler = preprocessing.MaxAbsScaler()
-        subset = pf.primitive_df[tkconfig.STAT_COLS]
+        max_abs_scaler = preprocessing.MinMaxScaler()
+        subset = pf.primitive_df[tkconfig.L_STAT_COLS + tkconfig.R_STAT_COLS]
         train_x = [tuple(x) for x in subset.values]
         train_x = max_abs_scaler.fit_transform(train_x)
+        print(train_x)
         vocab_kmeans = KMeans(n_clusters=Model._K, random_state=0).fit(train_x)
         return vocab_kmeans, max_abs_scaler
 
@@ -594,7 +601,8 @@ class Model(object):
             return pred_y
 
     @staticmethod
-    def get_local_primitive_hist(play_df, start_time, end_time, vocab_kmeans, max_abs_scaler, unit_time_interval):
+    def get_local_primitive_hist(left_play_df, right_play_df, start_time, end_time,
+                                 vocab_kmeans, max_abs_scaler, unit_time_interval):
         """
         Given a dataframe of a play with specific time interval, use trained model to label local event.
 
@@ -607,28 +615,53 @@ class Model(object):
         :return: frequency vector represents histogram with a primitive
         """
 
-        local_play_df = play_df[(play_df['timestamp'] >= start_time) & (play_df['timestamp'] <= end_time)]
+        left_local_play_df = left_play_df[(left_play_df['timestamp'] >= start_time) &
+                                          (left_play_df['timestamp'] <= end_time)]
+        right_local_play_df = right_play_df[(right_play_df['timestamp'] >= start_time) &
+                                            (right_play_df['timestamp'] <= end_time)]
 
         # unit_time_interval was set
-        local_stat_df = pd.DataFrame(columns=tkconfig.STAT_COLS)
+        local_stat_df = pd.DataFrame(columns=['seq_id', 'hand_side'] + tkconfig.STAT_COLS)
         now_time = start_time
         id_ = 0
+        seq_id = 0
 
         # feature extraction
         while now_time + unit_time_interval <= end_time:
             unit_start_time = now_time
             unit_end_time = now_time + unit_time_interval
 
-            local_stat_df.loc[id_] = Performance.get_statistical_features(local_play_df, unit_start_time, unit_end_time)
+            prefix = [seq_id, tkconfig.LEFT_HAND]
+            local_stat_df.loc[id_] = prefix + Performance.get_statistical_features(left_local_play_df,
+                                                                                   unit_start_time,
+                                                                                   unit_end_time)
+            id_ += 1
+
+            prefix = [seq_id, tkconfig.RIGHT_HAND]
+            local_stat_df.loc[id_] = prefix + Performance.get_statistical_features(right_local_play_df,
+                                                                                   unit_start_time,
+                                                                                   unit_end_time)
             id_ += 1
 
             now_time += unit_time_interval
+            seq_id += 1
 
         local_stat_df.dropna(inplace=True)
 
+        # merge left and right hand depends on the same time
+        left_local_df = local_stat_df[local_stat_df['hand_side'] == tkconfig.LEFT_HAND][['seq_id'] +
+                                                                                        tkconfig.STAT_COLS]
+        right_local_df = local_stat_df[local_stat_df['hand_side'] == tkconfig.RIGHT_HAND][['seq_id'] +
+                                                                                          tkconfig.STAT_COLS]
+        for col in tkconfig.STAT_COLS:
+            left_local_df.rename(columns={col: 'L_' + col}, inplace=True)
+            right_local_df.rename(columns={col: 'R_' + col}, inplace=True)
+
+        local_stat_df = left_local_df.merge(right_local_df, on='seq_id').drop('seq_id', axis=1)
+
         # build freq histogram
         vec = np.zeros(Model._K)
-        subset = local_stat_df[tkconfig.STAT_COLS]
+        subset = local_stat_df[tkconfig.L_STAT_COLS + tkconfig.R_STAT_COLS]
         train_x = [tuple(x) for x in subset.values]
         train_x = max_abs_scaler.transform(train_x)
         for group_num in vocab_kmeans.predict(train_x):
