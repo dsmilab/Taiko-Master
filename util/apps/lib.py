@@ -166,7 +166,7 @@ class Performance(object):
     DROPPED_COLUMNS = ['#', 'separator']
     RENAMED_COLUMNS = ['bar', 'bpm', 'time_unit', 'timestamp', 'label', 'continuous']
     DELTA_T_DIVIDED_COUNT = 4
-    TIME_UNIT_DIVIDED_COUNT = 8
+    TIME_UNIT_DIVIDED_COUNT = 16
 
     def __init__(self, sensor, who_id, song_id, order_id, left_modes=None, right_modes=None):
         self._sensor = sensor
