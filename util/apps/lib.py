@@ -165,8 +165,8 @@ class Performance(object):
 
     DROPPED_COLUMNS = ['#', 'separator']
     RENAMED_COLUMNS = ['bar', 'bpm', 'time_unit', 'timestamp', 'label', 'continuous']
-    DELTA_T_DIVIDED_COUNT = 4
-    TIME_UNIT_DIVIDED_COUNT = 16
+    DELTA_T_DIVIDED_COUNT = 2
+    TIME_UNIT_DIVIDED_COUNT = 4
 
     def __init__(self, sensor, who_id, song_id, order_id, left_modes=None, right_modes=None):
         self._sensor = sensor
@@ -327,6 +327,7 @@ class Performance(object):
 
         rms_df = play_df[['timestamp', 'imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz']].copy()
 
+        print(rms_df)
         # acceleration movement intensity (MI)
         rms_df['a_rms'] = (
             play_df['imu_ax'] * play_df['imu_ax'] +
@@ -343,6 +344,10 @@ class Performance(object):
         aai = rms_df['a_rms'].sum() / len(rms_df)
         gai = rms_df['g_rms'].sum() / len(rms_df)
 
+        # median of AMI
+        mami = rms_df['a_rms'].median()
+        mgmi = rms_df['g_rms'].median()
+
         # variance intensity (xVI)
         avi = 0
         for i in range(len(rms_df)):
@@ -357,6 +362,10 @@ class Performance(object):
             mit = float(row['g_rms'])
             gvi += (mit - gai) ** 2
         gvi /= len(rms_df)
+
+        # standard deviation intensity
+        asdi = math.sqrt(avi)
+        gsdi = math.sqrt(gvi)
 
         # normalized signal magnitude area (SMA)
         asma = (rms_df['imu_ax'].apply(lambda x: abs(x)).sum() +
@@ -373,7 +382,50 @@ class Performance(object):
         # averaged rotation energy (ARE)
         are = Performance.__do_fft(rms_df['g_rms']) / len(rms_df)
 
-        return [aai, avi, asma, gai, gvi, gsma, aae, are]
+        # skewness (ASS)
+        ass_child = 0
+        for i in range(len(rms_df)):
+            row = rms_df.iloc[i]
+            mit = float(row['a_rms'])
+            ass_child += (mit - aai) ** 3
+        ass_child /= len(rms_df)
+        ass = ass_child / math.pow(avi, 3.0 / 2.0)
+
+        # skewness (GSS)
+        gss_child = 0
+        for i in range(len(rms_df)):
+            row = rms_df.iloc[i]
+            mit = float(row['g_rms'])
+            gss_child += (mit - gai) ** 3
+        gss_child /= len(rms_df)
+        gss = gss_child / math.pow(gvi, 3.0 / 2.0)
+
+        # kurtosis (AKS)
+        aks_child = 0
+        for i in range(len(rms_df)):
+            row = rms_df.iloc[i]
+            mit = float(row['a_rms'])
+            aks_child += (mit - aai) ** 4
+        aks_child /= len(rms_df)
+        aks = aks_child / (avi ** 3) - 3
+
+        # kurtosis (GKS)
+        gks_child = 0
+        for i in range(len(rms_df)):
+            row = rms_df.iloc[i]
+            mit = float(row['g_rms'])
+            gks_child += (mit - gai) ** 4
+        gks_child /= len(rms_df)
+        gks = gks_child / (gvi ** 3) - 3
+
+        # interquartile range (AIR)
+        air = rms_df['a_rms'].quantile(0.75) - rms_df['a_rms'].quantile(0.25)
+
+        # interquartile range (GIR)
+        gir = rms_df['g_rms'].quantile(0.75) - rms_df['g_rms'].quantile(0.25)
+
+        return [aai, avi, asma, gai, gvi, gsma, aae, are,
+                mami, mgmi, asdi, gsdi, ass, gss, aks, gks, air, gir]
 
     @staticmethod
     def __adjust_zero(df, modes_dict):
@@ -455,6 +507,10 @@ class Performance(object):
 
                 plt.show()
                 plt.close()
+
+    @property
+    def song_df(self):
+        return self._song_df
 
     @property
     def primitive_df(self):
