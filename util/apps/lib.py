@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+
 import matplotlib.pyplot as plt
 import apps.tkconfig as tkconfig
 import logging
@@ -322,12 +323,11 @@ class Performance(object):
         """
 
         play_df = play_df[(play_df['timestamp'] >= start_time) & (play_df['timestamp'] <= end_time)]
-        if len(play_df) == 0:
+        if len(play_df) <= 1:
             return [np.nan] * len(tkconfig.STAT_COLS)
 
         rms_df = play_df[['timestamp', 'imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz']].copy()
 
-        print(rms_df)
         # acceleration movement intensity (MI)
         rms_df['a_rms'] = (
             play_df['imu_ax'] * play_df['imu_ax'] +
@@ -424,8 +424,56 @@ class Performance(object):
         # interquartile range (GIR)
         gir = rms_df['g_rms'].quantile(0.75) - rms_df['g_rms'].quantile(0.25)
 
+        # crossing rate
+        a_zero_cross = 0
+        g_zero_cross = 0
+        a_mean_cross = 0
+        g_mean_cross = 0
+        for i in range(1, len(rms_df)):
+            prev_row = rms_df.iloc[i - 1]
+            now_row = rms_df.iloc[i]
+            if (prev_row['a_rms'] <= mami) and (now_row['a_rms'] > mami):
+                a_zero_cross += 1
+            elif (prev_row['a_rms'] >= mami) and (now_row['a_rms'] < mami):
+                a_zero_cross += 1
+
+            if (prev_row['g_rms'] <= mgmi) and (now_row['g_rms'] > mgmi):
+                g_zero_cross += 1
+            elif (prev_row['g_rms'] >= mgmi) and (now_row['g_rms'] < mgmi):
+                g_zero_cross += 1
+
+            if (prev_row['a_rms'] >= aai) and (now_row['a_rms'] < aai):
+                a_mean_cross += 1
+            elif (prev_row['a_rms'] <= aai) and (now_row['a_rms'] > aai):
+                a_mean_cross += 1
+
+            if (prev_row['g_rms'] >= gai) and (now_row['g_rms'] < gai):
+                g_mean_cross += 1
+            elif (prev_row['g_rms'] <= gai) and (now_row['g_rms'] > gai):
+                g_mean_cross += 1
+
+        a_zero_cross /= len(rms_df)
+        g_zero_cross /= len(rms_df)
+        a_mean_cross /= len(rms_df)
+        g_mean_cross /= len(rms_df)
+
+        # correlation between two axes
+        a_xy_corr = rms_df['imu_ax'].corr(rms_df['imu_ay'])
+        a_yz_corr = rms_df['imu_ay'].corr(rms_df['imu_az'])
+        a_zx_corr = rms_df['imu_az'].corr(rms_df['imu_ax'])
+        g_xy_corr = rms_df['imu_gx'].corr(rms_df['imu_gy'])
+        g_yz_corr = rms_df['imu_gy'].corr(rms_df['imu_gz'])
+        g_zx_corr = rms_df['imu_gz'].corr(rms_df['imu_gx'])
+
+        # eigenvalues of dominant directions (EVA)
+        w, v = np.linalg.eig(rms_df[['imu_ax', 'imu_ay', 'imu_az']].corr().as_matrix())
+        evas = w[np.argpartition(w, -2)[-2:]]
+
         return [aai, avi, asma, gai, gvi, gsma, aae, are,
-                mami, mgmi, asdi, gsdi, ass, gss, aks, gks, air, gir]
+                mami, mgmi, asdi, gsdi, ass, gss, aks, gks, air, gir,
+                a_zero_cross, g_zero_cross, a_mean_cross, g_mean_cross,
+                a_xy_corr, a_yz_corr, a_zx_corr, g_xy_corr, g_yz_corr, g_zx_corr,
+                evas[0], evas[1]]
 
     @staticmethod
     def __adjust_zero(df, modes_dict):
