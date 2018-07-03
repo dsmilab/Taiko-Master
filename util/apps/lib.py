@@ -651,6 +651,8 @@ class Model(object):
         for id_, tm in tqdm(enumerate(pf.events), total=len(pf.events)):
             event_time = pf.events[id_][0]
             hit_type = pf.events[id_][1]
+            if hit_type == 0:
+                continue
             local_start_time = event_time - pf.delta_t
             local_end_time = event_time + pf.delta_t
 
