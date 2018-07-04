@@ -166,8 +166,8 @@ class Performance(object):
 
     DROPPED_COLUMNS = ['#', 'separator']
     RENAMED_COLUMNS = ['bar', 'bpm', 'time_unit', 'timestamp', 'label', 'continuous']
-    DELTA_T_DIVIDED_COUNT = 2
-    TIME_UNIT_DIVIDED_COUNT = 4
+    DELTA_T_DIVIDED_COUNT = 1
+    TIME_UNIT_DIVIDED_COUNT = 2
 
     def __init__(self, sensor, who_id, song_id, order_id, left_modes=None, right_modes=None):
         self._sensor = sensor
@@ -320,6 +320,17 @@ class Performance(object):
 
         event_primitive_df['hit_type'] = event_primitive_df['hit_type'].astype(np.int8)
         self._event_primitive_df = event_primitive_df
+
+    def scale(self):
+        max_abs_scaler = preprocessing.StandardScaler()
+        subset = self._event_primitive_df[tkconfig.L_STAT_COLS + tkconfig.R_STAT_COLS]
+        train_x = [tuple(x) for x in subset.values]
+        train_x = max_abs_scaler.fit_transform(train_x)
+        df = pd.DataFrame(train_x)
+        df.columns = tkconfig.L_STAT_COLS + tkconfig.R_STAT_COLS
+        self._event_primitive_df.drop(tkconfig.L_STAT_COLS + tkconfig.R_STAT_COLS, axis=1, inplace=True)
+
+        return self._event_primitive_df.join(df)
 
     @staticmethod
     def __do_fft(data):
