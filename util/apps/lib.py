@@ -182,6 +182,7 @@ class Performance(object):
         # importance dataframes as global sense
         self._song_df = None
         self._primitive_df = None
+        self._event_primitive_df = None
         self._events = []
         self._left_play_df, self._left_modes = None, left_modes
         self._right_play_df, self._right_modes = None, right_modes
@@ -218,6 +219,7 @@ class Performance(object):
         self._unit_time_interval = self._delta_t / Performance.TIME_UNIT_DIVIDED_COUNT
 
         self.__build_primitive_df()
+        self.__build_event_primitive_df()
 
     def __get_play_duration(self):
         """
@@ -297,6 +299,27 @@ class Performance(object):
             right_primitive_df.rename(columns={col: 'R_' + col}, inplace=True)
 
         self._primitive_df = left_primitive_df.merge(right_primitive_df, on='seq_id').drop('seq_id', axis=1)
+
+    def __build_event_primitive_df(self):
+        event_primitive_df = pd.DataFrame(columns=['hit_type'] + tkconfig.L_STAT_COLS + tkconfig.R_STAT_COLS)
+
+        # split all event times with gap "unit_time_interval"
+        for id_, tm in enumerate(self._events):
+            event_time = self._events[id_][0]
+            hit_type = self._events[id_][1]
+            local_start_time = event_time - self._unit_time_interval / 2
+            local_end_time = event_time + self._unit_time_interval / 2
+
+            # left arm
+            left_features = self.get_statistical_features(self._left_play_df, local_start_time, local_end_time)
+
+            # right arm
+            right_features = self.get_statistical_features(self._right_play_df, local_start_time, local_end_time)
+
+            event_primitive_df.loc[id_] = [hit_type] + left_features + right_features
+
+        event_primitive_df['hit_type'] = event_primitive_df['hit_type'].astype(np.int8)
+        self._event_primitive_df = event_primitive_df
 
     @staticmethod
     def __do_fft(data):
@@ -565,6 +588,10 @@ class Performance(object):
         return self._primitive_df
 
     @property
+    def event_primitive_df(self):
+        return self._event_primitive_df
+
+    @property
     def events(self):
         return self._events
 
@@ -591,6 +618,10 @@ class Performance(object):
     @property
     def unit_time_interval(self):
         return self._unit_time_interval
+
+    @property
+    def bar_unit(self):
+        return self._bar_unit
 
 
 class Model(object):
