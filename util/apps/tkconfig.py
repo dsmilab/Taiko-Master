@@ -25,12 +25,12 @@ STAT_COLS = ['AAI', 'AVI', 'ASMA', 'GAI', 'GVI', 'GSMA', 'AAE', 'ARE',
              'AXYCORR', 'AYZCORR', 'AZXCORR', 'GXYCORR', 'GYZCORR', 'GZXCORR',
              'EVA1', 'EVA2']
 L_STAT_COLS = ['L_AAI', 'L_AVI', 'L_ASMA', 'L_GAI', 'L_GVI', 'L_GSMA', 'L_AAE', 'L_ARE',
-               'L_MAMI', 'L_MGMI', 'L_ASDI', 'L_ASS', 'L_GSS', 'L_AKS', 'L_GKS', 'L_AIR', 'L_GIR',
+               'L_MAMI', 'L_MGMI', 'L_ASDI', 'L_GSDI', 'L_ASS', 'L_GSS', 'L_AKS', 'L_GKS', 'L_AIR', 'L_GIR',
                'L_AZCR', 'L_GZCR', 'L_AMCR', 'L_GMCR',
                'L_AXYCORR', 'L_AYZCORR', 'L_AZXCORR', 'L_GXYCORR', 'L_GYZCORR', 'L_GZXCORR',
                'L_EVA1', 'L_EVA2']
 R_STAT_COLS = ['R_AAI', 'R_AVI', 'R_ASMA', 'R_GAI', 'R_GVI', 'R_GSMA', 'R_AAE', 'R_ARE',
-               'R_MAMI', 'R_MGMI', 'R_ASDI', 'R_ASS', 'R_GSS', 'R_AKS', 'R_GKS', 'R_AIR', 'R_GIR',
+               'R_MAMI', 'R_MGMI', 'R_ASDI', 'R_GSDI', 'R_ASS', 'R_GSS', 'R_AKS', 'R_GKS', 'R_AIR', 'R_GIR',
                'R_AZCR', 'R_GZCR', 'R_AMCR', 'R_GMCR',
                'R_AXYCORR', 'R_AYZCORR', 'R_AZXCORR', 'R_GXYCORR', 'R_GYZCORR', 'R_GZXCORR',
                'R_EVA1', 'R_EVA2']
