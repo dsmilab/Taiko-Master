@@ -169,11 +169,18 @@ class Performance(object):
     DELTA_T_DIVIDED_COUNT = 1
     TIME_UNIT_DIVIDED_COUNT = 2
 
-    def __init__(self, sensor, who_id, song_id, order_id, left_modes=None, right_modes=None):
+    def __init__(self, sensor, who_id, song_id, order_id,
+                 dt_dc_count=DELTA_T_DIVIDED_COUNT,
+                 tu_dc_count=TIME_UNIT_DIVIDED_COUNT,
+                 left_modes=None, right_modes=None):
+
         self._sensor = sensor
         self._who_id = who_id
         self._song_id = song_id
         self._order_id = order_id
+
+        self.DELTA_T_DIVIDED_COUNT = dt_dc_count
+        self.TIME_UNIT_DIVIDED_COUNT = tu_dc_count
 
         # params of a song
         self._time_unit = None
@@ -215,8 +222,8 @@ class Performance(object):
 
         self._time_unit = self._song_df['time_unit'].min()
         self._bar_unit = self._time_unit * 8
-        self._delta_t = self._bar_unit / Performance.DELTA_T_DIVIDED_COUNT
-        self._unit_time_interval = self._delta_t / Performance.TIME_UNIT_DIVIDED_COUNT
+        self._delta_t = self._bar_unit / self.DELTA_T_DIVIDED_COUNT
+        self._unit_time_interval = self._delta_t / self.TIME_UNIT_DIVIDED_COUNT
 
         self.__build_primitive_df()
         self.__build_event_primitive_df()
@@ -328,9 +335,8 @@ class Performance(object):
         train_x = max_abs_scaler.fit_transform(train_x)
         df = pd.DataFrame(train_x)
         df.columns = tkconfig.L_STAT_COLS + tkconfig.R_STAT_COLS
-        self._event_primitive_df.drop(tkconfig.L_STAT_COLS + tkconfig.R_STAT_COLS, axis=1, inplace=True)
 
-        return self._event_primitive_df.join(df)
+        return self._event_primitive_df.drop(tkconfig.L_STAT_COLS + tkconfig.R_STAT_COLS, axis=1).join(df)
 
     @staticmethod
     def __do_fft(data):
