@@ -431,40 +431,40 @@ class Performance(object):
         are = Performance.__do_fft(rms_df['g_rms']) / len(rms_df)
 
         # skewness (ASS)
-        ass_child = 0
-        for i in range(len(rms_df)):
-            row = rms_df.iloc[i]
-            mit = float(row['a_rms'])
-            ass_child += (mit - aai) ** 3
-        ass_child /= len(rms_df)
-        ass = ass_child / math.pow(avi, 3.0 / 2.0)
+        # ass_child = 0
+        # for i in range(len(rms_df)):
+        #     row = rms_df.iloc[i]
+        #     mit = float(row['a_rms'])
+        #     ass_child += (mit - aai) ** 3
+        # ass_child /= len(rms_df)
+        # ass = ass_child / math.pow(avi, 3.0 / 2.0)
 
         # skewness (GSS)
-        gss_child = 0
-        for i in range(len(rms_df)):
-            row = rms_df.iloc[i]
-            mit = float(row['g_rms'])
-            gss_child += (mit - gai) ** 3
-        gss_child /= len(rms_df)
-        gss = gss_child / math.pow(gvi, 3.0 / 2.0)
+        # gss_child = 0
+        # for i in range(len(rms_df)):
+        #     row = rms_df.iloc[i]
+        #     mit = float(row['g_rms'])
+        #     gss_child += (mit - gai) ** 3
+        # gss_child /= len(rms_df)
+        # gss = gss_child / math.pow(gvi, 3.0 / 2.0)
 
         # kurtosis (AKS)
-        aks_child = 0
-        for i in range(len(rms_df)):
-            row = rms_df.iloc[i]
-            mit = float(row['a_rms'])
-            aks_child += (mit - aai) ** 4
-        aks_child /= len(rms_df)
-        aks = aks_child / (avi ** 3) - 3
+        # aks_child = 0
+        # for i in range(len(rms_df)):
+        #     row = rms_df.iloc[i]
+        #     mit = float(row['a_rms'])
+        #     aks_child += (mit - aai) ** 4
+        # aks_child /= len(rms_df)
+        # aks = aks_child / (avi ** 3) - 3
 
         # kurtosis (GKS)
-        gks_child = 0
-        for i in range(len(rms_df)):
-            row = rms_df.iloc[i]
-            mit = float(row['g_rms'])
-            gks_child += (mit - gai) ** 4
-        gks_child /= len(rms_df)
-        gks = gks_child / (gvi ** 3) - 3
+        # gks_child = 0
+        # for i in range(len(rms_df)):
+        #     row = rms_df.iloc[i]
+        #     mit = float(row['g_rms'])
+        #     gks_child += (mit - gai) ** 4
+        # gks_child /= len(rms_df)
+        # gks = gks_child / (gvi ** 3) - 3
 
         # interquartile range (AIR)
         air = rms_df['a_rms'].quantile(0.75) - rms_df['a_rms'].quantile(0.25)
@@ -514,14 +514,13 @@ class Performance(object):
         g_zx_corr = rms_df['imu_gz'].corr(rms_df['imu_gx'])
 
         # eigenvalues of dominant directions (EVA)
-        w, v = np.linalg.eig(rms_df[['imu_ax', 'imu_ay', 'imu_az']].corr().as_matrix())
-        evas = w[np.argpartition(w, -2)[-2:]]
-
+        # w, v = np.linalg.eig(rms_df[['imu_ax', 'imu_ay', 'imu_az']].corr().as_matrix())
+        # evas = w[np.argpartition(w, -2)[-2:]]
+        #
         return [aai, avi, asma, gai, gvi, gsma, aae, are,
-                mami, mgmi, asdi, gsdi, ass, gss, aks, gks, air, gir,
+                mami, mgmi, asdi, gsdi, air, gir,
                 a_zero_cross, g_zero_cross, a_mean_cross, g_mean_cross,
-                a_xy_corr, a_yz_corr, a_zx_corr, g_xy_corr, g_yz_corr, g_zx_corr,
-                evas[0], evas[1]]
+                a_xy_corr, a_yz_corr, a_zx_corr, g_xy_corr, g_yz_corr, g_zx_corr]
 
     @staticmethod
     def __adjust_zero(df, modes_dict):
@@ -722,8 +721,7 @@ class Model(object):
 
         return x, y
 
-    @staticmethod
-    def __build_vocabulary_kmeans(performance):
+    def __build_vocabulary_kmeans(self, performance):
         """
         Implement k-means algorithm to build vocabulary.
 
@@ -739,7 +737,7 @@ class Model(object):
         train_x = [tuple(x) for x in subset.values]
         train_x = max_abs_scaler.fit_transform(train_x)
         print(train_x)
-        vocab_kmeans = KMeans(n_clusters=Model._K, random_state=0).fit(train_x)
+        vocab_kmeans = KMeans(n_clusters=self._K, random_state=0).fit(train_x)
         return vocab_kmeans, max_abs_scaler
 
     def predict(self, performance, true_label=True):
@@ -762,8 +760,7 @@ class Model(object):
         else:
             return pred_y
 
-    @staticmethod
-    def get_local_primitive_hist(left_play_df, right_play_df, start_time, end_time,
+    def get_local_primitive_hist(self, left_play_df, right_play_df, start_time, end_time,
                                  vocab_kmeans, max_abs_scaler, unit_time_interval):
         """
         Given a dataframe of a play with specific time interval, use trained model to label local event.
@@ -808,8 +805,6 @@ class Model(object):
             now_time += unit_time_interval
             seq_id += 1
 
-        local_stat_df.dropna(inplace=True)
-
         # merge left and right hand depends on the same time
         left_local_df = local_stat_df[local_stat_df['hand_side'] == tkconfig.LEFT_HAND][['seq_id'] +
                                                                                         tkconfig.STAT_COLS]
@@ -820,9 +815,14 @@ class Model(object):
             right_local_df.rename(columns={col: 'R_' + col}, inplace=True)
 
         local_stat_df = left_local_df.merge(right_local_df, on='seq_id').drop('seq_id', axis=1)
+        local_stat_df.dropna(inplace=True)
 
         # build freq histogram
-        vec = np.zeros(Model._K)
+        vec = np.zeros(self._K)
+
+        if len(local_stat_df) == 0:
+            return vec
+
         subset = local_stat_df[tkconfig.L_STAT_COLS + tkconfig.R_STAT_COLS]
         train_x = [tuple(x) for x in subset.values]
         train_x = max_abs_scaler.transform(train_x)
