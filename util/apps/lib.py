@@ -213,6 +213,7 @@ class Performance(object):
         self._song_df = pd.read_csv(tkconfig.TABLE_PATH + 'taiko_song_' + str(self._song_id) + '_info.csv')
         self._song_df.drop(Performance.DROPPED_COLUMNS, axis=1, inplace=True)
         self._song_df.columns = Performance.RENAMED_COLUMNS
+        self._song_df['label'] = self._song_df['label'].apply(self._transform_hit_type_label)
 
         self._start_time, self._end_time, self._first_hit_time = self.__get_play_duration()
 
@@ -227,6 +228,13 @@ class Performance(object):
 
         self.__build_primitive_df()
         self.__build_event_primitive_df()
+
+    def _transform_hit_type_label(self, label):
+        if label in [1, 2, 3, 4]:
+            return 1
+        elif label in [5, 6]:
+            return 2
+        return 0
 
     def __get_play_duration(self):
         """
@@ -726,7 +734,7 @@ class Model(object):
         """
 
         pf = performance
-        max_abs_scaler = preprocessing.MinMaxScaler()
+        max_abs_scaler = preprocessing.StandardScaler()
         subset = pf.primitive_df[tkconfig.L_STAT_COLS + tkconfig.R_STAT_COLS]
         train_x = [tuple(x) for x in subset.values]
         train_x = max_abs_scaler.fit_transform(train_x)
