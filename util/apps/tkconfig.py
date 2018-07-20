@@ -1,7 +1,7 @@
 import logging
 
-LOG_FORMAT = '%(asctime)s %(levelname)s << %(message)s'
-logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT, datefmt='%H:%M:%S')
+# LOG_FORMAT = '%(asctime)s %(levelname)s << %(message)s'
+# logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT, datefmt='%H:%M:%S')
 
 LEFT_PATH = '../data/bb_left_forearm_csv/'
 RIGHT_PATH = '../data/bb_right_forearm_csv/'
@@ -9,6 +9,8 @@ TABLE_PATH = '../data/taiku_tables/'
 PATH = '../data/bb_capture/'
 OUTPUT_PATH = '../output/'
 PROCESSED_PATH = '../data/'
+
+BB_CAPTURE_PATH = '../bb_capture_output/'
 
 LEFT_HAND = 'left'
 RIGHT_HAND = 'right'
