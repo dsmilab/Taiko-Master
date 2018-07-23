@@ -31,7 +31,7 @@ class ScoreBoard(object):
         directory = d.strftime('bb_capture.capture_%Y_%m_%d_%H_%M_%S')
 
         score_start_time = float(row['first_hit_time']) - 1
-        score_end_time = score_start_time + row['song_length'] + 1
+        score_end_time = score_start_time + row['song_length'] + 3
 
         workspace = tkconfig.BB_CAPTURE_PATH + directory + '/'
         files = next(os.walk(workspace))[2]
