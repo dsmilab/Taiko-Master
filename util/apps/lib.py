@@ -166,14 +166,21 @@ class Performance(object):
 
     DROPPED_COLUMNS = ['#', 'separator']
     RENAMED_COLUMNS = ['bar', 'bpm', 'time_unit', 'timestamp', 'label', 'continuous']
-    DELTA_T_DIVIDED_COUNT = 2
-    TIME_UNIT_DIVIDED_COUNT = 4
+    DELTA_T_DIVIDED_COUNT = 1
+    TIME_UNIT_DIVIDED_COUNT = 2
 
-    def __init__(self, sensor, who_id, song_id, order_id, left_modes=None, right_modes=None):
+    def __init__(self, sensor, who_id, song_id, order_id,
+                 dt_dc_count=DELTA_T_DIVIDED_COUNT,
+                 tu_dc_count=TIME_UNIT_DIVIDED_COUNT,
+                 left_modes=None, right_modes=None):
+
         self._sensor = sensor
         self._who_id = who_id
         self._song_id = song_id
         self._order_id = order_id
+
+        self.DELTA_T_DIVIDED_COUNT = dt_dc_count
+        self.TIME_UNIT_DIVIDED_COUNT = tu_dc_count
 
         # params of a song
         self._time_unit = None
@@ -182,6 +189,7 @@ class Performance(object):
         # importance dataframes as global sense
         self._song_df = None
         self._primitive_df = None
+        self._event_primitive_df = None
         self._events = []
         self._left_play_df, self._left_modes = None, left_modes
         self._right_play_df, self._right_modes = None, right_modes
@@ -205,6 +213,7 @@ class Performance(object):
         self._song_df = pd.read_csv(tkconfig.TABLE_PATH + 'taiko_song_' + str(self._song_id) + '_info.csv')
         self._song_df.drop(Performance.DROPPED_COLUMNS, axis=1, inplace=True)
         self._song_df.columns = Performance.RENAMED_COLUMNS
+        self._song_df['label'] = self._song_df['label'].apply(self._transform_hit_type_label)
 
         self._start_time, self._end_time, self._first_hit_time = self.__get_play_duration()
 
@@ -214,10 +223,18 @@ class Performance(object):
 
         self._time_unit = self._song_df['time_unit'].min()
         self._bar_unit = self._time_unit * 8
-        self._delta_t = self._bar_unit / Performance.DELTA_T_DIVIDED_COUNT
-        self._unit_time_interval = self._delta_t / Performance.TIME_UNIT_DIVIDED_COUNT
+        self._delta_t = self._bar_unit / self.DELTA_T_DIVIDED_COUNT
+        self._unit_time_interval = self._delta_t / self.TIME_UNIT_DIVIDED_COUNT
 
         self.__build_primitive_df()
+        self.__build_event_primitive_df()
+
+    def _transform_hit_type_label(self, label):
+        if label in [1, 2, 3, 4]:
+            return 1
+        elif label in [5, 6]:
+            return 2
+        return 0
 
     def __get_play_duration(self):
         """
@@ -297,6 +314,37 @@ class Performance(object):
             right_primitive_df.rename(columns={col: 'R_' + col}, inplace=True)
 
         self._primitive_df = left_primitive_df.merge(right_primitive_df, on='seq_id').drop('seq_id', axis=1)
+
+    def __build_event_primitive_df(self):
+        event_primitive_df = pd.DataFrame(columns=['hit_type'] + tkconfig.L_STAT_COLS + tkconfig.R_STAT_COLS)
+
+        # split all event times with gap "unit_time_interval"
+        for id_, tm in enumerate(self._events):
+            event_time = self._events[id_][0]
+            hit_type = self._events[id_][1]
+            local_start_time = event_time - self._unit_time_interval / 2
+            local_end_time = event_time + self._unit_time_interval / 2
+
+            # left arm
+            left_features = self.get_statistical_features(self._left_play_df, local_start_time, local_end_time)
+
+            # right arm
+            right_features = self.get_statistical_features(self._right_play_df, local_start_time, local_end_time)
+
+            event_primitive_df.loc[id_] = [hit_type] + left_features + right_features
+
+        event_primitive_df['hit_type'] = event_primitive_df['hit_type'].astype(np.int8)
+        self._event_primitive_df = event_primitive_df
+
+    def scale(self):
+        max_abs_scaler = preprocessing.StandardScaler()
+        subset = self._event_primitive_df[tkconfig.L_STAT_COLS + tkconfig.R_STAT_COLS]
+        train_x = [tuple(x) for x in subset.values]
+        train_x = max_abs_scaler.fit_transform(train_x)
+        df = pd.DataFrame(train_x)
+        df.columns = tkconfig.L_STAT_COLS + tkconfig.R_STAT_COLS
+
+        return self._event_primitive_df.drop(tkconfig.L_STAT_COLS + tkconfig.R_STAT_COLS, axis=1).join(df)
 
     @staticmethod
     def __do_fft(data):
@@ -383,40 +431,40 @@ class Performance(object):
         are = Performance.__do_fft(rms_df['g_rms']) / len(rms_df)
 
         # skewness (ASS)
-        ass_child = 0
-        for i in range(len(rms_df)):
-            row = rms_df.iloc[i]
-            mit = float(row['a_rms'])
-            ass_child += (mit - aai) ** 3
-        ass_child /= len(rms_df)
-        ass = ass_child / math.pow(avi, 3.0 / 2.0)
+        # ass_child = 0
+        # for i in range(len(rms_df)):
+        #     row = rms_df.iloc[i]
+        #     mit = float(row['a_rms'])
+        #     ass_child += (mit - aai) ** 3
+        # ass_child /= len(rms_df)
+        # ass = ass_child / math.pow(avi, 3.0 / 2.0)
 
         # skewness (GSS)
-        gss_child = 0
-        for i in range(len(rms_df)):
-            row = rms_df.iloc[i]
-            mit = float(row['g_rms'])
-            gss_child += (mit - gai) ** 3
-        gss_child /= len(rms_df)
-        gss = gss_child / math.pow(gvi, 3.0 / 2.0)
+        # gss_child = 0
+        # for i in range(len(rms_df)):
+        #     row = rms_df.iloc[i]
+        #     mit = float(row['g_rms'])
+        #     gss_child += (mit - gai) ** 3
+        # gss_child /= len(rms_df)
+        # gss = gss_child / math.pow(gvi, 3.0 / 2.0)
 
         # kurtosis (AKS)
-        aks_child = 0
-        for i in range(len(rms_df)):
-            row = rms_df.iloc[i]
-            mit = float(row['a_rms'])
-            aks_child += (mit - aai) ** 4
-        aks_child /= len(rms_df)
-        aks = aks_child / (avi ** 3) - 3
+        # aks_child = 0
+        # for i in range(len(rms_df)):
+        #     row = rms_df.iloc[i]
+        #     mit = float(row['a_rms'])
+        #     aks_child += (mit - aai) ** 4
+        # aks_child /= len(rms_df)
+        # aks = aks_child / (avi ** 3) - 3
 
         # kurtosis (GKS)
-        gks_child = 0
-        for i in range(len(rms_df)):
-            row = rms_df.iloc[i]
-            mit = float(row['g_rms'])
-            gks_child += (mit - gai) ** 4
-        gks_child /= len(rms_df)
-        gks = gks_child / (gvi ** 3) - 3
+        # gks_child = 0
+        # for i in range(len(rms_df)):
+        #     row = rms_df.iloc[i]
+        #     mit = float(row['g_rms'])
+        #     gks_child += (mit - gai) ** 4
+        # gks_child /= len(rms_df)
+        # gks = gks_child / (gvi ** 3) - 3
 
         # interquartile range (AIR)
         air = rms_df['a_rms'].quantile(0.75) - rms_df['a_rms'].quantile(0.25)
@@ -466,14 +514,13 @@ class Performance(object):
         g_zx_corr = rms_df['imu_gz'].corr(rms_df['imu_gx'])
 
         # eigenvalues of dominant directions (EVA)
-        w, v = np.linalg.eig(rms_df[['imu_ax', 'imu_ay', 'imu_az']].corr().as_matrix())
-        evas = w[np.argpartition(w, -2)[-2:]]
-
+        # w, v = np.linalg.eig(rms_df[['imu_ax', 'imu_ay', 'imu_az']].corr().as_matrix())
+        # evas = w[np.argpartition(w, -2)[-2:]]
+        #
         return [aai, avi, asma, gai, gvi, gsma, aae, are,
-                mami, mgmi, asdi, gsdi, ass, gss, aks, gks, air, gir,
+                mami, mgmi, asdi, gsdi, air, gir,
                 a_zero_cross, g_zero_cross, a_mean_cross, g_mean_cross,
-                a_xy_corr, a_yz_corr, a_zx_corr, g_xy_corr, g_yz_corr, g_zx_corr,
-                evas[0], evas[1]]
+                a_xy_corr, a_yz_corr, a_zx_corr, g_xy_corr, g_yz_corr, g_zx_corr]
 
     @staticmethod
     def __adjust_zero(df, modes_dict):
@@ -565,6 +612,10 @@ class Performance(object):
         return self._primitive_df
 
     @property
+    def event_primitive_df(self):
+        return self._event_primitive_df
+
+    @property
     def events(self):
         return self._events
 
@@ -591,6 +642,10 @@ class Performance(object):
     @property
     def unit_time_interval(self):
         return self._unit_time_interval
+
+    @property
+    def bar_unit(self):
+        return self._bar_unit
 
 
 class Model(object):
@@ -666,8 +721,7 @@ class Model(object):
 
         return x, y
 
-    @staticmethod
-    def __build_vocabulary_kmeans(performance):
+    def __build_vocabulary_kmeans(self, performance):
         """
         Implement k-means algorithm to build vocabulary.
 
@@ -678,12 +732,12 @@ class Model(object):
         """
 
         pf = performance
-        max_abs_scaler = preprocessing.MinMaxScaler()
+        max_abs_scaler = preprocessing.StandardScaler()
         subset = pf.primitive_df[tkconfig.L_STAT_COLS + tkconfig.R_STAT_COLS]
         train_x = [tuple(x) for x in subset.values]
         train_x = max_abs_scaler.fit_transform(train_x)
         print(train_x)
-        vocab_kmeans = KMeans(n_clusters=Model._K, random_state=0).fit(train_x)
+        vocab_kmeans = KMeans(n_clusters=self._K, random_state=0).fit(train_x)
         return vocab_kmeans, max_abs_scaler
 
     def predict(self, performance, true_label=True):
@@ -706,8 +760,7 @@ class Model(object):
         else:
             return pred_y
 
-    @staticmethod
-    def get_local_primitive_hist(left_play_df, right_play_df, start_time, end_time,
+    def get_local_primitive_hist(self, left_play_df, right_play_df, start_time, end_time,
                                  vocab_kmeans, max_abs_scaler, unit_time_interval):
         """
         Given a dataframe of a play with specific time interval, use trained model to label local event.
@@ -752,8 +805,6 @@ class Model(object):
             now_time += unit_time_interval
             seq_id += 1
 
-        local_stat_df.dropna(inplace=True)
-
         # merge left and right hand depends on the same time
         left_local_df = local_stat_df[local_stat_df['hand_side'] == tkconfig.LEFT_HAND][['seq_id'] +
                                                                                         tkconfig.STAT_COLS]
@@ -764,9 +815,14 @@ class Model(object):
             right_local_df.rename(columns={col: 'R_' + col}, inplace=True)
 
         local_stat_df = left_local_df.merge(right_local_df, on='seq_id').drop('seq_id', axis=1)
+        local_stat_df.dropna(inplace=True)
 
         # build freq histogram
-        vec = np.zeros(Model._K)
+        vec = np.zeros(self._K)
+
+        if len(local_stat_df) == 0:
+            return vec
+
         subset = local_stat_df[tkconfig.L_STAT_COLS + tkconfig.R_STAT_COLS]
         train_x = [tuple(x) for x in subset.values]
         train_x = max_abs_scaler.transform(train_x)
