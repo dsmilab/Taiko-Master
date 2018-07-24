@@ -21,7 +21,7 @@ class ScoreBoard(object):
         self._drummer_df = drummer_df
         self._model = load_model('model/mnist_model.h5')
 
-    def get_scores(self, who_id, song_id, performance_order):
+    def get_scores_with_timestamps(self, who_id, song_id, performance_order, zero_adjust=True):
         row = self._drummer_df[(self._drummer_df['drummer_id'] == who_id) &
                                (self._drummer_df['song_id'] == song_id) &
                                (self._drummer_df['performance_order'] == performance_order)]
@@ -30,17 +30,22 @@ class ScoreBoard(object):
         d = datetime.strptime(row['start_time'], '%m/%d/%Y %H:%M:%S')
         directory = d.strftime('bb_capture.capture_%Y_%m_%d_%H_%M_%S')
 
-        score_start_time = float(row['first_hit_time']) - 1
+        first_hit_time = float(row['first_hit_time'])
+        score_start_time = first_hit_time - 1
         score_end_time = score_start_time + row['song_length'] + 3
 
         workspace = tkconfig.BB_CAPTURE_PATH + directory + '/'
         files = next(os.walk(workspace))[2]
         files.sort()
 
-        score_start_frame, score_end_frame = self._crop_frames(files, score_start_time, score_end_time)
+        score_start_frame, score_end_frame, timestamps = self._crop_frames(files, score_start_time, score_end_time)
         img_scores = self._process_images(workspace, files, score_start_frame, score_end_frame)
+        del img_scores[0]
 
-        return img_scores
+        if zero_adjust:
+            timestamps = [timestamp - first_hit_time for timestamp in timestamps]
+            
+        return img_scores, timestamps
 
     @staticmethod
     def _crop_frames(files, score_start_time, score_end_time):
@@ -54,7 +59,11 @@ class ScoreBoard(object):
             if frame_time <= score_end_time:
                 score_end_frame = id_
 
-        return score_start_frame, score_end_frame
+        timestamps = []
+        for i in range(score_start_frame, score_end_frame):
+            timestamps.append(float(files[i][5: -4]))
+
+        return score_start_frame, score_end_frame, timestamps
 
     def _process_images(self, workspace, files, score_start_frame, score_end_frame):
         all_digits = []
