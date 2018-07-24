@@ -229,7 +229,8 @@ class Performance(object):
         self.__build_primitive_df()
         self.__build_event_primitive_df()
 
-    def _transform_hit_type_label(self, label):
+    @staticmethod
+    def _transform_hit_type_label(label):
         if label in [1, 2, 3, 4]:
             return 1
         elif label in [5, 6]:
@@ -706,8 +707,8 @@ class Model(object):
         for id_, tm in tqdm(enumerate(pf.events), total=len(pf.events)):
             event_time = pf.events[id_][0]
             hit_type = pf.events[id_][1]
-            if hit_type == 0:
-                continue
+            # if hit_type == 0:
+            #     continue
             local_start_time = event_time - pf.delta_t
             local_end_time = event_time + pf.delta_t
 
