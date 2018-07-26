@@ -164,8 +164,8 @@ class Performance(object):
         unit_time_interval: time interval we consider a primitive
     """
 
-    DROPPED_COLUMNS = ['#', 'separator']
-    RENAMED_COLUMNS = ['bar', 'bpm', 'time_unit', 'timestamp', 'label', 'continuous']
+    DROPPED_COLUMNS = ['#', 'separator', 'continuous']
+    RENAMED_COLUMNS = ['bar', 'bpm', 'time_unit', 'timestamp', 'label']
     DELTA_T_DIVIDED_COUNT = 1
     TIME_UNIT_DIVIDED_COUNT = 2
 
@@ -210,7 +210,10 @@ class Performance(object):
         :return:
         """
 
-        self._song_df = pd.read_csv(tkconfig.TABLE_PATH + 'taiko_song_' + str(self._song_id) + '_info.csv')
+        difficulty = self.__get_play_difficulty()
+        song_file_name = 'taiko_song_%d_%s_info.csv' % (self._song_id, difficulty)
+
+        self._song_df = pd.read_csv(tkconfig.TABLE_PATH + song_file_name)
         self._song_df.drop(Performance.DROPPED_COLUMNS, axis=1, inplace=True)
         self._song_df.columns = Performance.RENAMED_COLUMNS
         self._song_df['label'] = self._song_df['label'].apply(self._transform_hit_type_label)
@@ -236,6 +239,18 @@ class Performance(object):
         elif label in [5, 6]:
             return 2
         return 0
+
+    def __get_play_difficulty(self):
+        df = self._sensor.drummer_df
+        df = df[(df['drummer_id'] == self._who_id) &
+                (df['song_id'] == self._song_id) &
+                (df['performance_order'] == self._order_id)]
+        assert len(df) > 0, logging.error('No matched performances.')
+
+        # assume matched case is unique
+        row = df.iloc[0]
+
+        return row['difficulty']
 
     def __get_play_duration(self):
         """
@@ -707,7 +722,7 @@ class Model(object):
         for id_, tm in tqdm(enumerate(pf.events), total=len(pf.events)):
             event_time = pf.events[id_][0]
             hit_type = pf.events[id_][1]
-            # if hit_type == 0:
+            # if hit_type == 0 or hit_type == 3:
             #     continue
             local_start_time = event_time - pf.delta_t
             local_end_time = event_time + pf.delta_t
