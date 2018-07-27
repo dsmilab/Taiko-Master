@@ -30,7 +30,7 @@ class Sensor(object):
         drummer_df: dataframe about performance of drummers
     """
 
-    TAILED_ADDITIONAL_TIME = 15
+    TAILED_ADDITIONAL_TIME = 30
 
     def __init__(self, verbose=0):
         self._verbose = verbose
@@ -309,6 +309,8 @@ class Performance(object):
             event_primitive_df.loc[id_] = [hit_type] + left_features + right_features + near
 
         event_primitive_df['hit_type'] = event_primitive_df['hit_type'].astype(np.int8)
+        event_primitive_df.dropna(inplace=True)
+
         self._event_primitive_df = event_primitive_df
 
     def __get_near_event_hit_type(self, now, n_counts=2):
@@ -334,8 +336,8 @@ class Performance(object):
         train_x = max_abs_scaler.fit_transform(train_x)
         df = pd.DataFrame(train_x)
         df.columns = tkconfig.L_STAT_COLS + tkconfig.R_STAT_COLS
-
-        return self._event_primitive_df.drop(tkconfig.L_STAT_COLS + tkconfig.R_STAT_COLS, axis=1).join(df)
+        self._event_primitive_df = self._event_primitive_df.drop(tkconfig.L_STAT_COLS +
+                                                                 tkconfig.R_STAT_COLS, axis=1).join(df)
 
     @staticmethod
     def __do_fft(data):
