@@ -33,4 +33,5 @@ R_STAT_COLS = ['R_AAI', 'R_AVI', 'R_ASMA', 'R_GAI', 'R_GVI', 'R_GSMA', 'R_AAE', 
                'R_MAMI', 'R_MGMI', 'R_ASDI', 'R_GSDI', 'R_AIR', 'R_GIR',
                'R_AZCR', 'R_GZCR', 'R_AMCR', 'R_GMCR',
                'R_AXYCORR', 'R_AYZCORR', 'R_AZXCORR', 'R_GXYCORR', 'R_GYZCORR', 'R_GZXCORR']
+COND_COLS = ['L2', 'L1', 'R1', 'R2']
 COLORS = ['black', 'red', 'blue', 'yellow', 'green', 'cyan', 'purple']

@@ -188,7 +188,6 @@ class Performance(object):
 
         # importance dataframes as global sense
         self._song_df = None
-        self._primitive_df = None
         self._event_primitive_df = None
         self._events = []
         self._left_play_df, self._left_modes = None, left_modes
@@ -229,7 +228,6 @@ class Performance(object):
         self._delta_t = self._bar_unit / self.DELTA_T_DIVIDED_COUNT
         self._unit_time_interval = self._delta_t / self.TIME_UNIT_DIVIDED_COUNT
 
-        self.__build_primitive_df()
         self.__build_event_primitive_df()
 
     @staticmethod
@@ -288,51 +286,10 @@ class Performance(object):
         play_df = self.__adjust_zero(play_df, modes)
         return play_df, modes
 
-    def __build_primitive_df(self):
-        """
-        After setting play's dataframe, build dataframe of primitives in this play.
-
-        :return: dataframe of primitives
-        """
-
-        primitive_df = pd.DataFrame(columns=['seq_id', 'hand_side'] + tkconfig.STAT_COLS)
-
-        # split interval [start_time, end_time] with gap "unit_time_interval"
-        id_ = 0
-        seq_id = 0
-        now_time = self._start_time
-        while now_time + self._unit_time_interval <= self._end_time:
-            local_start_time = now_time
-            local_end_time = now_time + self._unit_time_interval
-
-            # left arm
-            left_features = self.get_statistical_features(self._left_play_df, local_start_time, local_end_time)
-            primitive_df.loc[id_] = [seq_id, tkconfig.LEFT_HAND] + left_features
-            id_ += 1
-
-            # right arm
-            right_features = self.get_statistical_features(self._right_play_df, local_start_time, local_end_time)
-            primitive_df.loc[id_] = [seq_id, tkconfig.RIGHT_HAND] + right_features
-            id_ += 1
-
-            now_time += self._unit_time_interval
-            seq_id += 1
-
-        primitive_df.dropna(inplace=True)
-
-        # merge left and right hand depends on the same time
-        left_primitive_df = primitive_df[primitive_df['hand_side'] == tkconfig.LEFT_HAND][['seq_id'] +
-                                                                                          tkconfig.STAT_COLS]
-        right_primitive_df = primitive_df[primitive_df['hand_side'] == tkconfig.RIGHT_HAND][['seq_id'] +
-                                                                                            tkconfig.STAT_COLS]
-        for col in tkconfig.STAT_COLS:
-            left_primitive_df.rename(columns={col: 'L_' + col}, inplace=True)
-            right_primitive_df.rename(columns={col: 'R_' + col}, inplace=True)
-
-        self._primitive_df = left_primitive_df.merge(right_primitive_df, on='seq_id').drop('seq_id', axis=1)
-
     def __build_event_primitive_df(self):
-        event_primitive_df = pd.DataFrame(columns=['hit_type'] + tkconfig.L_STAT_COLS + tkconfig.R_STAT_COLS)
+        event_primitive_df = pd.DataFrame(columns=['hit_type'] + tkconfig.L_STAT_COLS
+                                                  + tkconfig.R_STAT_COLS
+                                                  + tkconfig.COND_COLS)
 
         # split all event times with gap "unit_time_interval"
         for id_, tm in enumerate(self._events):
@@ -347,10 +304,28 @@ class Performance(object):
             # right arm
             right_features = self.get_statistical_features(self._right_play_df, local_start_time, local_end_time)
 
-            event_primitive_df.loc[id_] = [hit_type] + left_features + right_features
+            near = self.__get_near_event_hit_type(id_)
+
+            event_primitive_df.loc[id_] = [hit_type] + left_features + right_features + near
 
         event_primitive_df['hit_type'] = event_primitive_df['hit_type'].astype(np.int8)
         self._event_primitive_df = event_primitive_df
+
+    def __get_near_event_hit_type(self, now, n_counts=2):
+        near = []
+        for i in range(n_counts):
+            hit_type = 0
+            if now - 1 - i >= 0:
+                hit_type = self._events[now - 1 - i][1]
+            near.append(hit_type)
+
+        for i in range(n_counts):
+            hit_type = 0
+            if now + 1 + i < len(self._events):
+                hit_type = self._events[now + 1 + i][1]
+            near.append(hit_type)
+
+        return near
 
     def scale(self):
         max_abs_scaler = preprocessing.StandardScaler()
@@ -622,10 +597,6 @@ class Performance(object):
     @property
     def song_df(self):
         return self._song_df
-
-    @property
-    def primitive_df(self):
-        return self._primitive_df
 
     @property
     def event_primitive_df(self):
