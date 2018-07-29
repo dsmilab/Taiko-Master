@@ -284,6 +284,7 @@ class Performance(object):
             modes = self.__get_modes_dict(play_df)
 
         play_df = self.__adjust_zero(play_df, modes)
+
         return play_df, modes
 
     def __build_event_primitive_df(self):
