@@ -1,0 +1,52 @@
+from ..config import *
+from ..tools.timestamp import *
+
+import pandas as pd
+import numpy as np
+
+__all__ = ['load_drummer_df']
+
+TAILED_ADDITIONAL_TIME = 30
+
+
+class _Record(object):
+
+    def __init__(self):
+        self._drummer_df = None
+
+        self.__load_drummer_csv()
+
+    def __load_drummer_csv(self):
+        """
+        Load CSV files which contain information about drummers' performance.
+
+        :return: performance dataframe being in additional of timestamp pre-processing.
+        """
+
+        # read drummers' plays
+        df = pd.read_csv(PLAY_TABLE_PATH)
+
+        # read song's information and merge it
+        tmp_df = pd.read_csv(SONG_TABLE_PATH, dtype={
+            'song_length': np.int16
+        })
+        df = df.merge(tmp_df, how='left', left_on='song_id', right_on='song_id')
+
+        # read drummers' personal information and merge it
+        tmp_df = pd.read_csv(DRUMMER_TABLE_PATH)
+        df = df.merge(tmp_df, how='left', left_on='drummer_id', right_on='id')
+
+        # translate UTC timestamp into hardware timestamp
+        df['hw_start_time'] = df['start_time'].apply(get_hwclock_time)
+        df['hw_end_time'] = df['hw_start_time'] + df['song_length'] + TAILED_ADDITIONAL_TIME
+
+        df.drop('id', axis=1, inplace=True)
+
+        self._drummer_df = df
+
+    @property
+    def drummer_df(self):
+        return self._drummer_df
+
+def load_drummer_df():
+    return _Record().drummer_df
