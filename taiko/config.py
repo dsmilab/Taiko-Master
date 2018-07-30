@@ -1,6 +1,10 @@
 import logging
 import os
 
+# constant
+RIGHT_HAND = 0
+LEFT_HAND = 1
+
 # io.arm
 BASE_PATH = os.path.dirname(os.path.realpath(__file__))
 LEFT_PATH = os.path.join(BASE_PATH, '../data/bb_left_forearm_csv/')

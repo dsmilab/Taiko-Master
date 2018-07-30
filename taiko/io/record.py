@@ -4,7 +4,7 @@ from ..tools.timestamp import *
 import pandas as pd
 import numpy as np
 
-__all__ = ['load_drummer_df']
+__all__ = ['load_drummer_df', 'get_record']
 
 TAILED_ADDITIONAL_TIME = 30
 
@@ -50,3 +50,19 @@ class _Record(object):
 
 def load_drummer_df():
     return _Record().drummer_df
+
+def get_record(who_id, song_id, order_id):
+    df = load_drummer_df()
+    df = df[(df['drummer_id'] == who_id) &
+            (df['song_id'] == song_id) &
+            (df['performance_order'] == order_id)]
+
+    if len(df) == 0:
+        raise KeyError('No matched performances.')
+    elif len(df) > 1:
+        raise KeyError('Duplicated matched performances.')
+
+    # assume matched case is unique
+    row = df.iloc[0]
+
+    return row

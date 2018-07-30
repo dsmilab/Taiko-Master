@@ -20,29 +20,13 @@ class _Note(object):
         self._song_id = song_id
         self._order_id = order_id
 
-        difficulty = self.__get_play_difficulty()
+        difficulty = get_record(who_id, song_id, order_id)['difficulty']
         note_file_name = NOTE_MAGIC_STR % (self._song_id, difficulty)
 
         self._note_df = pd.read_csv(os.path.join(TABLE_PATH, note_file_name))
         self._note_df.drop(DROPPED_COLUMNS, axis=1, inplace=True)
         self._note_df.columns = RENAMED_COLUMNS
         self._note_df['label'] = self._note_df['label'].apply(transform_hit_type_label)
-
-    def __get_play_difficulty(self):
-        df = self._drummer_df
-        df = df[(df['drummer_id'] == self._who_id) &
-                (df['song_id'] == self._song_id) &
-                (df['performance_order'] == self._order_id)]
-
-        if len(df) == 0:
-            raise KeyError('No matched performances.')
-        elif len(df) > 1:
-            raise KeyError('Duplicated matched performances.')
-
-        # assume matched case is unique
-        row = df.iloc[0]
-
-        return row.difficulty
 
     @property
     def note_df(self):
