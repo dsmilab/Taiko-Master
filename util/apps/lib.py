@@ -289,8 +289,8 @@ class Performance(object):
 
     def __build_event_primitive_df(self):
         event_primitive_df = pd.DataFrame(columns=['hit_type'] + tkconfig.L_STAT_COLS
-                                                  + tkconfig.R_STAT_COLS
-                                                  + tkconfig.COND_COLS)
+                                          + tkconfig.R_STAT_COLS
+                                          + tkconfig.COND_COLS)
 
         # split all event times with gap "unit_time_interval"
         for id_, tm in enumerate(self._events):

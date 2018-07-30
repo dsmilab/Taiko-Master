@@ -3,6 +3,7 @@ import time
 
 __all__ = ['get_hwclock_time']
 
+
 def get_hwclock_time(local_time, delta=0):
     """
     Given UTC time, translate it into hardware time.

@@ -48,8 +48,10 @@ class _Record(object):
     def drummer_df(self):
         return self._drummer_df
 
+
 def load_drummer_df():
     return _Record().drummer_df
+
 
 def get_record(who_id, song_id, order_id):
     df = load_drummer_df()

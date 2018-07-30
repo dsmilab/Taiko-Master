@@ -35,8 +35,7 @@ class ScoreBoard(object):
         score_end_time = score_start_time + row['song_length'] + 3
 
         workspace = tkconfig.BB_CAPTURE_PATH + directory + '/'
-        files = next(os.walk(workspace))[2]
-        files.sort()
+        files = sorted(next(os.walk(workspace))[2])
 
         score_start_frame, score_end_frame, timestamps = self._crop_frames(files, score_start_time, score_end_time)
         img_scores = self._process_images(workspace, files, score_start_frame, score_end_frame)
@@ -44,7 +43,7 @@ class ScoreBoard(object):
 
         if zero_adjust:
             timestamps = [timestamp - first_hit_time for timestamp in timestamps]
-            
+
         return img_scores, timestamps
 
     @staticmethod
@@ -73,7 +72,7 @@ class ScoreBoard(object):
             digits = []
             for digit in range(DIGIT_COUNTS):
                 cropped = img[X_ANCHOR:X_ANCHOR + IMG_ROWS, Y_ANCHOR +
-                                                            IMG_COLS * digit:Y_ANCHOR + IMG_COLS * (digit + 1)]
+                              IMG_COLS * digit:Y_ANCHOR + IMG_COLS * (digit + 1)]
                 cropped = rgb2grey(cropped)
                 digits.append(cropped)
 
