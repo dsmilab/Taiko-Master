@@ -26,7 +26,7 @@ class _Note(object):
         self._note_df = pd.read_csv(os.path.join(TABLE_PATH, note_file_name))
         self._note_df.drop(DROPPED_COLUMNS, axis=1, inplace=True)
         self._note_df.columns = RENAMED_COLUMNS
-        self._note_df['label'] = self._note_df['label'].apply(transform_hit_type_label)
+        self._note_df.loc[:, 'label'] = self._note_df['label'].apply(transform_hit_type_label)
 
     @property
     def note_df(self):

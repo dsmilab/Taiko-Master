@@ -33,7 +33,7 @@ class _ArmData(object):
 
         # merge them into a dataframe
         merged_df = pd.DataFrame(pd.concat(script_df, ignore_index=True))
-        merged_df.drop('key', axis=1, inplace=True)
+        merged_df.drop(['key', 'wall_time'], axis=1, inplace=True)
 
         self._arm_df = merged_df
 
