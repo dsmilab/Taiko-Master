@@ -86,8 +86,10 @@ class _Performance(object):
 
     def __get_near_event_hit_type(self, n_counts=2):
         mat = []
+
         for id_ in range(len(self._events)):
             near = []
+
             for i in range(n_counts):
                 hit_type = 0
                 if id_ - 1 - i >= 0:
@@ -99,11 +101,13 @@ class _Performance(object):
                 if id_ + 1 + i < len(self._events):
                     hit_type = self._events[id_ + 1 + i][1]
                 near.append(hit_type)
+
             mat.append(near)
 
         near_df = pd.DataFrame(data=mat,
                                columns=['L' + str(i + 1) for i in range(n_counts)] +
                                        ['R' + str(i + 1) for i in range(n_counts)])
+
         return near_df
 
     @property
