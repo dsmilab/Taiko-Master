@@ -23,6 +23,7 @@ MNIST_MODEL_PATH = os.path.join(BASE_PATH, 'model/mnist_model.h5')
 STAT_COLS = ['AAI', 'AVI', 'ASMA', 'GAI', 'GVI', 'GSMA', 'AAE', 'ARE',
              'MAMI', 'MGMI', 'ASDI', 'GSDI', 'AIR', 'GIR',
              'AZCR', 'GZCR', 'AMCR', 'GMCR',
+             'ASS', 'GSS', 'AKS', 'GKS',
              'AXYCORR', 'AYZCORR', 'AZXCORR', 'GXYCORR', 'GYZCORR', 'GZXCORR']
 
 ZERO_ADJ_COL = ['imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz', 'msu_ax', 'msu_ay', 'msu_az']
@@ -34,5 +35,5 @@ ALL_COLUMNS = ['timestamp', 'wall_time', 'imu_temp',
                'baro_temp', 'baro']
 
 SENSOR_COLUMNS = [ALL_COLUMNS[0]] + ALL_COLUMNS[2:]
-SCALE_COLUMNS = STAT_COLS[:18]
+SCALE_COLUMNS = STAT_COLS[:22]
 COLORS = ['black', 'red', 'blue', 'yellow', 'green', 'cyan', 'purple']

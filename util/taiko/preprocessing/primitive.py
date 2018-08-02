@@ -58,6 +58,12 @@ class _Primitive(object):
         air = self.__get_air()
         gir = self.__get_gir()
 
+        ass = self.__get_ass(aai, avi)
+        gss = self.__get_gss(gai, gvi)
+
+        aks = self.__get_aks(aai, avi)
+        gks = self.__get_gks(gai, gvi)
+
         a_zero_cross = self.__get_a_zero_cross(mami)
         g_zero_cross = self.__get_g_zero_cross(mgmi)
 
@@ -86,6 +92,10 @@ class _Primitive(object):
                 gsdi,
                 air,
                 gir,
+                ass,
+                gss,
+                aks,
+                gks,
                 a_zero_cross,
                 g_zero_cross,
                 a_mean_cross,
@@ -157,7 +167,7 @@ class _Primitive(object):
         are = do_fft(self._rms_df['g_rms']) / len(self._rms_df)
         return are
 
-    def __get_aas(self, aai, avi):
+    def __get_ass(self, aai, avi):
         # skewness (ASS)
         ass_child = 0
         for i in range(len(self._rms_df)):
@@ -287,7 +297,7 @@ class _Primitive(object):
 
     def __get_evas(self):
         # eigenvalues of dominant directions (EVA)
-        w, v = np.linalg.eig(self._rms_df[['imu_ax', 'imu_ay', 'imu_az']].corr().as_matrix())
+        w, v = np.linalg.eig(self._rms_df[['imu_ax', 'imu_ay', 'imu_az']].corr().values)
         evas = w[np.argpartition(w, -2)[-2:]]
         return evas
 
