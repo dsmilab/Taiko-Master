@@ -6,10 +6,7 @@ from .primitive import *
 from collections import deque
 
 import pandas as pd
-import numpy as np
 from sklearn import preprocessing
-from sklearn.cluster import KMeans
-from sklearn.svm import SVC
 
 __all__ = ['get_performance']
 
@@ -17,6 +14,20 @@ DELTA_T_DIVIDED_COUNT = 8
 
 
 class _Performance(object):
+    """
+    Handle the specific play and engineer features around hit events.
+
+    :protected attributes:
+        event_primitive_df: dataframe containing of primitives around events in this play.
+
+        note_df: drum note dataframe of the particular song
+        play: dataframe about particular arms of the record
+
+        events: the 2D array which element (time, label) represents a note type "label" occurs at "time"
+        time_unit: the minimum time interval between two notes depending on BPM of a song
+        bar_unit: default is "time_unit x 8"
+        delta_t: time interval we consider a local event
+    """
 
     def __init__(self, who_id, song_id, order_id, scale=True):
         self._event_primitive_df = None
@@ -52,6 +63,12 @@ class _Performance(object):
         return events
 
     def __build_event_primitive_df(self):
+        """
+        After setting play's dataframe, build dataframe of primitives around events in this play.
+
+        :return: feature engineered dataframe of primitives
+        """
+
         event_primitive_df = pd.DataFrame(columns=['hit_type'])
         event_primitive_df['hit_type'] = [self._events[i][1] for i in range(len(self._events))]
 
@@ -91,6 +108,13 @@ class _Performance(object):
         self._event_primitive_df = event_primitive_df
 
     def __get_near_event_hit_type(self, n_counts=2):
+        """
+        Get event hit type before and after the current hit type.
+
+        :param n_counts: range to get hit types
+        :return: the dataframe contains all hit types
+        """
+
         mat = []
 
         for id_ in range(len(self._events)):
@@ -117,6 +141,12 @@ class _Performance(object):
         return near_df
 
     def __scale(self):
+        """
+        Scale values of required features.
+
+        :return: nothing
+        """
+
         scaler = preprocessing.StandardScaler()
         columns = []
         for label, _ in self._play.play_dict.items():
@@ -133,4 +163,13 @@ class _Performance(object):
 
 
 def get_performance(who_id, song_id, order_id):
+    """
+    Get the performance.
+
+    :param who_id: # of drummer
+    :param song_id: # of song
+    :param order_id: # of performance repetitively
+    :return: the desired unique performance
+    """
+
     return _Performance(who_id, song_id, order_id)

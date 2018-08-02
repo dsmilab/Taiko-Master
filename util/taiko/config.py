@@ -20,6 +20,7 @@ DRUMMER_TABLE_PATH = os.path.join(TABLE_PATH, 'taiko_drummer.csv')
 BB_CAPTURE_PATH = os.path.join(BASE_PATH, '../../bb_capture_output/')
 MNIST_MODEL_PATH = os.path.join(BASE_PATH, 'model/mnist_model.h5')
 
+# preprocessing.primitive
 STAT_COLS = ['AAI', 'AVI', 'ASMA', 'GAI', 'GVI', 'GSMA', 'AAE', 'ARE',
              'MAMI', 'MGMI', 'ASDI', 'GSDI', 'AIR', 'GIR',
              'AZCR', 'GZCR', 'AMCR', 'GMCR',
@@ -36,4 +37,6 @@ ALL_COLUMNS = ['timestamp', 'wall_time', 'imu_temp',
 
 SENSOR_COLUMNS = [ALL_COLUMNS[0]] + ALL_COLUMNS[2:]
 SCALE_COLUMNS = STAT_COLS[:22]
+
+# plot
 COLORS = ['black', 'red', 'blue', 'yellow', 'green', 'cyan', 'purple']

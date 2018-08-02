@@ -10,6 +10,12 @@ TAILED_ADDITIONAL_TIME = 30
 
 
 class _Record(object):
+    """
+    Handle all drummers' info.
+
+    :protected attributes:
+        drummer_df: dataframe about performance of drummers
+    """
 
     def __init__(self):
         self._drummer_df = None
@@ -54,6 +60,14 @@ def load_drummer_df():
 
 
 def get_record(who_id, song_id, order_id):
+    """
+    Get the record from drummer info.
+
+    :param who_id: # of drummer
+    :param song_id: # of song
+    :param order_id: # of performance repetitively
+    :return: the desired unique record
+    """
     df = load_drummer_df()
     df = df[(df['drummer_id'] == who_id) &
             (df['song_id'] == song_id) &

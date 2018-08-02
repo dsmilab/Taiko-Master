@@ -9,6 +9,12 @@ __all__ = ['load_arm_df']
 
 
 class _ArmData(object):
+    """
+    Handle output from wearable devices.
+
+    :protected attributes:
+        arm_df: dataframe about particular arm
+    """
 
     def __init__(self, arm_csv_path):
         self._arm_df = None
@@ -43,6 +49,13 @@ class _ArmData(object):
 
 
 def load_arm_df(handedness):
+    """
+    Load sensor dataframe of a particular hand.
+
+    :param handedness: 0 => right, 1 => left
+    :return: Original arm sensor dataframe
+    """
+
     if handedness == 0:
         return _ArmData(RIGHT_PATH).arm_df
     elif handedness == 1:
