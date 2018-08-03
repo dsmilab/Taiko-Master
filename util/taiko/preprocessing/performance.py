@@ -1,6 +1,5 @@
 from ..config import *
 from ..io.note import *
-from ..io.record import *
 from .play import *
 from .primitive import *
 from collections import deque
@@ -29,11 +28,11 @@ class _Performance(object):
         delta_t: time interval we consider a local event
     """
 
-    def __init__(self, who_id, song_id, order_id, scale=True):
+    def __init__(self, who_id, song_id, order_id, scale, resample):
         self._event_primitive_df = None
 
         self._note_df = load_note_df(who_id, song_id, order_id)
-        self._play = get_play(who_id, song_id, order_id)
+        self._play = get_play(who_id, song_id, order_id, resample=resample)
 
         self._events = self.__retrieve_event()
         self._time_unit = self._note_df['time_unit'].min()
@@ -162,14 +161,16 @@ class _Performance(object):
         return self._event_primitive_df
 
 
-def get_performance(who_id, song_id, order_id):
+def get_performance(who_id, song_id, order_id, scale=True, resample=RESAMPLE_RATE):
     """
     Get the performance.
 
     :param who_id: # of drummer
     :param song_id: # of song
     :param order_id: # of performance repetitively
+    :param scale: if "True", scale values of required features
+    :param resample: if not "None", resample by this frequency
     :return: the desired unique performance
     """
 
-    return _Performance(who_id, song_id, order_id)
+    return _Performance(who_id, song_id, order_id, scale, resample)

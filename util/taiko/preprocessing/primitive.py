@@ -60,11 +60,11 @@ class _Primitive(object):
         air = self.__get_air()
         gir = self.__get_gir()
 
-        ass = self.__get_ass(aai, avi)
-        gss = self.__get_gss(gai, gvi)
-
-        aks = self.__get_aks(aai, avi)
-        gks = self.__get_gks(gai, gvi)
+        # ass = self.__get_ass(aai, avi)
+        # gss = self.__get_gss(gai, gvi)
+        #
+        # aks = self.__get_aks(aai, avi)
+        # gks = self.__get_gks(gai, gvi)
 
         a_zero_cross = self.__get_a_zero_cross(mami)
         g_zero_cross = self.__get_g_zero_cross(mgmi)
@@ -94,10 +94,10 @@ class _Primitive(object):
                 gsdi,
                 air,
                 gir,
-                ass,
-                gss,
-                aks,
-                gks,
+                # ass,
+                # gss,
+                # aks,
+                # gks,
                 a_zero_cross,
                 g_zero_cross,
                 a_mean_cross,
