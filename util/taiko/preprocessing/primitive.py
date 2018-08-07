@@ -311,7 +311,7 @@ class _Primitive(object):
 
     def __get_evas(self):
         # eigenvalues of dominant directions (EVA)
-        w, v = np.linalg.eig(self._rms_df[['imu_ax', 'imu_ay', 'imu_az']].corr().values)
+        w = np.linalg.eig(self._rms_df[['imu_ax', 'imu_ay', 'imu_az']].corr().values)
         evas = w[np.argpartition(w, -2)[-2:]]
         return evas
 

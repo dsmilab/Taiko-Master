@@ -79,7 +79,7 @@ class _Performance(object):
 
             tmp_primitive_mat = []
             # split all event times with gap "delta_t"
-            for id_, tm in enumerate(self._events):
+            for id_, _ in enumerate(self._events):
                 event_time = self._events[id_][0]
                 local_start_time = event_time - self._delta_t / 2
                 local_end_time = event_time + self._delta_t / 2
