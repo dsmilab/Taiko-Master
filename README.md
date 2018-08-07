@@ -17,6 +17,7 @@ In general, follow the paper [Motion Primitive-Based Human Activity Recognition 
 
 Belows are repos for collecting raw data from wearable devices.
 
+
 1. [beagle_bone_blue_data_acq](https://github.com/taoyilee/beagle_bone_blue_data_acq)
 
 	- [Introduction of beaglebone-blue](docs/144934_data.pdf): The official manual of BBB.
@@ -84,12 +85,48 @@ In addition, [Taiko-Time-Series-Analytics](https://github.com/taoyilee/Taiko-Tim
 <br/>
 
 ## Result
-Use the last performance to train, we get
 
-![](docs/training_cnfm.png)
+### Confusion Matrix
 
-However, predict a test performance, we get
+#### Case 1.
 
-![](docs/test_cnfm.png)
+Using <font color='blue'> **drummer 7** </font> 's 3th play to train and testing 1st, 2nd plays, respectively, then we get
 
-There is a long way to go! 
+![](docs/test_cnfm-7-3to1.png)
+![](docs/test_cnfm-7-3to2.png)
+
+with the feature importance visualization 
+
+![](docs/feature_importance-7.png)
+
+#### Case 2.
+
+Using <font color='blue'> **drummer 4** </font> 's 3th play to train and testing 1st, 2nd plays, respectively, then we get
+
+![](docs/test_cnfm-4-3to1.png)
+![](docs/test_cnfm-4-3to2.png)
+
+with the feature importance visualization 
+
+![](docs/feature_importance-4.png)
+
+<br/>
+
+### Self-cross test
+
+Use # to train and # to valid and then test #.
+
+![](docs/barplot_all.png)
+
+Resampling causes increasing training error. On the other hand, scaling causes decreasing one, in general.
+
+<br/>
+
+### All-cross test
+
+![](docs/heatmap_yy.png)
+![](docs/heatmap_yn.png)
+![](docs/heatmap_ny.png)
+![](docs/heatmap_nn.png)
+
+Scaling makes decreasing training error. But resampling has no fixed result.
