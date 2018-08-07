@@ -1,15 +1,11 @@
 from ..config import *
 from ..io.note import *
-from ..io.record import *
 from .play import *
 from .primitive import *
 from collections import deque
 
 import pandas as pd
-import numpy as np
 from sklearn import preprocessing
-from sklearn.cluster import KMeans
-from sklearn.svm import SVC
 
 __all__ = ['get_performance']
 
@@ -17,12 +13,26 @@ DELTA_T_DIVIDED_COUNT = 8
 
 
 class _Performance(object):
+    """
+    Handle the specific play and engineer features around hit events.
 
-    def __init__(self, who_id, song_id, order_id, scale=True):
+    :protected attributes:
+        event_primitive_df: dataframe containing of primitives around events in this play.
+
+        note_df: drum note dataframe of the particular song
+        play: dataframe about particular arms of the record
+
+        events: the 2D array which element (time, label) represents a note type "label" occurs at "time"
+        time_unit: the minimum time interval between two notes depending on BPM of a song
+        bar_unit: default is "time_unit x 8"
+        delta_t: time interval we consider a local event
+    """
+
+    def __init__(self, who_id, song_id, order_id, scale, resample):
         self._event_primitive_df = None
 
         self._note_df = load_note_df(who_id, song_id, order_id)
-        self._play = get_play(who_id, song_id, order_id)
+        self._play = get_play(who_id, song_id, order_id, resample=resample)
 
         self._events = self.__retrieve_event()
         self._time_unit = self._note_df['time_unit'].min()
@@ -52,6 +62,12 @@ class _Performance(object):
         return events
 
     def __build_event_primitive_df(self):
+        """
+        After setting play's dataframe, build dataframe of primitives around events in this play.
+
+        :return: feature engineered dataframe of primitives
+        """
+
         event_primitive_df = pd.DataFrame(columns=['hit_type'])
         event_primitive_df['hit_type'] = [self._events[i][1] for i in range(len(self._events))]
 
@@ -63,7 +79,7 @@ class _Performance(object):
 
             tmp_primitive_mat = []
             # split all event times with gap "delta_t"
-            for id_, tm in enumerate(self._events):
+            for id_, _ in enumerate(self._events):
                 event_time = self._events[id_][0]
                 local_start_time = event_time - self._delta_t / 2
                 local_end_time = event_time + self._delta_t / 2
@@ -91,6 +107,13 @@ class _Performance(object):
         self._event_primitive_df = event_primitive_df
 
     def __get_near_event_hit_type(self, n_counts=2):
+        """
+        Get event hit type before and after the current hit type.
+
+        :param n_counts: range to get hit types
+        :return: the dataframe contains all hit types
+        """
+
         mat = []
 
         for id_ in range(len(self._events)):
@@ -117,6 +140,12 @@ class _Performance(object):
         return near_df
 
     def __scale(self):
+        """
+        Scale values of required features.
+
+        :return: nothing
+        """
+
         scaler = preprocessing.StandardScaler()
         columns = []
         for label, _ in self._play.play_dict.items():
@@ -132,5 +161,16 @@ class _Performance(object):
         return self._event_primitive_df
 
 
-def get_performance(who_id, song_id, order_id):
-    return _Performance(who_id, song_id, order_id)
+def get_performance(who_id, song_id, order_id, scale=True, resample=RESAMPLE_RATE):
+    """
+    Get the performance.
+
+    :param who_id: # of drummer
+    :param song_id: # of song
+    :param order_id: # of performance repetitively
+    :param scale: if "True", scale values of required features
+    :param resample: if not "None", resample by this frequency
+    :return: the desired unique performance
+    """
+
+    return _Performance(who_id, song_id, order_id, scale, resample)

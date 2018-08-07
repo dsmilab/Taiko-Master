@@ -2,7 +2,6 @@ from ..config import *
 from .record import *
 
 import pandas as pd
-import numpy as np
 import os
 
 __all__ = ['load_note_df']
@@ -13,6 +12,16 @@ NOTE_MAGIC_STR = 'taiko_song_%d_%s_info.csv'
 
 
 class _Note(object):
+    """
+    Drum note
+
+    :protected attributes:
+        drummer_df: dataframe about performance of drummers
+        who_id: # of drummer
+        song_id: # of song
+        order_id: # of performance repetitively
+        note_df: drum note dataframe of the particular song
+    """
 
     def __init__(self, who_id, song_id, order_id):
         self._drummer_df = load_drummer_df()
@@ -34,6 +43,13 @@ class _Note(object):
 
 
 def transform_hit_type_label(label):
+    """
+    Relabel the column.
+
+    :param label: original label
+    :return: transformed label
+    """
+
     if label in [1, 2, 3, 4]:
         return 1
     elif label in [5, 6]:
@@ -42,4 +58,12 @@ def transform_hit_type_label(label):
 
 
 def load_note_df(who_id, song_id, order_id):
+    """
+    Load particular drum note dataframe.
+
+    :param who_id: # of drummer
+    :param song_id: # of song
+    :param order_id: # of performance repetitively
+    :return: drum note dataframe of the particular song
+    """
     return _Note(who_id, song_id, order_id).note_df

@@ -19,6 +19,9 @@ __all__ = ['get_scores_with_timestamps']
 
 
 class _ScoreBoard(object):
+    """
+    Handle MNIST model and score info from screenshots.
+    """
 
     def __init__(self, who_id, song_id, order_id, zero_adjust=True):
 
@@ -114,5 +117,15 @@ class _ScoreBoard(object):
 
 
 def get_scores_with_timestamps(who_id, song_id, order_id, zero_adjust=True):
+    """
+    Get score and timestamp info.
+
+    :param who_id: # of drummer
+    :param song_id: # of song
+    :param order_id: # of performance repetitively
+    :param zero_adjust: shift all timestamps to leftmost as 0
+    :return: list of scores, list of corresponding timestamps
+    """
+
     scoreboard = _ScoreBoard(who_id, song_id, order_id, zero_adjust)
     return scoreboard.img_scores, scoreboard.timestamps

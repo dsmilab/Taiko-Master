@@ -2,25 +2,32 @@ from ..config import *
 from ..io import *
 
 import pandas as pd
-from pandas import datetime
-import numpy as np
 from scipy.stats import mode
 
 RESAMPLE_RATE = '0.02S'
 
-__all__ = ['get_play']
+__all__ = ['get_play', 'RESAMPLE_RATE']
 
 
 class _Play(object):
+    """
+    Handle particular arms of sensor data for the record.
 
-    def __init__(self, rec, is_zero_adjust=True):
+    :protected attributes:
+        play_dict: dictionary of {label: play_df}
+        start_time: timestamp where the song starts
+        end_time: timestamp where the song ends
+        first_hit_time: timestamp where the first note occurs
+    """
+
+    def __init__(self, rec, is_zero_adjust, resample):
         self._play_dict = {}
         self._start_time, self._end_time = None, None
         self._first_hit_time = None
 
         self.__set_hw_time(rec)
-        self._play_dict['R'] = self.__build_play_df(RIGHT_HAND, is_zero_adjust, RESAMPLE_RATE)
-        self._play_dict['L'] = self.__build_play_df(LEFT_HAND, is_zero_adjust, RESAMPLE_RATE)
+        self._play_dict['R'] = self.__build_play_df(RIGHT_HAND, is_zero_adjust, resample)
+        self._play_dict['L'] = self.__build_play_df(LEFT_HAND, is_zero_adjust, resample)
 
     def __set_hw_time(self, rec):
         self._start_time = rec['hw_start_time']
@@ -31,15 +38,18 @@ class _Play(object):
         """
         After setting duration of the song, build dataframe of a play.
 
-        :param df: original dataframe
-        :param modes: default is "None", adjust zero by this own case, otherwise will by this param
+        :param handedness: original dataframe
+        :param is_zero_adjust: default is "None", adjust zero by this own case, otherwise will by this param
+        :param resample: if not "None", resample by this frequency
         :return: cropped and zero-adjusted dataframe, attributes' modes
         """
 
+        # crop desired play time interval
         df = load_arm_df(handedness)
         play_df = df[(df['timestamp'] >= self._start_time) &
                      (df['timestamp'] <= self._end_time)].copy()
 
+        # resample for more samples
         if resample is not None:
             play_df.loc[:, 'timestamp'] = pd.to_datetime(play_df['timestamp'], unit='s')
             play_df.loc[:, 'timestamp'] = play_df['timestamp'].apply(
@@ -50,6 +60,7 @@ class _Play(object):
             play_df.loc[:, 'timestamp'] = play_df['timestamp'].apply(lambda x: x.timestamp())
             play_df.fillna(method='ffill', inplace=True)
 
+        # implement zero adjust for needed columns
         if is_zero_adjust:
             modes_dict = {}
             copy_df = play_df.copy()
@@ -82,6 +93,17 @@ class _Play(object):
         return self._first_hit_time
 
 
-def get_play(who_id, song_id, order_id, is_adjust_zero=True):
+def get_play(who_id, song_id, order_id, is_adjust_zero=True, resample=RESAMPLE_RATE):
+    """
+    Get the particular play.
+
+    :param who_id: # of drummer
+    :param song_id: # of song
+    :param order_id: # of performance repetitively
+    :param is_adjust_zero: if "True", implement zero adjust
+    :param resample: if not "None", resample by this frequency
+    :return:
+    """
+
     rec = get_record(who_id, song_id, order_id)
-    return _Play(rec, is_adjust_zero)
+    return _Play(rec, is_adjust_zero, resample)

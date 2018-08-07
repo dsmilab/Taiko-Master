@@ -8,3 +8,15 @@ data/
 ipynb/\.ipynb_checkpoints/
 
 ipynb/__pycache__/
+
+util/taiko/__pycache__/
+
+util/taiko/image/__pycache__/
+
+util/taiko/io/__pycache__/
+
+util/taiko/tools/__pycache__/
+
+util/taiko/preprocessing/__pycache__/
+
+util/\.ipynb_checkpoints/
