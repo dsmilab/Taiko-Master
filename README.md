@@ -1,5 +1,7 @@
 # Taiko-Master
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/331f51c35b59495395e6a81555c75cfb)](https://app.codacy.com/app/howeverforever/Taiko-Master?utm_source=github.com&utm_medium=referral&utm_content=dsmilab/Taiko-Master&utm_campaign=badger)
+
 This is a project teaching a newbie how to perform better in the video game [**Taiko no Tatsujin**](https://en.wikipedia.org/wiki/Taiko_no_Tatsujin).
 
 <br/>
