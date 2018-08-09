@@ -7,7 +7,7 @@ from datetime import datetime
 
 from keras.models import load_model
 
-from skimage.io import imshow, imread
+from skimage.io import imshow, imread, imsave
 from skimage.transform import resize
 from skimage.color import rgb2grey
 
@@ -44,36 +44,37 @@ class _ResultBoard(object):
 
         # self._crop_frames(files)
         self._process_images(workspace, files)
-        print(self._img_scores)
+        # print(self._img_scores)
 
     def _process_images(self, workspace, files):
-
-        for filename in reversed(files):
+        id_ = 0
+        for filename in reversed(files[-1:]):
             img = imread(os.path.join(workspace, filename))
-            imshow(img)
-            plt.show()
             all_ok = True
             for pos in range(len(DIGIT_COUNTS)):
                 digits = []
                 for digit in range(DIGIT_COUNTS[pos]):
                     cropped = img[X_ANCHOR[pos]:X_ANCHOR[pos] + IMG_ROWS[pos],
                                   Y_ANCHOR[pos] + digit * IMG_COLS[pos]:Y_ANCHOR[pos] + (digit + 1) * IMG_COLS[pos]]
-                    cropped = rgb2grey(cropped)
+                    # cropped = rgb2grey(cropped)
                     cropped = resize(cropped, (TARGET_IMG_ROWS, TARGET_IMG_COLS),
-                                     mode='constant', preserve_range=True)
-                    imshow(cropped)
-                    plt.show()
+                                     mode='constant', preserve_range=False)
+
+                    # imshow(cropped)
+                    imsave('digit_images/' + filename[:-4] + '_%03d.png' % id_, cropped)
+                    id_ += 1
+                    # plt.show()
                     digits.append(cropped)
 
                 all_digits = []
                 all_digits.extend(digits)
 
-                all_digits = np.asarray(all_digits)
-                all_digits = all_digits.reshape(all_digits.shape[0], TARGET_IMG_ROWS, TARGET_IMG_COLS, 1)
-                all_scores = self._model.predict_classes(all_digits)
-
-                processed_result = self._process_scores(all_scores, DIGIT_COUNTS[pos])
-                all_ok = all_ok & processed_result
+                # all_digits = np.asarray(all_digits)
+                # all_digits = all_digits.reshape(all_digits.shape[0], TARGET_IMG_ROWS, TARGET_IMG_COLS, 1)
+                # all_scores = self._model.predict_classes(all_digits)
+                #
+                # processed_result = self._process_scores(all_scores, DIGIT_COUNTS[pos])
+                # all_ok = all_ok & processed_result
 
             if all_ok:
                 return
