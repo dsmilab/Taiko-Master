@@ -3,4 +3,4 @@ from .io import *
 from .preprocessing import *
 from .image import *
 
-__version__ = '0.1.1'
+__version__ = '0.3'
