@@ -28,6 +28,8 @@ class _ResultBoard(object):
     """
 
     def __init__(self, who_id, song_id, order_id):
+        self._img_scores = None
+        self._img_screenshot = []
 
         self._model = load_model(MNIST_MODEL_PATH)
 
@@ -47,34 +49,33 @@ class _ResultBoard(object):
         # print(self._img_scores)
 
     def _process_images(self, workspace, files):
-        id_ = 0
-        for filename in reversed(files[-1:]):
+        for filename in reversed(files):
             img = imread(os.path.join(workspace, filename))
             all_ok = True
+            self._img_screenshot = []
+
             for pos in range(len(DIGIT_COUNTS)):
                 digits = []
                 for digit in range(DIGIT_COUNTS[pos]):
                     cropped = img[X_ANCHOR[pos]:X_ANCHOR[pos] + IMG_ROWS[pos],
                                   Y_ANCHOR[pos] + digit * IMG_COLS[pos]:Y_ANCHOR[pos] + (digit + 1) * IMG_COLS[pos]]
-                    # cropped = rgb2grey(cropped)
                     cropped = resize(cropped, (TARGET_IMG_ROWS, TARGET_IMG_COLS),
                                      mode='constant', preserve_range=False)
+                    cropped = rgb2grey(cropped)
 
-                    # imshow(cropped)
-                    imsave('digit_images/' + filename[:-4] + '_%03d.png' % id_, cropped)
-                    id_ += 1
-                    # plt.show()
                     digits.append(cropped)
 
                 all_digits = []
                 all_digits.extend(digits)
 
-                # all_digits = np.asarray(all_digits)
-                # all_digits = all_digits.reshape(all_digits.shape[0], TARGET_IMG_ROWS, TARGET_IMG_COLS, 1)
-                # all_scores = self._model.predict_classes(all_digits)
-                #
-                # processed_result = self._process_scores(all_scores, DIGIT_COUNTS[pos])
-                # all_ok = all_ok & processed_result
+                all_digits = np.asarray(all_digits)
+                all_digits = all_digits.reshape(all_digits.shape[0], TARGET_IMG_ROWS, TARGET_IMG_COLS, 1)
+                all_scores = self._model.predict_classes(all_digits)
+
+                processed_result = self._process_scores(all_scores, DIGIT_COUNTS[pos])
+                all_ok = (all_ok & processed_result)
+                if processed_result:
+                    self._img_screenshot.extend(self._img_scores)
 
             if all_ok:
                 return
@@ -96,7 +97,7 @@ class _ResultBoard(object):
                     leading_space = False
                 score = score * 10 + d
 
-            if score < img_scores[-1] or broken:
+            if score < img_scores[-1] or broken or leading_space:
                 return False
 
             img_scores.append(score)
@@ -104,6 +105,10 @@ class _ResultBoard(object):
         del img_scores[0]
         self._img_scores = img_scores
         return True
+
+    @property
+    def img_screenshot(self):
+        return self._img_screenshot
 
 
 def result_board(who_id, song_id, order_id):
