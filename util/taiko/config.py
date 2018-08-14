@@ -14,6 +14,7 @@ TABLE_PATH = os.path.join(BASE_PATH, '../../data/taiko_tables/')
 PLAY_TABLE_PATH = os.path.join(TABLE_PATH, 'taiko_play.csv')
 SONG_TABLE_PATH = os.path.join(TABLE_PATH, 'taiko_song.csv')
 DRUMMER_TABLE_PATH = os.path.join(TABLE_PATH, 'taiko_drummer.csv')
+RESULT_TABLE_PATH = os.path.join(TABLE_PATH, 'taiko_result.csv')
 
 # image.scoreboard
 BB_CAPTURE_PATH = os.path.join(BASE_PATH, '../../bb_capture_output/')
