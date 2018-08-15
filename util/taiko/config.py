@@ -23,13 +23,12 @@ MNIST_MODEL_PATH = os.path.join(BASE_PATH, 'model/mnist_model.h5')
 # preprocessing.primitive
 STAT_COLS = ['AAI', 'AVI', 'ASMA',
              'GAI', 'GVI', 'GSMA',
-             'BAI', 'BVI', 'BSMA',
-             'AAE', 'ARE', 'ABE',
-             'MAMI', 'MGMI', 'MBMI',
-             'ASDI', 'GSDI', 'BSDI',
-             'AIR', 'GIR', 'BIR',
-             'AZCR', 'GZCR', 'BZCR',
-             'AMCR', 'GMCR', 'BMCR',
+             'AAE', 'ARE',
+             'MAMI', 'MGMI',
+             'ASDI', 'GSDI',
+             'AIR', 'GIR',
+             'AZCR', 'GZCR',
+             'AMCR', 'GMCR',
              'AXYCORR', 'AYZCORR', 'AZXCORR', 'GXYCORR', 'GYZCORR', 'GZXCORR']
 
 ZERO_ADJ_COL = ['imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz', 'msu_ax', 'msu_ay', 'msu_az']

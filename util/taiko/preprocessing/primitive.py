@@ -26,7 +26,7 @@ class _Primitive(object):
         while len(window) > 0:
             mat.append(window.popleft())
         df = pd.DataFrame(mat, columns=SENSOR_COLUMNS)
-        rms_df = df[['timestamp', 'imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz', 'baro']].copy()
+        rms_df = df[['timestamp', 'imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz']].copy()
 
         # acceleration movement intensity (AMI)
         rms_df['a_rms'] = (rms_df['imu_ax'] ** 2 + rms_df['imu_ay'] ** 2 + rms_df['imu_az'] ** 2).apply(math.sqrt)
@@ -39,34 +39,26 @@ class _Primitive(object):
     def __retrieve_features(self):
         aai = self.__get_aai()
         gai = self.__get_gai()
-        bai = self.__get_bai()
 
         mami = self.__get_mami()
         mgmi = self.__get_mgmi()
-        mbmi = self.__get_mbmi()
 
         avi = self.__get_avi(aai)
         gvi = self.__get_gvi(gai)
-        bvi = self.__get_gvi(bai)
 
         asma = self.__get_asma()
         gsma = self.__get_gsma()
-        bsma = self.__get_bsma()
 
         aae = self.__get_aae()
         are = self.__get_are()
-        abe = self.__get_abe()
 
         # acceleration standard deviation intensity
         asdi = math.sqrt(avi)
         # gyroscope standard deviation intensity
         gsdi = math.sqrt(gvi)
-        # gyroscope standard deviation intensity
-        bsdi = math.sqrt(bvi)
 
         air = self.__get_air()
         gir = self.__get_gir()
-        bir = self.__get_bir()
 
         # ass = self.__get_ass(aai, avi)
         # gss = self.__get_gss(gai, gvi)
@@ -76,11 +68,9 @@ class _Primitive(object):
 
         a_zero_cross = self.__get_a_zero_cross(mami)
         g_zero_cross = self.__get_g_zero_cross(mgmi)
-        b_zero_cross = self.__get_b_zero_cross(mbmi)
 
         a_mean_cross = self.__get_a_mean_cross(aai)
         g_mean_cross = self.__get_g_mean_cross(gai)
-        b_mean_cross = self.__get_b_mean_cross(bai)
 
         a_xy_corr = self.__get_a_xy_corr()
         a_yz_corr = self.__get_a_yz_corr()
@@ -96,27 +86,18 @@ class _Primitive(object):
 
                 gai,
                 gvi,
-                gsma,
-
-                bai,
-                bvi,
-                bsma,
 
                 aae,
                 are,
-                abe,
 
                 mami,
                 mgmi,
-                mbmi,
 
                 asdi,
                 gsdi,
-                bsdi,
 
                 air,
                 gir,
-                bir,
 
                 # ass,
                 # gss,
@@ -125,11 +106,9 @@ class _Primitive(object):
 
                 a_zero_cross,
                 g_zero_cross,
-                b_zero_cross,
 
                 a_mean_cross,
                 g_mean_cross,
-                b_mean_cross,
 
                 a_xy_corr,
                 a_yz_corr,
@@ -148,10 +127,6 @@ class _Primitive(object):
         gai = self._rms_df['g_rms'].sum() / len(self._rms_df)
         return gai
 
-    def __get_bai(self):
-        bai = self._rms_df['baro'].sum() / len(self._rms_df)
-        return bai
-
     def __get_mami(self):
         # median of AMI
         mami = self._rms_df['a_rms'].median()
@@ -161,11 +136,6 @@ class _Primitive(object):
         # median of GMI
         mgmi = self._rms_df['g_rms'].median()
         return mgmi
-
-    def __get_mbmi(self):
-        # median of GMI
-        mbmi = self._rms_df['baro'].median()
-        return mbmi
 
     def __get_avi(self, aai):
         # acceleration variance intensity (AVI)
@@ -187,15 +157,6 @@ class _Primitive(object):
         gvi /= len(self._rms_df)
         return gvi
 
-    def __get_bvi(self, bai):
-        bvi = 0
-        for i in range(len(self._rms_df)):
-            row = self._rms_df.iloc[i]
-            mit = float(row['baro'])
-            bvi += (mit - bai) ** 2
-        bvi /= len(self._rms_df)
-        return bvi
-
     def __get_asma(self):
         # acceleration normalized signal magnitude area (ASMA)
         asma = (self._rms_df['imu_ax'].apply(abs).sum() +
@@ -210,10 +171,6 @@ class _Primitive(object):
                 self._rms_df['imu_gz'].apply(abs).sum()) / len(self._rms_df)
         return gsma
 
-    def __get_bsma(self):
-        bsma = self._rms_df['baro'].apply(abs).sum() / len(self._rms_df)
-        return bsma
-
     def __get_aae(self):
         # averaged acceleration energy (AAE)
         aae = do_fft(self._rms_df['a_rms']) / len(self._rms_df)
@@ -223,10 +180,6 @@ class _Primitive(object):
         # averaged rotation energy (ARE)
         are = do_fft(self._rms_df['g_rms']) / len(self._rms_df)
         return are
-
-    def __get_abe(self):
-        abe = do_fft(self._rms_df['baro']) / len(self._rms_df)
-        return abe
 
     def __get_ass(self, aai, avi):
         # acceleration skewness which is the degree of asymmetry of the sensor signal distribution (ASS)
@@ -282,10 +235,6 @@ class _Primitive(object):
         gir = self._rms_df['g_rms'].quantile(0.75) - self._rms_df['g_rms'].quantile(0.25)
         return gir
 
-    def __get_bir(self):
-        bir = self._rms_df['baro'].quantile(0.75) - self._rms_df['baro'].quantile(0.25)
-        return bir
-
     def __get_a_zero_cross(self, mami):
         # the total number of times the acceleration signal changes form positive to negative or negative or vice versa
         a_zero_cross = 0
@@ -312,18 +261,6 @@ class _Primitive(object):
         g_zero_cross /= len(self._rms_df)
         return g_zero_cross
 
-    def __get_b_zero_cross(self, mbmi):
-        b_zero_cross = 0
-        for i in range(1, len(self._rms_df)):
-            prev_row = self._rms_df.iloc[i - 1]
-            now_row = self._rms_df.iloc[i]
-            if (prev_row['baro'] <= mbmi) and (now_row['baro'] > mbmi):
-                b_zero_cross += 1
-            elif (prev_row['baro'] >= mbmi) and (now_row['baro'] < mbmi):
-                b_zero_cross += 1
-        b_zero_cross /= len(self._rms_df)
-        return b_zero_cross
-
     def __get_a_mean_cross(self, aai):
         # the total number of times the acceleration signal changes form below average to above average or vice versa
         a_mean_cross = 0
@@ -349,18 +286,6 @@ class _Primitive(object):
                 g_mean_cross += 1
         g_mean_cross /= len(self._rms_df)
         return g_mean_cross
-
-    def __get_b_mean_cross(self, bai):
-        b_mean_cross = 0
-        for i in range(1, len(self._rms_df)):
-            prev_row = self._rms_df.iloc[i - 1]
-            now_row = self._rms_df.iloc[i]
-            if (prev_row['baro'] >= bai) and (now_row['baro'] < bai):
-                b_mean_cross += 1
-            elif (prev_row['baro'] <= bai) and (now_row['baro'] > bai):
-                b_mean_cross += 1
-        b_mean_cross /= len(self._rms_df)
-        return b_mean_cross
 
     def __get_a_xy_corr(self):
         # correlation between two acceleration X, Y axes
