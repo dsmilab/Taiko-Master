@@ -49,6 +49,17 @@ class _Play(object):
         play_df = df[(df['timestamp'] >= self._start_time) &
                      (df['timestamp'] <= self._end_time)].copy()
 
+        # resample for more samples
+        if resample is not None:
+            play_df.loc[:, 'timestamp'] = pd.to_datetime(play_df['timestamp'], unit='s')
+            play_df.loc[:, 'timestamp'] = play_df['timestamp'].apply(
+                lambda x: x.tz_localize('UTC').tz_convert('Asia/Taipei'))
+            play_df = play_df.set_index('timestamp').resample(resample).mean()
+            play_df = play_df.interpolate(method='linear')
+            play_df.reset_index(inplace=True)
+            play_df.loc[:, 'timestamp'] = play_df['timestamp'].apply(lambda x: x.timestamp())
+            play_df.fillna(method='ffill', inplace=True)
+
         # implement zero adjust for needed columns
         if is_zero_adjust:
             modes_dict = {}
@@ -62,17 +73,6 @@ class _Play(object):
                 copy_df.loc[:, col] = copy_df[col] - modes_dict[col]
 
             play_df = copy_df
-
-        # resample for more samples
-        if resample is not None:
-            play_df.loc[:, 'timestamp'] = pd.to_datetime(play_df['timestamp'], unit='s')
-            play_df.loc[:, 'timestamp'] = play_df['timestamp'].apply(
-                lambda x: x.tz_localize('UTC').tz_convert('Asia/Taipei'))
-            play_df = play_df.set_index('timestamp').resample(resample).mean()
-            play_df = play_df.interpolate(method='linear')
-            play_df.reset_index(inplace=True)
-            play_df.loc[:, 'timestamp'] = play_df['timestamp'].apply(lambda x: x.timestamp())
-            play_df.fillna(method='ffill', inplace=True)
 
         return play_df
 
