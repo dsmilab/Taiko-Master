@@ -57,6 +57,23 @@ def transform_hit_type_label(label):
     return 0
 
 
+def transform_hit_type_label_2(label):
+    """
+    Relabel the column.
+
+    :param label: original label
+    :return: transformed label
+    """
+
+    if label in [1, 3]:
+        return 1
+    elif label in [2, 4]:
+        return 2
+    elif label in [5, 6]:
+        return 3
+    return 0
+
+
 def load_note_df(who_id, song_id, order_id):
     """
     Load particular drum note dataframe.

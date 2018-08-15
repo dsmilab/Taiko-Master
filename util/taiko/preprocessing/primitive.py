@@ -83,25 +83,33 @@ class _Primitive(object):
         return [aai,
                 avi,
                 asma,
+
                 gai,
                 gvi,
-                gsma,
+
                 aae,
                 are,
+
                 mami,
                 mgmi,
+
                 asdi,
                 gsdi,
+
                 air,
                 gir,
+
                 # ass,
                 # gss,
                 # aks,
                 # gks,
+
                 a_zero_cross,
                 g_zero_cross,
+
                 a_mean_cross,
                 g_mean_cross,
+
                 a_xy_corr,
                 a_yz_corr,
                 a_zx_corr,

@@ -14,15 +14,21 @@ TABLE_PATH = os.path.join(BASE_PATH, '../../data/taiko_tables/')
 PLAY_TABLE_PATH = os.path.join(TABLE_PATH, 'taiko_play.csv')
 SONG_TABLE_PATH = os.path.join(TABLE_PATH, 'taiko_song.csv')
 DRUMMER_TABLE_PATH = os.path.join(TABLE_PATH, 'taiko_drummer.csv')
+RESULT_TABLE_PATH = os.path.join(TABLE_PATH, 'taiko_result.csv')
 
 # image.scoreboard
 BB_CAPTURE_PATH = os.path.join(BASE_PATH, '../../bb_capture_output/')
 MNIST_MODEL_PATH = os.path.join(BASE_PATH, 'model/mnist_model.h5')
 
 # preprocessing.primitive
-STAT_COLS = ['AAI', 'AVI', 'ASMA', 'GAI', 'GVI', 'GSMA', 'AAE', 'ARE',
-             'MAMI', 'MGMI', 'ASDI', 'GSDI', 'AIR', 'GIR',
-             'AZCR', 'GZCR', 'AMCR', 'GMCR',
+STAT_COLS = ['AAI', 'AVI', 'ASMA',
+             'GAI', 'GVI', 'GSMA',
+             'AAE', 'ARE',
+             'MAMI', 'MGMI',
+             'ASDI', 'GSDI',
+             'AIR', 'GIR',
+             'AZCR', 'GZCR',
+             'AMCR', 'GMCR',
              'AXYCORR', 'AYZCORR', 'AZXCORR', 'GXYCORR', 'GYZCORR', 'GZXCORR']
 
 ZERO_ADJ_COL = ['imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz', 'msu_ax', 'msu_ay', 'msu_az']

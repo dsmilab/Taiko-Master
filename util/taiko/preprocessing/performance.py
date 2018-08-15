@@ -84,7 +84,7 @@ class _Performance(object):
                 local_start_time = event_time - self._delta_t / 2
                 local_end_time = event_time + self._delta_t / 2
 
-                if len(window) == 0:
+                if len(window) == 0 and play_id < len(play_mat):
                     window.append(play_mat[play_id])
                     play_id += 1
 
@@ -92,7 +92,7 @@ class _Performance(object):
                     window.append(play_mat[play_id])
                     play_id += 1
 
-                while window[0][0] < local_start_time:
+                while len(window) > 0 and window[0][0] < local_start_time:
                     window.popleft()
 
                 tmp_primitive_mat.append(get_features(window))
