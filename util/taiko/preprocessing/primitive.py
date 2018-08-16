@@ -58,6 +58,9 @@ class _Primitive(object):
         iqr_s = [self.__get_iqr(col) for col in RMS_COLS]
         fr_s = [self.__get_full_range(col) for col in RMS_COLS]
 
+        freqx_s_s = np.array([self.__get_fft_coef(col, 3) for col in RMS_COLS])
+        freqx_s = freqx_s_s.reshape(len(RMS_COLS) * 3).tolist()
+
         # ass = self.__get_ss(RMS_COLS[0], aai, avi)
         # gss = self.__get_ss(RMS_COLS[1], gai, gvi)
         #
@@ -66,7 +69,7 @@ class _Primitive(object):
 
         median_cross_s = [self.__get_median_cross(col, mmi) for col, mmi in zip(RMS_COLS, mmi_s)]
         mean_cross_s = [self.__get_mean_cross(col, ai) for col, ai in zip(RMS_COLS, ai_s)]
-        zero_cross_s = [self.__get_zero_cross(col) for col in RMS_COLS]
+        zero_cross_s = [self.__get_zero_cross(col) for col in RMS_COLS[2:]]
 
         a_xy_corr = self.__get_corr(RMS_COLS[2], RMS_COLS[3])
         a_yz_corr = self.__get_corr(RMS_COLS[3], RMS_COLS[4])
@@ -83,6 +86,7 @@ class _Primitive(object):
             sdi_s +\
             iqr_s +\
             fr_s +\
+            freqx_s +\
             median_cross_s +\
             mean_cross_s +\
             zero_cross_s +\
