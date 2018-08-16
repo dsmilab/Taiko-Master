@@ -22,6 +22,6 @@ def get_event_primitive_df(who_id, song_id, order_id, scaling=True, resampling=T
                                              scaling,
                                              resampling_boolean[resampling]).event_primitive_df
         filename = '%d-%d-%d-%s%s' % (who_id, song_id, order_id, boolean_dict[scaling], boolean_dict[resampling])
-        event_primitive_df.to_csv('CSV/event_primitive/' + filename + '.csv', index=False)
+        event_primitive_df.to_csv('CSV/event_primitive/' + filename + '.csv', index=False, float_format='%.4g')
 
     return event_primitive_df

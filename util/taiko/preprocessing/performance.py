@@ -103,7 +103,6 @@ class _Performance(object):
 
         near_df = self.__get_near_event_hit_type()
         event_primitive_df = pd.concat([event_primitive_df, near_df], axis=1)
-
         self._event_primitive_df = event_primitive_df
 
     def __get_near_event_hit_type(self, n_counts=2):
@@ -149,7 +148,7 @@ class _Performance(object):
         scaler = preprocessing.StandardScaler()
         columns = []
         for label, _ in self._play.play_dict.items():
-            columns = [label + '_' + col for col in SCALE_COLUMNS]
+            columns += [label + '_' + col for col in SCALE_COLUMNS]
         subset = self._event_primitive_df[columns]
         train_x = [tuple(x) for x in subset.values]
         train_x = scaler.fit_transform(train_x)
