@@ -2,6 +2,9 @@ from ..config import *
 
 import pandas as pd
 import numpy as np
+
+from scipy.spatial.distance import euclidean
+from fastdtw import fastdtw
 import math
 
 __all__ = ['get_features']
@@ -16,12 +19,13 @@ class _Primitive(object):
         features: engineered features from cropped primitive
     """
 
-    def __init__(self, window):
-        self._rms_df = None
-        self.__convert_to_df(window)
+    def __init__(self, window, tempe_window):
+        self._rms_df = self.__convert_to_df(window)
+        self._tempe_rms_df = self.__convert_to_df(tempe_window)
         self._features = self.__retrieve_features()
 
-    def __convert_to_df(self, window):
+    @staticmethod
+    def __convert_to_df(window):
         mat = []
         while len(window) > 0:
             mat.append(window.popleft())
@@ -38,7 +42,7 @@ class _Primitive(object):
                                rms_df[RMS_COLS[6]] ** 2 +
                                rms_df[RMS_COLS[7]] ** 2).apply(math.sqrt)
 
-        self._rms_df = rms_df
+        return rms_df
 
     def __retrieve_features(self):
 
@@ -71,6 +75,8 @@ class _Primitive(object):
         mean_cross_s = [self.__get_mean_cross(col, ai) for col, ai in zip(RMS_COLS, ai_s)]
         zero_cross_s = [self.__get_zero_cross(col) for col in RMS_COLS[2:]]
 
+        dtw_s = [self.__get_dtw_distance(col) for col in RMS_COLS]
+
         a_xy_corr = self.__get_corr(RMS_COLS[2], RMS_COLS[3])
         a_yz_corr = self.__get_corr(RMS_COLS[3], RMS_COLS[4])
         a_zx_corr = self.__get_corr(RMS_COLS[4], RMS_COLS[2])
@@ -90,6 +96,7 @@ class _Primitive(object):
             median_cross_s +\
             mean_cross_s +\
             zero_cross_s +\
+            dtw_s +\
             [a_xy_corr, a_yz_corr, a_zx_corr,
                 g_xy_corr, g_yz_corr, g_zx_corr]
 
@@ -194,6 +201,12 @@ class _Primitive(object):
         mean_cross /= len(self._rms_df)
         return mean_cross
 
+    def __get_dtw_distance(self, col):
+        x = np.array(self._rms_df[col])
+        y = np.array(self._tempe_rms_df[col])
+        distance, path = fastdtw(x, y, dist=euclidean)
+        return distance
+
     def __get_fft_coef(self, col, max_n_counts):
         freqx = get_fft_coef(self._rms_df[col])
         return freqx[-max_n_counts:]
@@ -234,12 +247,13 @@ def get_fft_coef(data):
     return freqx
 
 
-def get_features(window):
+def get_features(window, tempe_window):
     """
     Get all engineered features from the window.
 
     :param window: the range of sensor data we care about
+    :param tempe_window: the range of sensor data we care about
     :return: engineered features
     """
 
-    return _Primitive(window).features
+    return _Primitive(window, tempe_window).features

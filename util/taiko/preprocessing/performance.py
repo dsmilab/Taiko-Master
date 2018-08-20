@@ -1,7 +1,8 @@
 from ..config import *
-from ..io.note import *
+from ..io import *
 from .play import *
 from .primitive import *
+from ..tools.timestamp import *
 from collections import deque
 
 import pandas as pd
@@ -33,6 +34,11 @@ class _Performance(object):
 
         self._note_df = load_note_df(who_id, song_id, order_id)
         self._play = get_play(who_id, song_id, order_id, resample=resample)
+
+        tempe_row = get_best_score_row(song_id)
+        tempe_who = int(tempe_row['drummer_id'])
+        tempe_order = int(tempe_row['performance_order'])
+        self._tempe_play = get_play(tempe_who, song_id, tempe_order, resample=resample)
 
         self._events = self.__retrieve_event()
         self._time_unit = self._note_df['time_unit'].min()
@@ -73,9 +79,14 @@ class _Performance(object):
 
         for label, play_df in self._play.play_dict.items():
             window = deque()
+            tempe_window = deque()
 
             play_mat = play_df.values
+            tempe_play_mat = self._tempe_play.play_dict[label].values
+            print(tempe_play_mat)
+
             play_id = 0
+            tempe_play_id = 0
 
             tmp_primitive_mat = []
             # split all event times with gap "delta_t"
@@ -84,18 +95,11 @@ class _Performance(object):
                 local_start_time = event_time - self._delta_t / 2
                 local_end_time = event_time + self._delta_t / 2
 
-                if len(window) == 0 and play_id < len(play_mat):
-                    window.append(play_mat[play_id])
-                    play_id += 1
+                window, play_mat, play_id = slide(window, play_mat, play_id, local_start_time, local_end_time)
+                tempe_window, tempe_play_mat, tempe_play_id = slide(tempe_window, tempe_play_mat, tempe_play_id,
+                                                                    local_start_time, local_end_time)
 
-                while play_id < len(play_mat) and play_mat[play_id][0] < local_end_time:
-                    window.append(play_mat[play_id])
-                    play_id += 1
-
-                while len(window) > 0 and window[0][0] < local_start_time:
-                    window.popleft()
-
-                tmp_primitive_mat.append(get_features(window))
+                tmp_primitive_mat.append(get_features(window, tempe_window))
 
             tmp_primitive_df = pd.DataFrame(data=tmp_primitive_mat,
                                             columns=[label + '_' + col for col in STAT_COLS])

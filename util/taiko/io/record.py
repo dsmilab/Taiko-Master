@@ -4,7 +4,11 @@ from ..tools.timestamp import *
 import pandas as pd
 import numpy as np
 
-__all__ = ['load_drummer_df', 'get_record', 'get_score']
+__all__ = ['load_drummer_df',
+           'load_result_df',
+           'get_record',
+           'get_score',
+           'get_best_score_row']
 
 TAILED_ADDITIONAL_TIME = 30
 
@@ -69,6 +73,10 @@ def load_drummer_df():
     return _Record().drummer_df
 
 
+def load_result_df():
+    return _Record().result_df
+
+
 def get_record(who_id, song_id, order_id):
     """
     Get the record from drummer info.
@@ -116,3 +124,10 @@ def get_score(who_id, song_id, order_id):
     # assume matched case is unique
     row = df.iloc[0]
     return row['score'].astype(np.int32)
+
+
+def get_best_score_row(song_id):
+    df = load_result_df()
+    df = df[df['song_id'] == song_id]
+    best_row = df.nlargest(1, 'score')
+    return best_row

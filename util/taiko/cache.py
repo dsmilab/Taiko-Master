@@ -1,5 +1,4 @@
 from .preprocessing.performance import *
-from .io.note import *
 
 import pandas as pd
 
