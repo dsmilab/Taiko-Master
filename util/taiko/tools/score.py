@@ -1,4 +1,8 @@
-__all__ = ['get_processing_score']
+import numpy as np
+from sklearn import metrics
+
+__all__ = ['get_processing_score',
+           'my_f1_score']
 
 
 def get_processing_score(pred_score_list):
@@ -20,3 +24,9 @@ def get_processing_score(pred_score_list):
         return None
 
     return score
+
+
+def my_f1_score(y_pred, y):
+    y = y.get_label()
+    y_pred = y_pred.reshape(len(np.unique(y)), -1).argmax(axis=0)
+    return "f1-score", metrics.f1_score(y, y_pred, average="weighted"), True

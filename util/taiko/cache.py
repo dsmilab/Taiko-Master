@@ -7,6 +7,9 @@ __all__ = ['get_event_primitive_df']
 
 
 def get_event_primitive_df(who_id, song_id, order_id, scaling=True, resampling=True):
+    if who_id == 4 and song_id == 4 and order_id in [3, 4]:
+        raise ValueError('Corrupted EP')
+
     boolean_dict = {True: 'y', False: 'n'}
     resampling_boolean = {True: '0.02S', False: None}
 
