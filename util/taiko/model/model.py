@@ -71,8 +71,9 @@ class LGBM(_Model):
 
             for i_ in range(len(order_ids)):
                 order_id = order_ids[i_]
-                train_df = pd.DataFrame(
-                    pd.concat(train_dfs[0:i_] + train_dfs[i_ + 1: len(train_dfs)], ignore_index=True))
+                train_df = pd.concat(train_dfs[0:i_] +
+                                     train_dfs[i_ + 1: len(train_dfs)],
+                                     ignore_index=True)
                 test_df = train_dfs[i_]
                 f1_score = self._run(train_df, test_df, num_boost_round, verbose_eval, early_stopping_round, params)
                 scores[order_id] = f1_score
@@ -87,12 +88,34 @@ class LGBM(_Model):
                 order_ids.append(key[1])
                 test_dfs.append(df)
 
-            train_df = pd.DataFrame(pd.concat([df for (key, df) in train_ids], ignore_index=True))
+            train_df = pd.concat([df for (key, df) in train_ids], ignore_index=True)
 
             for i_ in range(len(order_ids)):
                 order_id = order_ids[i_]
-
                 test_df = test_dfs[i_]
+
+                f1_score = self._run(train_df, test_df, num_boost_round, verbose_eval, early_stopping_round, params)
+                scores[order_id] = f1_score
+
+        elif mode == 'all-to-one':
+            train_ids = [xx for xx in ep_ids if xx[0][0] != test_who]
+            test_ids = [xx for xx in ep_ids if xx[0][0] == test_who]
+
+            order_ids = []
+            test_dfs = []
+            for (key, df) in test_ids:
+                order_ids.append(key[1])
+                test_dfs.append(df)
+
+            pre_train_df = pd.concat([df for (key, df) in train_ids], ignore_index=True)
+            for i_ in range(len(order_ids)):
+                order_id = order_ids[i_]
+                test_df = test_dfs[i_]
+
+                other_train_df = pd.concat(test_dfs[0:i_] +
+                                           test_dfs[i_ + 1: len(test_dfs)],
+                                           ignore_index=True)
+                train_df = pd.concat([other_train_df, pre_train_df], ignore_index=True)
                 f1_score = self._run(train_df, test_df, num_boost_round, verbose_eval, early_stopping_round, params)
                 scores[order_id] = f1_score
 
