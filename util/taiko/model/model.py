@@ -1,12 +1,12 @@
 from ..cache import *
 from ..io.record import *
 from ..tools.score import *
+
 import numpy as np
 import pandas as pd
-from sklearn import metrics
-from tqdm import tqdm
-from sklearn.metrics import classification_report
 import lightgbm as lgb
+from sklearn import metrics
+from sklearn.metrics import classification_report
 
 __all__ = ['LGBM']
 
@@ -52,20 +52,49 @@ class LGBM(_Model):
 
     def run(self, test_who, num_boost_round=200, verbose_eval=50, early_stopping_round=100,
             params=None, mode='one-to-one'):
-        dc = self._ep_dict[test_who]
-        order_ids = []
-        train_dfs = []
-        for key, value in dc.items():
-            order_ids.append(key)
-            train_dfs.append(value)
+        if mode not in ['one-to-one', 'rest-to-one', 'all-to-one']:
+            raise ValueError('mode Error!')
+
+        ep_ids = []
+        for key1, value1 in self._ep_dict.items():
+            for key2, value2 in value1.items():
+                ep_ids.append(((key1, key2), value2))
 
         scores = {}
-        for i_ in range(len(order_ids)):
-            order_id = order_ids[i_]
-            train_df = pd.DataFrame(pd.concat(train_dfs[0:i_] + train_dfs[i_ + 1: len(train_dfs)], ignore_index=True))
-            test_df = train_dfs[i_]
-            f1_score = self._run(train_df, test_df, num_boost_round, verbose_eval, early_stopping_round, params)
-            scores[order_id] = f1_score
+        if mode == 'one-to-one':
+            ep_ids = [xx for xx in ep_ids if xx[0][0] == test_who]
+            order_ids = []
+            train_dfs = []
+            for (key, df) in ep_ids:
+                order_ids.append(key[1])
+                train_dfs.append(df)
+
+            for i_ in range(len(order_ids)):
+                order_id = order_ids[i_]
+                train_df = pd.DataFrame(
+                    pd.concat(train_dfs[0:i_] + train_dfs[i_ + 1: len(train_dfs)], ignore_index=True))
+                test_df = train_dfs[i_]
+                f1_score = self._run(train_df, test_df, num_boost_round, verbose_eval, early_stopping_round, params)
+                scores[order_id] = f1_score
+
+        elif mode == 'rest-to-one':
+            train_ids = [xx for xx in ep_ids if xx[0][0] != test_who]
+            test_ids = [xx for xx in ep_ids if xx[0][0] == test_who]
+
+            order_ids = []
+            test_dfs = []
+            for (key, df) in test_ids:
+                order_ids.append(key[1])
+                test_dfs.append(df)
+
+            train_df = pd.DataFrame(pd.concat([df for (key, df) in train_ids], ignore_index=True))
+
+            for i_ in range(len(order_ids)):
+                order_id = order_ids[i_]
+
+                test_df = test_dfs[i_]
+                f1_score = self._run(train_df, test_df, num_boost_round, verbose_eval, early_stopping_round, params)
+                scores[order_id] = f1_score
 
         return scores
 
