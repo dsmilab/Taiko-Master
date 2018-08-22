@@ -69,7 +69,7 @@ class _Performance(object):
         """
 
         event_primitive_df = pd.DataFrame(columns=['hit_type'])
-        event_primitive_df['hit_type'] = [self._events[i][1] for i in range(len(self._events))]
+        event_primitive_df['hit_type'] = [self._events[i_][1] for i_ in range(len(self._events))]
 
         for label, play_df in self._play.play_dict.items():
             window = deque()
@@ -118,23 +118,23 @@ class _Performance(object):
         for id_ in range(len(self._events)):
             near = []
 
-            for i in range(n_counts):
+            for i_ in range(n_counts):
                 hit_type = 0
-                if id_ - 1 - i >= 0:
-                    hit_type = self._events[id_ - 1 - i][1]
+                if id_ - 1 - i_ >= 0:
+                    hit_type = self._events[id_ - 1 - i_][1]
                 near.append(hit_type)
 
-            for i in range(n_counts):
+            for i_ in range(n_counts):
                 hit_type = 0
-                if id_ + 1 + i < len(self._events):
-                    hit_type = self._events[id_ + 1 + i][1]
+                if id_ + 1 + i_ < len(self._events):
+                    hit_type = self._events[id_ + 1 + i_][1]
                 near.append(hit_type)
 
             mat.append(near)
 
         near_df = pd.DataFrame(data=mat,
-                               columns=['L' + str(i + 1) for i in range(n_counts)] +
-                                       ['R' + str(i + 1) for i in range(n_counts)])
+                               columns=['L' + str(i_ + 1) for i_ in range(n_counts)] +
+                               ['R' + str(i_ + 1) for i_ in range(n_counts)])
 
         return near_df
 

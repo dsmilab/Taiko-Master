@@ -12,11 +12,11 @@ __all__ = ['LGBM']
 
 
 class _Model(object):
-    def __init__(self, song_id):
+    def __init__(self, song_id, acc, gyr, near):
         self._ep_dict = {}
-        self._load_event_primitive(song_id)
+        self._load_event_primitive(song_id, acc, gyr, near)
 
-    def _load_event_primitive(self, song_id):
+    def _load_event_primitive(self, song_id, acc, gyr, near):
         df = load_drummer_df()
         df = df[df['song_id'] == song_id]
         df = df[['drummer_id', 'performance_order']]
@@ -26,7 +26,7 @@ class _Model(object):
             order_id = int(row['performance_order'])
 
             try:
-                ep_df = get_event_primitive_df(who_id, song_id, order_id)
+                ep_df = get_event_primitive_df(who_id, song_id, order_id, acc=acc, gyr=gyr, near=near)
             except ValueError:
                 continue
 
@@ -40,8 +40,8 @@ class _Model(object):
 
 
 class LGBM(_Model):
-    def __init__(self, song_id):
-        super(LGBM, self).__init__(song_id)
+    def __init__(self, song_id, acc=True, gyr=True, near=True):
+        super(LGBM, self).__init__(song_id, acc, gyr, near)
         self._params = dict({
             'learning_rate': 0.1,
             'application': 'multiclass',
