@@ -52,7 +52,7 @@ def transform_hit_type_label(label):
 
     if label in [1, 2, 3, 4]:
         return 1
-    elif label in [5, 6]:
+    elif label in [5, 6, 7]:
         return 2
     return 0
 
@@ -69,7 +69,7 @@ def transform_hit_type_label_2(label):
         return 1
     elif label in [2, 4]:
         return 2
-    elif label in [5, 6]:
+    elif label in [5, 6, 7]:
         return 3
     return 0
 
