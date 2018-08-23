@@ -4,7 +4,11 @@ import pandas as pd
 import numpy as np
 import math
 
-__all__ = ['get_features']
+from scipy.spatial.distance import euclidean
+from fastdtw import fastdtw
+
+__all__ = ['get_features',
+           'get_feature_columns']
 
 
 class _Primitive(object):
@@ -37,7 +41,6 @@ class _Primitive(object):
         rms_df[RMS_COLS[1]] = (rms_df[RMS_COLS[5]] ** 2 +
                                rms_df[RMS_COLS[6]] ** 2 +
                                rms_df[RMS_COLS[7]] ** 2).apply(math.sqrt)
-
         self._rms_df = rms_df
 
     def __retrieve_features(self):
@@ -210,6 +213,10 @@ class _Primitive(object):
         return evas
 
     @property
+    def rms_df(self):
+        return self._rms_df
+
+    @property
     def features(self):
         return self._features
 
@@ -234,12 +241,58 @@ def get_fft_coef(data):
     return freqx
 
 
-def get_features(window):
+def get_dtw_distance(rms_df1, rms_df2, col):
+    x = np.array(rms_df1[col])
+    y = np.array(rms_df2[col])
+    distance, _ = fastdtw(x, y, dist=euclidean)
+    return distance
+
+
+def get_features(windows):
     """
     Get all engineered features from the window.
 
-    :param window: the range of sensor data we care about
+    :param windows: the range of sensor data we care about
     :return: engineered features
     """
 
-    return _Primitive(window).features
+    primitives = [_Primitive(window) for window in windows]
+
+    feature_row = []
+    for prim in primitives:
+        feature_row.extend(prim.features)
+
+    # C(n, 2)
+    for col in RMS_COLS:
+        for i_ in range(len(primitives)):
+            for j_ in range(len(primitives)):
+                if i_ >= j_:
+                    continue
+                dtw_distance = get_dtw_distance(primitives[i_].rms_df, primitives[j_].rms_df, col)
+                feature_row.append(dtw_distance)
+
+    return feature_row
+
+
+def get_feature_columns(labels):
+    """
+
+    :param labels:
+    :return:
+    """
+
+    feature_names = []
+
+    for label in labels:
+        columns = [label + '_' + col for col in STAT_COLS]
+        feature_names.extend(columns)
+
+    for i_ in range(len(labels)):
+        for j_ in range(len(labels)):
+            if i_ >= j_:
+                continue
+            suffix_cols = [prefix_ + '_' + suffix_ for prefix_, suffix_ in zip(PREFIX_COLS, [SUFFIX_COLS[10]] * 8)]
+            columns = [labels[i_] + labels[j_] + '_' + col for col in suffix_cols]
+            feature_names.extend(columns)
+
+    return feature_names
