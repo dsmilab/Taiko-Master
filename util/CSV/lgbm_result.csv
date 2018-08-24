@@ -1,0 +1,1837 @@
+test_who,song_id,test_order,f1_score,feat,mode
+1,1,1,0.9421,acc + gyr + near,one-to-one
+1,1,2,0.9586,acc + gyr + near,one-to-one
+1,1,3,0.9447,acc + gyr + near,one-to-one
+1,1,1,0.9533,acc + gyr + near,rest-to-one
+1,1,2,0.9616,acc + gyr + near,rest-to-one
+1,1,3,0.9613,acc + gyr + near,rest-to-one
+1,1,1,0.956,acc + gyr + near,all-to-one
+1,1,2,0.9644,acc + gyr + near,all-to-one
+1,1,3,0.964,acc + gyr + near,all-to-one
+2,1,1,0.9671,acc + gyr + near,one-to-one
+2,1,2,0.8732,acc + gyr + near,one-to-one
+2,1,3,0.9134,acc + gyr + near,one-to-one
+2,1,1,0.9639,acc + gyr + near,rest-to-one
+2,1,2,0.9259,acc + gyr + near,rest-to-one
+2,1,3,0.9583,acc + gyr + near,rest-to-one
+2,1,1,0.9807,acc + gyr + near,all-to-one
+2,1,2,0.945,acc + gyr + near,all-to-one
+2,1,3,0.9695,acc + gyr + near,all-to-one
+3,1,1,0.9471,acc + gyr + near,one-to-one
+3,1,2,0.9781,acc + gyr + near,one-to-one
+3,1,3,0.9835,acc + gyr + near,one-to-one
+3,1,1,0.9779,acc + gyr + near,rest-to-one
+3,1,2,0.9807,acc + gyr + near,rest-to-one
+3,1,3,0.9779,acc + gyr + near,rest-to-one
+3,1,1,0.978,acc + gyr + near,all-to-one
+3,1,2,0.9862,acc + gyr + near,all-to-one
+3,1,3,0.9864,acc + gyr + near,all-to-one
+4,1,1,0.9408,acc + gyr + near,one-to-one
+4,1,2,0.9402,acc + gyr + near,one-to-one
+4,1,3,0.9752,acc + gyr + near,one-to-one
+4,1,1,0.8912,acc + gyr + near,rest-to-one
+4,1,2,0.9017,acc + gyr + near,rest-to-one
+4,1,3,0.9078,acc + gyr + near,rest-to-one
+4,1,1,0.9418,acc + gyr + near,all-to-one
+4,1,2,0.9588,acc + gyr + near,all-to-one
+4,1,3,0.9698,acc + gyr + near,all-to-one
+5,1,1,0.8911,acc + gyr + near,one-to-one
+5,1,2,0.9724,acc + gyr + near,one-to-one
+5,1,3,0.9727,acc + gyr + near,one-to-one
+5,1,1,0.897,acc + gyr + near,rest-to-one
+5,1,2,0.9696,acc + gyr + near,rest-to-one
+5,1,3,0.9589,acc + gyr + near,rest-to-one
+5,1,1,0.9185,acc + gyr + near,all-to-one
+5,1,2,0.9861,acc + gyr + near,all-to-one
+5,1,3,0.967,acc + gyr + near,all-to-one
+6,1,1,0.9645,acc + gyr + near,one-to-one
+6,1,2,0.9532,acc + gyr + near,one-to-one
+6,1,3,0.9751,acc + gyr + near,one-to-one
+6,1,1,0.9557,acc + gyr + near,rest-to-one
+6,1,2,0.9478,acc + gyr + near,rest-to-one
+6,1,3,0.9668,acc + gyr + near,rest-to-one
+6,1,1,0.9808,acc + gyr + near,all-to-one
+6,1,2,0.9614,acc + gyr + near,all-to-one
+6,1,3,0.9806,acc + gyr + near,all-to-one
+7,1,1,0.9531,acc + gyr + near,one-to-one
+7,1,2,0.964,acc + gyr + near,one-to-one
+7,1,3,0.9503,acc + gyr + near,one-to-one
+7,1,1,0.964,acc + gyr + near,rest-to-one
+7,1,2,0.9806,acc + gyr + near,rest-to-one
+7,1,3,0.9612,acc + gyr + near,rest-to-one
+7,1,1,0.9806,acc + gyr + near,all-to-one
+7,1,2,0.9834,acc + gyr + near,all-to-one
+7,1,3,0.9667,acc + gyr + near,all-to-one
+8,1,1,0.9394,acc + gyr + near,one-to-one
+8,1,2,0.9343,acc + gyr + near,one-to-one
+8,1,3,0.9516,acc + gyr + near,one-to-one
+8,1,1,0.9531,acc + gyr + near,rest-to-one
+8,1,2,0.9399,acc + gyr + near,rest-to-one
+8,1,3,0.9569,acc + gyr + near,rest-to-one
+8,1,1,0.9557,acc + gyr + near,all-to-one
+8,1,2,0.9533,acc + gyr + near,all-to-one
+8,1,3,0.9648,acc + gyr + near,all-to-one
+1,1,1,0.9017,acc + gyr,one-to-one
+1,1,2,0.9175,acc + gyr,one-to-one
+1,1,3,0.915,acc + gyr,one-to-one
+1,1,1,0.8157,acc + gyr,rest-to-one
+1,1,2,0.826,acc + gyr,rest-to-one
+1,1,3,0.8728,acc + gyr,rest-to-one
+1,1,1,0.8777,acc + gyr,all-to-one
+1,1,2,0.8985,acc + gyr,all-to-one
+1,1,3,0.9058,acc + gyr,all-to-one
+2,1,1,0.9647,acc + gyr,one-to-one
+2,1,2,0.8756,acc + gyr,one-to-one
+2,1,3,0.905,acc + gyr,one-to-one
+2,1,1,0.9088,acc + gyr,rest-to-one
+2,1,2,0.8085,acc + gyr,rest-to-one
+2,1,3,0.9219,acc + gyr,rest-to-one
+2,1,1,0.9536,acc + gyr,all-to-one
+2,1,2,0.855,acc + gyr,all-to-one
+2,1,3,0.9346,acc + gyr,all-to-one
+3,1,1,0.9285,acc + gyr,one-to-one
+3,1,2,0.9618,acc + gyr,one-to-one
+3,1,3,0.9644,acc + gyr,one-to-one
+3,1,1,0.863,acc + gyr,rest-to-one
+3,1,2,0.9362,acc + gyr,rest-to-one
+3,1,3,0.8733,acc + gyr,rest-to-one
+3,1,1,0.9369,acc + gyr,all-to-one
+3,1,2,0.9643,acc + gyr,all-to-one
+3,1,3,0.9372,acc + gyr,all-to-one
+4,1,1,0.908,acc + gyr,one-to-one
+4,1,2,0.9322,acc + gyr,one-to-one
+4,1,3,0.9645,acc + gyr,one-to-one
+4,1,1,0.5756,acc + gyr,rest-to-one
+4,1,2,0.6472,acc + gyr,rest-to-one
+4,1,3,0.6322,acc + gyr,rest-to-one
+4,1,1,0.7138,acc + gyr,all-to-one
+4,1,2,0.8793,acc + gyr,all-to-one
+4,1,3,0.7748,acc + gyr,all-to-one
+5,1,1,0.7928,acc + gyr,one-to-one
+5,1,2,0.9296,acc + gyr,one-to-one
+5,1,3,0.9263,acc + gyr,one-to-one
+5,1,1,0.7641,acc + gyr,rest-to-one
+5,1,2,0.8714,acc + gyr,rest-to-one
+5,1,3,0.8933,acc + gyr,rest-to-one
+5,1,1,0.8107,acc + gyr,all-to-one
+5,1,2,0.9266,acc + gyr,all-to-one
+5,1,3,0.9459,acc + gyr,all-to-one
+6,1,1,0.9285,acc + gyr,one-to-one
+6,1,2,0.9419,acc + gyr,one-to-one
+6,1,3,0.9479,acc + gyr,one-to-one
+6,1,1,0.7695,acc + gyr,rest-to-one
+6,1,2,0.7823,acc + gyr,rest-to-one
+6,1,3,0.8503,acc + gyr,rest-to-one
+6,1,1,0.8567,acc + gyr,all-to-one
+6,1,2,0.8805,acc + gyr,all-to-one
+6,1,3,0.9313,acc + gyr,all-to-one
+7,1,1,0.9285,acc + gyr,one-to-one
+7,1,2,0.9262,acc + gyr,one-to-one
+7,1,3,0.9211,acc + gyr,one-to-one
+7,1,1,0.8518,acc + gyr,rest-to-one
+7,1,2,0.8631,acc + gyr,rest-to-one
+7,1,3,0.8775,acc + gyr,rest-to-one
+7,1,1,0.9232,acc + gyr,all-to-one
+7,1,2,0.9169,acc + gyr,all-to-one
+7,1,3,0.926,acc + gyr,all-to-one
+8,1,1,0.8417,acc + gyr,one-to-one
+8,1,2,0.8745,acc + gyr,one-to-one
+8,1,3,0.8921,acc + gyr,one-to-one
+8,1,1,0.853,acc + gyr,rest-to-one
+8,1,2,0.8236,acc + gyr,rest-to-one
+8,1,3,0.8594,acc + gyr,rest-to-one
+8,1,1,0.8531,acc + gyr,all-to-one
+8,1,2,0.8321,acc + gyr,all-to-one
+8,1,3,0.8831,acc + gyr,all-to-one
+1,1,1,0.9394,acc + near,one-to-one
+1,1,2,0.9475,acc + near,one-to-one
+1,1,3,0.9583,acc + near,one-to-one
+1,1,1,0.9398,acc + near,rest-to-one
+1,1,2,0.9668,acc + near,rest-to-one
+1,1,3,0.9529,acc + near,rest-to-one
+1,1,1,0.9427,acc + near,all-to-one
+1,1,2,0.9641,acc + near,all-to-one
+1,1,3,0.9557,acc + near,all-to-one
+2,1,1,0.9782,acc + near,one-to-one
+2,1,2,0.8647,acc + near,one-to-one
+2,1,3,0.9092,acc + near,one-to-one
+2,1,1,0.9524,acc + near,rest-to-one
+2,1,2,0.9129,acc + near,rest-to-one
+2,1,3,0.9554,acc + near,rest-to-one
+2,1,1,0.9723,acc + near,all-to-one
+2,1,2,0.916,acc + near,all-to-one
+2,1,3,0.9695,acc + near,all-to-one
+3,1,1,0.9368,acc + near,one-to-one
+3,1,2,0.9782,acc + near,one-to-one
+3,1,3,0.9752,acc + near,one-to-one
+3,1,1,0.9666,acc + near,rest-to-one
+3,1,2,0.9778,acc + near,rest-to-one
+3,1,3,0.9753,acc + near,rest-to-one
+3,1,1,0.9668,acc + near,all-to-one
+3,1,2,0.975,acc + near,all-to-one
+3,1,3,0.9835,acc + near,all-to-one
+4,1,1,0.9478,acc + near,one-to-one
+4,1,2,0.9373,acc + near,one-to-one
+4,1,3,0.9837,acc + near,one-to-one
+4,1,1,0.8955,acc + near,rest-to-one
+4,1,2,0.9095,acc + near,rest-to-one
+4,1,3,0.926,acc + near,rest-to-one
+4,1,1,0.9219,acc + near,all-to-one
+4,1,2,0.9422,acc + near,all-to-one
+4,1,3,0.9645,acc + near,all-to-one
+5,1,1,0.9082,acc + near,one-to-one
+5,1,2,0.95,acc + near,one-to-one
+5,1,3,0.9457,acc + near,one-to-one
+5,1,1,0.8952,acc + near,rest-to-one
+5,1,2,0.9724,acc + near,rest-to-one
+5,1,3,0.9534,acc + near,rest-to-one
+5,1,1,0.921,acc + near,all-to-one
+5,1,2,0.989,acc + near,all-to-one
+5,1,3,0.9725,acc + near,all-to-one
+6,1,1,0.9619,acc + near,one-to-one
+6,1,2,0.9474,acc + near,one-to-one
+6,1,3,0.9778,acc + near,one-to-one
+6,1,1,0.9447,acc + near,rest-to-one
+6,1,2,0.9017,acc + near,rest-to-one
+6,1,3,0.938,acc + near,rest-to-one
+6,1,1,0.967,acc + near,all-to-one
+6,1,2,0.9502,acc + near,all-to-one
+6,1,3,0.9695,acc + near,all-to-one
+7,1,1,0.9587,acc + near,one-to-one
+7,1,2,0.9721,acc + near,one-to-one
+7,1,3,0.9336,acc + near,one-to-one
+7,1,1,0.9667,acc + near,rest-to-one
+7,1,2,0.9861,acc + near,rest-to-one
+7,1,3,0.9776,acc + near,rest-to-one
+7,1,1,0.9723,acc + near,all-to-one
+7,1,2,0.9889,acc + near,all-to-one
+7,1,3,0.9832,acc + near,all-to-one
+8,1,1,0.9147,acc + near,one-to-one
+8,1,2,0.9305,acc + near,one-to-one
+8,1,3,0.9671,acc + near,one-to-one
+8,1,1,0.9317,acc + near,rest-to-one
+8,1,2,0.9427,acc + near,rest-to-one
+8,1,3,0.946,acc + near,rest-to-one
+8,1,1,0.9343,acc + near,all-to-one
+8,1,2,0.9398,acc + near,all-to-one
+8,1,3,0.9539,acc + near,all-to-one
+1,1,1,0.8839,acc,one-to-one
+1,1,2,0.896,acc,one-to-one
+1,1,3,0.9175,acc,one-to-one
+1,1,1,0.8368,acc,rest-to-one
+1,1,2,0.8285,acc,rest-to-one
+1,1,3,0.8377,acc,rest-to-one
+1,1,1,0.872,acc,all-to-one
+1,1,2,0.8785,acc,all-to-one
+1,1,3,0.8893,acc,all-to-one
+2,1,1,0.9397,acc,one-to-one
+2,1,2,0.7446,acc,one-to-one
+2,1,3,0.8568,acc,one-to-one
+2,1,1,0.8488,acc,rest-to-one
+2,1,2,0.7057,acc,rest-to-one
+2,1,3,0.8911,acc,rest-to-one
+2,1,1,0.9233,acc,all-to-one
+2,1,2,0.7311,acc,all-to-one
+2,1,3,0.9,acc,all-to-one
+3,1,1,0.8822,acc,one-to-one
+3,1,2,0.9286,acc,one-to-one
+3,1,3,0.9036,acc,one-to-one
+3,1,1,0.7912,acc,rest-to-one
+3,1,2,0.8366,acc,rest-to-one
+3,1,3,0.7882,acc,rest-to-one
+3,1,1,0.8429,acc,all-to-one
+3,1,2,0.8796,acc,all-to-one
+3,1,3,0.8616,acc,all-to-one
+4,1,1,0.8886,acc,one-to-one
+4,1,2,0.9035,acc,one-to-one
+4,1,3,0.9212,acc,one-to-one
+4,1,1,0.5847,acc,rest-to-one
+4,1,2,0.6138,acc,rest-to-one
+4,1,3,0.6155,acc,rest-to-one
+4,1,1,0.7509,acc,all-to-one
+4,1,2,0.8004,acc,all-to-one
+4,1,3,0.7468,acc,all-to-one
+5,1,1,0.7994,acc,one-to-one
+5,1,2,0.9185,acc,one-to-one
+5,1,3,0.8852,acc,one-to-one
+5,1,1,0.7472,acc,rest-to-one
+5,1,2,0.854,acc,rest-to-one
+5,1,3,0.8175,acc,rest-to-one
+5,1,1,0.7744,acc,all-to-one
+5,1,2,0.8804,acc,all-to-one
+5,1,3,0.8881,acc,all-to-one
+6,1,1,0.8997,acc,one-to-one
+6,1,2,0.8802,acc,one-to-one
+6,1,3,0.9237,acc,one-to-one
+6,1,1,0.8104,acc,rest-to-one
+6,1,2,0.7769,acc,rest-to-one
+6,1,3,0.8246,acc,rest-to-one
+6,1,1,0.8612,acc,all-to-one
+6,1,2,0.8409,acc,all-to-one
+6,1,3,0.9072,acc,all-to-one
+7,1,1,0.8969,acc,one-to-one
+7,1,2,0.9095,acc,one-to-one
+7,1,3,0.9139,acc,one-to-one
+7,1,1,0.8396,acc,rest-to-one
+7,1,2,0.874,acc,rest-to-one
+7,1,3,0.8691,acc,rest-to-one
+7,1,1,0.8925,acc,all-to-one
+7,1,2,0.9363,acc,all-to-one
+7,1,3,0.9089,acc,all-to-one
+8,1,1,0.7922,acc,one-to-one
+8,1,2,0.8261,acc,one-to-one
+8,1,3,0.8465,acc,one-to-one
+8,1,1,0.8009,acc,rest-to-one
+8,1,2,0.7944,acc,rest-to-one
+8,1,3,0.8206,acc,rest-to-one
+8,1,1,0.8128,acc,all-to-one
+8,1,2,0.8216,acc,all-to-one
+8,1,3,0.8615,acc,all-to-one
+1,1,1,0.9477,gyr + near,one-to-one
+1,1,2,0.9529,gyr + near,one-to-one
+1,1,3,0.9504,gyr + near,one-to-one
+1,1,1,0.9508,gyr + near,rest-to-one
+1,1,2,0.951,gyr + near,rest-to-one
+1,1,3,0.9613,gyr + near,rest-to-one
+1,1,1,0.956,gyr + near,all-to-one
+1,1,2,0.967,gyr + near,all-to-one
+1,1,3,0.9613,gyr + near,all-to-one
+2,1,1,0.9558,gyr + near,one-to-one
+2,1,2,0.8892,gyr + near,one-to-one
+2,1,3,0.956,gyr + near,one-to-one
+2,1,1,0.9303,gyr + near,rest-to-one
+2,1,2,0.9202,gyr + near,rest-to-one
+2,1,3,0.9333,gyr + near,rest-to-one
+2,1,1,0.964,gyr + near,all-to-one
+2,1,2,0.9375,gyr + near,all-to-one
+2,1,3,0.9613,gyr + near,all-to-one
+3,1,1,0.9454,gyr + near,one-to-one
+3,1,2,0.9808,gyr + near,one-to-one
+3,1,3,0.9727,gyr + near,one-to-one
+3,1,1,0.9807,gyr + near,rest-to-one
+3,1,2,0.9864,gyr + near,rest-to-one
+3,1,3,0.9752,gyr + near,rest-to-one
+3,1,1,0.9807,gyr + near,all-to-one
+3,1,2,0.989,gyr + near,all-to-one
+3,1,3,0.9725,gyr + near,all-to-one
+4,1,1,0.9459,gyr + near,one-to-one
+4,1,2,0.9291,gyr + near,one-to-one
+4,1,3,0.9483,gyr + near,one-to-one
+4,1,1,0.8656,gyr + near,rest-to-one
+4,1,2,0.8889,gyr + near,rest-to-one
+4,1,3,0.8761,gyr + near,rest-to-one
+4,1,1,0.9338,gyr + near,all-to-one
+4,1,2,0.9506,gyr + near,all-to-one
+4,1,3,0.9564,gyr + near,all-to-one
+5,1,1,0.8896,gyr + near,one-to-one
+5,1,2,0.9807,gyr + near,one-to-one
+5,1,3,0.9727,gyr + near,one-to-one
+5,1,1,0.919,gyr + near,rest-to-one
+5,1,2,0.9643,gyr + near,rest-to-one
+5,1,3,0.9589,gyr + near,rest-to-one
+5,1,1,0.9187,gyr + near,all-to-one
+5,1,2,0.9777,gyr + near,all-to-one
+5,1,3,0.967,gyr + near,all-to-one
+6,1,1,0.9457,gyr + near,one-to-one
+6,1,2,0.9862,gyr + near,one-to-one
+6,1,3,0.9696,gyr + near,one-to-one
+6,1,1,0.9584,gyr + near,rest-to-one
+6,1,2,0.9556,gyr + near,rest-to-one
+6,1,3,0.9585,gyr + near,rest-to-one
+6,1,1,0.9752,gyr + near,all-to-one
+6,1,2,0.9752,gyr + near,all-to-one
+6,1,3,0.9806,gyr + near,all-to-one
+7,1,1,0.9584,gyr + near,one-to-one
+7,1,2,0.9802,gyr + near,one-to-one
+7,1,3,0.9329,gyr + near,one-to-one
+7,1,1,0.9669,gyr + near,rest-to-one
+7,1,2,0.9614,gyr + near,rest-to-one
+7,1,3,0.9253,gyr + near,rest-to-one
+7,1,1,0.9779,gyr + near,all-to-one
+7,1,2,0.9806,gyr + near,all-to-one
+7,1,3,0.9432,gyr + near,all-to-one
+8,1,1,0.9476,gyr + near,one-to-one
+8,1,2,0.9236,gyr + near,one-to-one
+8,1,3,0.9564,gyr + near,one-to-one
+8,1,1,0.9527,gyr + near,rest-to-one
+8,1,2,0.934,gyr + near,rest-to-one
+8,1,3,0.9618,gyr + near,rest-to-one
+8,1,1,0.9581,gyr + near,all-to-one
+8,1,2,0.9584,gyr + near,all-to-one
+8,1,3,0.9674,gyr + near,all-to-one
+1,1,1,0.9229,gyr,one-to-one
+1,1,2,0.9151,gyr,one-to-one
+1,1,3,0.926,gyr,one-to-one
+1,1,1,0.7568,gyr,rest-to-one
+1,1,2,0.8071,gyr,rest-to-one
+1,1,3,0.8388,gyr,rest-to-one
+1,1,1,0.8468,gyr,all-to-one
+1,1,2,0.8597,gyr,all-to-one
+1,1,3,0.8899,gyr,all-to-one
+2,1,1,0.9558,gyr,one-to-one
+2,1,2,0.8811,gyr,one-to-one
+2,1,3,0.9293,gyr,one-to-one
+2,1,1,0.8957,gyr,rest-to-one
+2,1,2,0.8188,gyr,rest-to-one
+2,1,3,0.8895,gyr,rest-to-one
+2,1,1,0.956,gyr,all-to-one
+2,1,2,0.8488,gyr,all-to-one
+2,1,3,0.922,gyr,all-to-one
+3,1,1,0.9212,gyr,one-to-one
+3,1,2,0.9535,gyr,one-to-one
+3,1,3,0.957,gyr,one-to-one
+3,1,1,0.8989,gyr,rest-to-one
+3,1,2,0.9321,gyr,rest-to-one
+3,1,3,0.8906,gyr,rest-to-one
+3,1,1,0.9397,gyr,all-to-one
+3,1,2,0.959,gyr,all-to-one
+3,1,3,0.926,gyr,all-to-one
+4,1,1,0.8954,gyr,one-to-one
+4,1,2,0.9266,gyr,one-to-one
+4,1,3,0.9512,gyr,one-to-one
+4,1,1,0.6295,gyr,rest-to-one
+4,1,2,0.6858,gyr,rest-to-one
+4,1,3,0.6655,gyr,rest-to-one
+4,1,1,0.7379,gyr,all-to-one
+4,1,2,0.8603,gyr,all-to-one
+4,1,3,0.831,gyr,all-to-one
+5,1,1,0.7841,gyr,one-to-one
+5,1,2,0.8894,gyr,one-to-one
+5,1,3,0.906,gyr,one-to-one
+5,1,1,0.7885,gyr,rest-to-one
+5,1,2,0.8585,gyr,rest-to-one
+5,1,3,0.882,gyr,rest-to-one
+5,1,1,0.8146,gyr,all-to-one
+5,1,2,0.9115,gyr,all-to-one
+5,1,3,0.9305,gyr,all-to-one
+6,1,1,0.9139,gyr,one-to-one
+6,1,2,0.9589,gyr,one-to-one
+6,1,3,0.943,gyr,one-to-one
+6,1,1,0.7674,gyr,rest-to-one
+6,1,2,0.7939,gyr,rest-to-one
+6,1,3,0.8615,gyr,rest-to-one
+6,1,1,0.8385,gyr,all-to-one
+6,1,2,0.8661,gyr,all-to-one
+6,1,3,0.9235,gyr,all-to-one
+7,1,1,0.8907,gyr,one-to-one
+7,1,2,0.9298,gyr,one-to-one
+7,1,3,0.8735,gyr,one-to-one
+7,1,1,0.8524,gyr,rest-to-one
+7,1,2,0.8141,gyr,rest-to-one
+7,1,3,0.8081,gyr,rest-to-one
+7,1,1,0.9098,gyr,all-to-one
+7,1,2,0.9013,gyr,all-to-one
+7,1,3,0.844,gyr,all-to-one
+8,1,1,0.8534,gyr,one-to-one
+8,1,2,0.8359,gyr,one-to-one
+8,1,3,0.89,gyr,one-to-one
+8,1,1,0.853,gyr,rest-to-one
+8,1,2,0.7994,gyr,rest-to-one
+8,1,3,0.8568,gyr,rest-to-one
+8,1,1,0.8594,gyr,all-to-one
+8,1,2,0.812,gyr,all-to-one
+8,1,3,0.8637,gyr,all-to-one
+1,2,1,0.8861,acc + gyr + near,one-to-one
+1,2,2,0.8334,acc + gyr + near,one-to-one
+1,2,3,0.8359,acc + gyr + near,one-to-one
+1,2,1,0.8059,acc + gyr + near,rest-to-one
+1,2,2,0.8051,acc + gyr + near,rest-to-one
+1,2,3,0.8508,acc + gyr + near,rest-to-one
+1,2,1,0.8615,acc + gyr + near,all-to-one
+1,2,2,0.8263,acc + gyr + near,all-to-one
+1,2,3,0.8763,acc + gyr + near,all-to-one
+2,2,1,0.9413,acc + gyr + near,one-to-one
+2,2,2,0.9607,acc + gyr + near,one-to-one
+2,2,3,0.9348,acc + gyr + near,one-to-one
+2,2,1,0.9091,acc + gyr + near,rest-to-one
+2,2,2,0.9278,acc + gyr + near,rest-to-one
+2,2,3,0.8945,acc + gyr + near,rest-to-one
+2,2,1,0.935,acc + gyr + near,all-to-one
+2,2,2,0.9557,acc + gyr + near,all-to-one
+2,2,3,0.9162,acc + gyr + near,all-to-one
+3,2,1,0.8865,acc + gyr + near,one-to-one
+3,2,2,0.9006,acc + gyr + near,one-to-one
+3,2,3,0.8994,acc + gyr + near,one-to-one
+3,2,1,0.9017,acc + gyr + near,rest-to-one
+3,2,2,0.8821,acc + gyr + near,rest-to-one
+3,2,3,0.9014,acc + gyr + near,rest-to-one
+3,2,1,0.9002,acc + gyr + near,all-to-one
+3,2,2,0.8889,acc + gyr + near,all-to-one
+3,2,3,0.9009,acc + gyr + near,all-to-one
+4,2,1,0.9233,acc + gyr + near,one-to-one
+4,2,2,0.8904,acc + gyr + near,one-to-one
+4,2,3,0.8732,acc + gyr + near,one-to-one
+4,2,1,0.8053,acc + gyr + near,rest-to-one
+4,2,2,0.792,acc + gyr + near,rest-to-one
+4,2,3,0.7894,acc + gyr + near,rest-to-one
+4,2,1,0.8881,acc + gyr + near,all-to-one
+4,2,2,0.8606,acc + gyr + near,all-to-one
+4,2,3,0.8381,acc + gyr + near,all-to-one
+5,2,1,0.9109,acc + gyr + near,one-to-one
+5,2,2,0.9399,acc + gyr + near,one-to-one
+5,2,3,0.8827,acc + gyr + near,one-to-one
+5,2,1,0.8855,acc + gyr + near,rest-to-one
+5,2,2,0.8702,acc + gyr + near,rest-to-one
+5,2,3,0.8737,acc + gyr + near,rest-to-one
+5,2,1,0.9128,acc + gyr + near,all-to-one
+5,2,2,0.9032,acc + gyr + near,all-to-one
+5,2,3,0.882,acc + gyr + near,all-to-one
+6,2,1,0.9303,acc + gyr + near,one-to-one
+6,2,2,0.9257,acc + gyr + near,one-to-one
+6,2,3,0.9477,acc + gyr + near,one-to-one
+6,2,1,0.845,acc + gyr + near,rest-to-one
+6,2,2,0.8533,acc + gyr + near,rest-to-one
+6,2,3,0.87,acc + gyr + near,rest-to-one
+6,2,1,0.9053,acc + gyr + near,all-to-one
+6,2,2,0.9003,acc + gyr + near,all-to-one
+6,2,3,0.9121,acc + gyr + near,all-to-one
+7,2,1,0.9494,acc + gyr + near,one-to-one
+7,2,2,0.9561,acc + gyr + near,one-to-one
+7,2,3,0.9625,acc + gyr + near,one-to-one
+7,2,1,0.89,acc + gyr + near,rest-to-one
+7,2,2,0.9046,acc + gyr + near,rest-to-one
+7,2,3,0.9164,acc + gyr + near,rest-to-one
+7,2,1,0.9163,acc + gyr + near,all-to-one
+7,2,2,0.93,acc + gyr + near,all-to-one
+7,2,3,0.9499,acc + gyr + near,all-to-one
+8,2,1,0.9007,acc + gyr + near,one-to-one
+8,2,2,0.8963,acc + gyr + near,one-to-one
+8,2,3,0.914,acc + gyr + near,one-to-one
+8,2,1,0.8681,acc + gyr + near,rest-to-one
+8,2,2,0.8738,acc + gyr + near,rest-to-one
+8,2,3,0.8994,acc + gyr + near,rest-to-one
+8,2,1,0.8682,acc + gyr + near,all-to-one
+8,2,2,0.8884,acc + gyr + near,all-to-one
+8,2,3,0.9025,acc + gyr + near,all-to-one
+1,2,1,0.7724,acc + gyr,one-to-one
+1,2,2,0.7338,acc + gyr,one-to-one
+1,2,3,0.6823,acc + gyr,one-to-one
+1,2,1,0.6798,acc + gyr,rest-to-one
+1,2,2,0.6676,acc + gyr,rest-to-one
+1,2,3,0.7507,acc + gyr,rest-to-one
+1,2,1,0.717,acc + gyr,all-to-one
+1,2,2,0.7002,acc + gyr,all-to-one
+1,2,3,0.7549,acc + gyr,all-to-one
+2,2,1,0.9126,acc + gyr,one-to-one
+2,2,2,0.9279,acc + gyr,one-to-one
+2,2,3,0.882,acc + gyr,one-to-one
+2,2,1,0.864,acc + gyr,rest-to-one
+2,2,2,0.8521,acc + gyr,rest-to-one
+2,2,3,0.8175,acc + gyr,rest-to-one
+2,2,1,0.9016,acc + gyr,all-to-one
+2,2,2,0.9069,acc + gyr,all-to-one
+2,2,3,0.8627,acc + gyr,all-to-one
+3,2,1,0.7846,acc + gyr,one-to-one
+3,2,2,0.7893,acc + gyr,one-to-one
+3,2,3,0.8276,acc + gyr,one-to-one
+3,2,1,0.7917,acc + gyr,rest-to-one
+3,2,2,0.7734,acc + gyr,rest-to-one
+3,2,3,0.7864,acc + gyr,rest-to-one
+3,2,1,0.7796,acc + gyr,all-to-one
+3,2,2,0.7784,acc + gyr,all-to-one
+3,2,3,0.8116,acc + gyr,all-to-one
+4,2,1,0.8894,acc + gyr,one-to-one
+4,2,2,0.8413,acc + gyr,one-to-one
+4,2,3,0.8019,acc + gyr,one-to-one
+4,2,1,0.7124,acc + gyr,rest-to-one
+4,2,2,0.6913,acc + gyr,rest-to-one
+4,2,3,0.6799,acc + gyr,rest-to-one
+4,2,1,0.8318,acc + gyr,all-to-one
+4,2,2,0.8027,acc + gyr,all-to-one
+4,2,3,0.7786,acc + gyr,all-to-one
+5,2,1,0.8533,acc + gyr,one-to-one
+5,2,2,0.8968,acc + gyr,one-to-one
+5,2,3,0.8553,acc + gyr,one-to-one
+5,2,1,0.7367,acc + gyr,rest-to-one
+5,2,2,0.752,acc + gyr,rest-to-one
+5,2,3,0.7454,acc + gyr,rest-to-one
+5,2,1,0.8147,acc + gyr,all-to-one
+5,2,2,0.8317,acc + gyr,all-to-one
+5,2,3,0.8094,acc + gyr,all-to-one
+6,2,1,0.8588,acc + gyr,one-to-one
+6,2,2,0.864,acc + gyr,one-to-one
+6,2,3,0.9054,acc + gyr,one-to-one
+6,2,1,0.76,acc + gyr,rest-to-one
+6,2,2,0.7588,acc + gyr,rest-to-one
+6,2,3,0.7728,acc + gyr,rest-to-one
+6,2,1,0.8166,acc + gyr,all-to-one
+6,2,2,0.8354,acc + gyr,all-to-one
+6,2,3,0.8517,acc + gyr,all-to-one
+7,2,1,0.8909,acc + gyr,one-to-one
+7,2,2,0.9257,acc + gyr,one-to-one
+7,2,3,0.921,acc + gyr,one-to-one
+7,2,1,0.797,acc + gyr,rest-to-one
+7,2,2,0.7987,acc + gyr,rest-to-one
+7,2,3,0.847,acc + gyr,rest-to-one
+7,2,1,0.8361,acc + gyr,all-to-one
+7,2,2,0.8653,acc + gyr,all-to-one
+7,2,3,0.8982,acc + gyr,all-to-one
+8,2,1,0.756,acc + gyr,one-to-one
+8,2,2,0.779,acc + gyr,one-to-one
+8,2,3,0.7612,acc + gyr,one-to-one
+8,2,1,0.7394,acc + gyr,rest-to-one
+8,2,2,0.765,acc + gyr,rest-to-one
+8,2,3,0.7665,acc + gyr,rest-to-one
+8,2,1,0.7431,acc + gyr,all-to-one
+8,2,2,0.7897,acc + gyr,all-to-one
+8,2,3,0.7742,acc + gyr,all-to-one
+1,2,1,0.8411,acc + near,one-to-one
+1,2,2,0.8112,acc + near,one-to-one
+1,2,3,0.8206,acc + near,one-to-one
+1,2,1,0.8045,acc + near,rest-to-one
+1,2,2,0.7886,acc + near,rest-to-one
+1,2,3,0.8433,acc + near,rest-to-one
+1,2,1,0.8564,acc + near,all-to-one
+1,2,2,0.8237,acc + near,all-to-one
+1,2,3,0.8546,acc + near,all-to-one
+2,2,1,0.9428,acc + near,one-to-one
+2,2,2,0.9476,acc + near,one-to-one
+2,2,3,0.9115,acc + near,one-to-one
+2,2,1,0.8882,acc + near,rest-to-one
+2,2,2,0.9196,acc + near,rest-to-one
+2,2,3,0.8822,acc + near,rest-to-one
+2,2,1,0.9209,acc + near,all-to-one
+2,2,2,0.9377,acc + near,all-to-one
+2,2,3,0.9152,acc + near,all-to-one
+3,2,1,0.8888,acc + near,one-to-one
+3,2,2,0.8981,acc + near,one-to-one
+3,2,3,0.8911,acc + near,one-to-one
+3,2,1,0.9027,acc + near,rest-to-one
+3,2,2,0.8921,acc + near,rest-to-one
+3,2,3,0.9204,acc + near,rest-to-one
+3,2,1,0.9028,acc + near,all-to-one
+3,2,2,0.9046,acc + near,all-to-one
+3,2,3,0.9204,acc + near,all-to-one
+4,2,1,0.9046,acc + near,one-to-one
+4,2,2,0.9037,acc + near,one-to-one
+4,2,3,0.8743,acc + near,one-to-one
+4,2,1,0.7998,acc + near,rest-to-one
+4,2,2,0.7954,acc + near,rest-to-one
+4,2,3,0.7588,acc + near,rest-to-one
+4,2,1,0.8703,acc + near,all-to-one
+4,2,2,0.8539,acc + near,all-to-one
+4,2,3,0.8354,acc + near,all-to-one
+5,2,1,0.9004,acc + near,one-to-one
+5,2,2,0.9368,acc + near,one-to-one
+5,2,3,0.869,acc + near,one-to-one
+5,2,1,0.8778,acc + near,rest-to-one
+5,2,2,0.867,acc + near,rest-to-one
+5,2,3,0.8656,acc + near,rest-to-one
+5,2,1,0.8993,acc + near,all-to-one
+5,2,2,0.9066,acc + near,all-to-one
+5,2,3,0.887,acc + near,all-to-one
+6,2,1,0.913,acc + near,one-to-one
+6,2,2,0.9192,acc + near,one-to-one
+6,2,3,0.9347,acc + near,one-to-one
+6,2,1,0.8536,acc + near,rest-to-one
+6,2,2,0.848,acc + near,rest-to-one
+6,2,3,0.8346,acc + near,rest-to-one
+6,2,1,0.8872,acc + near,all-to-one
+6,2,2,0.8902,acc + near,all-to-one
+6,2,3,0.8806,acc + near,all-to-one
+7,2,1,0.9489,acc + near,one-to-one
+7,2,2,0.9549,acc + near,one-to-one
+7,2,3,0.9542,acc + near,one-to-one
+7,2,1,0.8979,acc + near,rest-to-one
+7,2,2,0.9163,acc + near,rest-to-one
+7,2,3,0.9048,acc + near,rest-to-one
+7,2,1,0.9257,acc + near,all-to-one
+7,2,2,0.9146,acc + near,all-to-one
+7,2,3,0.9368,acc + near,all-to-one
+8,2,1,0.888,acc + near,one-to-one
+8,2,2,0.89,acc + near,one-to-one
+8,2,3,0.911,acc + near,one-to-one
+8,2,1,0.8678,acc + near,rest-to-one
+8,2,2,0.8786,acc + near,rest-to-one
+8,2,3,0.9015,acc + near,rest-to-one
+8,2,1,0.8755,acc + near,all-to-one
+8,2,2,0.8935,acc + near,all-to-one
+8,2,3,0.9224,acc + near,all-to-one
+1,2,1,0.749,acc,one-to-one
+1,2,2,0.7008,acc,one-to-one
+1,2,3,0.7003,acc,one-to-one
+1,2,1,0.6766,acc,rest-to-one
+1,2,2,0.687,acc,rest-to-one
+1,2,3,0.718,acc,rest-to-one
+1,2,1,0.7118,acc,all-to-one
+1,2,2,0.6938,acc,all-to-one
+1,2,3,0.7269,acc,all-to-one
+2,2,1,0.8998,acc,one-to-one
+2,2,2,0.9121,acc,one-to-one
+2,2,3,0.868,acc,one-to-one
+2,2,1,0.8386,acc,rest-to-one
+2,2,2,0.8427,acc,rest-to-one
+2,2,3,0.8042,acc,rest-to-one
+2,2,1,0.8826,acc,all-to-one
+2,2,2,0.8876,acc,all-to-one
+2,2,3,0.8511,acc,all-to-one
+3,2,1,0.7672,acc,one-to-one
+3,2,2,0.7981,acc,one-to-one
+3,2,3,0.8205,acc,one-to-one
+3,2,1,0.7493,acc,rest-to-one
+3,2,2,0.7653,acc,rest-to-one
+3,2,3,0.7785,acc,rest-to-one
+3,2,1,0.7622,acc,all-to-one
+3,2,2,0.7745,acc,all-to-one
+3,2,3,0.8195,acc,all-to-one
+4,2,1,0.8438,acc,one-to-one
+4,2,2,0.8091,acc,one-to-one
+4,2,3,0.821,acc,one-to-one
+4,2,1,0.6764,acc,rest-to-one
+4,2,2,0.6743,acc,rest-to-one
+4,2,3,0.655,acc,rest-to-one
+4,2,1,0.7795,acc,all-to-one
+4,2,2,0.7334,acc,all-to-one
+4,2,3,0.7693,acc,all-to-one
+5,2,1,0.8171,acc,one-to-one
+5,2,2,0.8975,acc,one-to-one
+5,2,3,0.807,acc,one-to-one
+5,2,1,0.7414,acc,rest-to-one
+5,2,2,0.7442,acc,rest-to-one
+5,2,3,0.7678,acc,rest-to-one
+5,2,1,0.7896,acc,all-to-one
+5,2,2,0.8171,acc,all-to-one
+5,2,3,0.8095,acc,all-to-one
+6,2,1,0.8416,acc,one-to-one
+6,2,2,0.8605,acc,one-to-one
+6,2,3,0.8914,acc,one-to-one
+6,2,1,0.7657,acc,rest-to-one
+6,2,2,0.7487,acc,rest-to-one
+6,2,3,0.7743,acc,rest-to-one
+6,2,1,0.807,acc,all-to-one
+6,2,2,0.8143,acc,all-to-one
+6,2,3,0.8253,acc,all-to-one
+7,2,1,0.8657,acc,one-to-one
+7,2,2,0.9115,acc,one-to-one
+7,2,3,0.8967,acc,one-to-one
+7,2,1,0.807,acc,rest-to-one
+7,2,2,0.8036,acc,rest-to-one
+7,2,3,0.8471,acc,rest-to-one
+7,2,1,0.8468,acc,all-to-one
+7,2,2,0.8491,acc,all-to-one
+7,2,3,0.8774,acc,all-to-one
+8,2,1,0.7415,acc,one-to-one
+8,2,2,0.7722,acc,one-to-one
+8,2,3,0.7677,acc,one-to-one
+8,2,1,0.7324,acc,rest-to-one
+8,2,2,0.7695,acc,rest-to-one
+8,2,3,0.7565,acc,rest-to-one
+8,2,1,0.7283,acc,all-to-one
+8,2,2,0.7798,acc,all-to-one
+8,2,3,0.7577,acc,all-to-one
+1,2,1,0.8742,gyr + near,one-to-one
+1,2,2,0.8389,gyr + near,one-to-one
+1,2,3,0.8226,gyr + near,one-to-one
+1,2,1,0.7785,gyr + near,rest-to-one
+1,2,2,0.7833,gyr + near,rest-to-one
+1,2,3,0.8657,gyr + near,rest-to-one
+1,2,1,0.8282,gyr + near,all-to-one
+1,2,2,0.821,gyr + near,all-to-one
+1,2,3,0.8855,gyr + near,all-to-one
+2,2,1,0.9443,gyr + near,one-to-one
+2,2,2,0.9509,gyr + near,one-to-one
+2,2,3,0.8796,gyr + near,one-to-one
+2,2,1,0.8862,gyr + near,rest-to-one
+2,2,2,0.8989,gyr + near,rest-to-one
+2,2,3,0.871,gyr + near,rest-to-one
+2,2,1,0.9236,gyr + near,all-to-one
+2,2,2,0.9394,gyr + near,all-to-one
+2,2,3,0.9059,gyr + near,all-to-one
+3,2,1,0.8929,gyr + near,one-to-one
+3,2,2,0.8977,gyr + near,one-to-one
+3,2,3,0.8879,gyr + near,one-to-one
+3,2,1,0.8868,gyr + near,rest-to-one
+3,2,2,0.8771,gyr + near,rest-to-one
+3,2,3,0.8832,gyr + near,rest-to-one
+3,2,1,0.89,gyr + near,all-to-one
+3,2,2,0.8822,gyr + near,all-to-one
+3,2,3,0.8957,gyr + near,all-to-one
+4,2,1,0.9297,gyr + near,one-to-one
+4,2,2,0.8959,gyr + near,one-to-one
+4,2,3,0.8577,gyr + near,one-to-one
+4,2,1,0.7958,gyr + near,rest-to-one
+4,2,2,0.7858,gyr + near,rest-to-one
+4,2,3,0.7903,gyr + near,rest-to-one
+4,2,1,0.8816,gyr + near,all-to-one
+4,2,2,0.8531,gyr + near,all-to-one
+4,2,3,0.84,gyr + near,all-to-one
+5,2,1,0.9155,gyr + near,one-to-one
+5,2,2,0.914,gyr + near,one-to-one
+5,2,3,0.8426,gyr + near,one-to-one
+5,2,1,0.8936,gyr + near,rest-to-one
+5,2,2,0.8875,gyr + near,rest-to-one
+5,2,3,0.8629,gyr + near,rest-to-one
+5,2,1,0.9054,gyr + near,all-to-one
+5,2,2,0.9024,gyr + near,all-to-one
+5,2,3,0.8746,gyr + near,all-to-one
+6,2,1,0.915,gyr + near,one-to-one
+6,2,2,0.9162,gyr + near,one-to-one
+6,2,3,0.9429,gyr + near,one-to-one
+6,2,1,0.8382,gyr + near,rest-to-one
+6,2,2,0.8499,gyr + near,rest-to-one
+6,2,3,0.8641,gyr + near,rest-to-one
+6,2,1,0.8946,gyr + near,all-to-one
+6,2,2,0.8896,gyr + near,all-to-one
+6,2,3,0.9251,gyr + near,all-to-one
+7,2,1,0.9104,gyr + near,one-to-one
+7,2,2,0.9362,gyr + near,one-to-one
+7,2,3,0.9368,gyr + near,one-to-one
+7,2,1,0.8505,gyr + near,rest-to-one
+7,2,2,0.8815,gyr + near,rest-to-one
+7,2,3,0.8886,gyr + near,rest-to-one
+7,2,1,0.9018,gyr + near,all-to-one
+7,2,2,0.9038,gyr + near,all-to-one
+7,2,3,0.9281,gyr + near,all-to-one
+8,2,1,0.8866,gyr + near,one-to-one
+8,2,2,0.8907,gyr + near,one-to-one
+8,2,3,0.9023,gyr + near,one-to-one
+8,2,1,0.8418,gyr + near,rest-to-one
+8,2,2,0.8821,gyr + near,rest-to-one
+8,2,3,0.8986,gyr + near,rest-to-one
+8,2,1,0.857,gyr + near,all-to-one
+8,2,2,0.8889,gyr + near,all-to-one
+8,2,3,0.9051,gyr + near,all-to-one
+1,2,1,0.7464,gyr,one-to-one
+1,2,2,0.7205,gyr,one-to-one
+1,2,3,0.6614,gyr,one-to-one
+1,2,1,0.66,gyr,rest-to-one
+1,2,2,0.6536,gyr,rest-to-one
+1,2,3,0.7413,gyr,rest-to-one
+1,2,1,0.694,gyr,all-to-one
+1,2,2,0.6825,gyr,all-to-one
+1,2,3,0.7546,gyr,all-to-one
+2,2,1,0.9077,gyr,one-to-one
+2,2,2,0.898,gyr,one-to-one
+2,2,3,0.8427,gyr,one-to-one
+2,2,1,0.8281,gyr,rest-to-one
+2,2,2,0.8294,gyr,rest-to-one
+2,2,3,0.8101,gyr,rest-to-one
+2,2,1,0.887,gyr,all-to-one
+2,2,2,0.8746,gyr,all-to-one
+2,2,3,0.8444,gyr,all-to-one
+3,2,1,0.7654,gyr,one-to-one
+3,2,2,0.7701,gyr,one-to-one
+3,2,3,0.7908,gyr,one-to-one
+3,2,1,0.7862,gyr,rest-to-one
+3,2,2,0.7434,gyr,rest-to-one
+3,2,3,0.7727,gyr,rest-to-one
+3,2,1,0.7941,gyr,all-to-one
+3,2,2,0.7628,gyr,all-to-one
+3,2,3,0.7916,gyr,all-to-one
+4,2,1,0.8685,gyr,one-to-one
+4,2,2,0.8547,gyr,one-to-one
+4,2,3,0.7583,gyr,one-to-one
+4,2,1,0.729,gyr,rest-to-one
+4,2,2,0.7226,gyr,rest-to-one
+4,2,3,0.7041,gyr,rest-to-one
+4,2,1,0.7962,gyr,all-to-one
+4,2,2,0.743,gyr,all-to-one
+4,2,3,0.74,gyr,all-to-one
+5,2,1,0.8446,gyr,one-to-one
+5,2,2,0.8664,gyr,one-to-one
+5,2,3,0.7965,gyr,one-to-one
+5,2,1,0.7262,gyr,rest-to-one
+5,2,2,0.7388,gyr,rest-to-one
+5,2,3,0.7217,gyr,rest-to-one
+5,2,1,0.7842,gyr,all-to-one
+5,2,2,0.8169,gyr,all-to-one
+5,2,3,0.7642,gyr,all-to-one
+6,2,1,0.8337,gyr,one-to-one
+6,2,2,0.845,gyr,one-to-one
+6,2,3,0.8589,gyr,one-to-one
+6,2,1,0.7541,gyr,rest-to-one
+6,2,2,0.744,gyr,rest-to-one
+6,2,3,0.7482,gyr,rest-to-one
+6,2,1,0.7907,gyr,all-to-one
+6,2,2,0.7847,gyr,all-to-one
+6,2,3,0.805,gyr,all-to-one
+7,2,1,0.8342,gyr,one-to-one
+7,2,2,0.8992,gyr,one-to-one
+7,2,3,0.8907,gyr,one-to-one
+7,2,1,0.7402,gyr,rest-to-one
+7,2,2,0.7813,gyr,rest-to-one
+7,2,3,0.8004,gyr,rest-to-one
+7,2,1,0.7742,gyr,all-to-one
+7,2,2,0.8203,gyr,all-to-one
+7,2,3,0.8687,gyr,all-to-one
+8,2,1,0.7511,gyr,one-to-one
+8,2,2,0.7628,gyr,one-to-one
+8,2,3,0.7773,gyr,one-to-one
+8,2,1,0.7146,gyr,rest-to-one
+8,2,2,0.7495,gyr,rest-to-one
+8,2,3,0.7873,gyr,rest-to-one
+8,2,1,0.7302,gyr,all-to-one
+8,2,2,0.7579,gyr,all-to-one
+8,2,3,0.7808,gyr,all-to-one
+1,3,1,0.8929,acc + gyr + near,one-to-one
+1,3,2,0.8964,acc + gyr + near,one-to-one
+1,3,3,0.8878,acc + gyr + near,one-to-one
+1,3,1,0.7915,acc + gyr + near,rest-to-one
+1,3,2,0.7866,acc + gyr + near,rest-to-one
+1,3,3,0.7828,acc + gyr + near,rest-to-one
+1,3,1,0.8583,acc + gyr + near,all-to-one
+1,3,2,0.8655,acc + gyr + near,all-to-one
+1,3,3,0.8331,acc + gyr + near,all-to-one
+2,3,1,0.7802,acc + gyr + near,one-to-one
+2,3,2,0.8747,acc + gyr + near,one-to-one
+2,3,3,0.8721,acc + gyr + near,one-to-one
+2,3,1,0.7558,acc + gyr + near,rest-to-one
+2,3,2,0.8443,acc + gyr + near,rest-to-one
+2,3,3,0.8513,acc + gyr + near,rest-to-one
+2,3,1,0.7674,acc + gyr + near,all-to-one
+2,3,2,0.8789,acc + gyr + near,all-to-one
+2,3,3,0.8662,acc + gyr + near,all-to-one
+3,3,1,0.8638,acc + gyr + near,one-to-one
+3,3,2,0.8804,acc + gyr + near,one-to-one
+3,3,3,0.8976,acc + gyr + near,one-to-one
+3,3,1,0.8614,acc + gyr + near,rest-to-one
+3,3,2,0.863,acc + gyr + near,rest-to-one
+3,3,3,0.8655,acc + gyr + near,rest-to-one
+3,3,1,0.8709,acc + gyr + near,all-to-one
+3,3,2,0.8784,acc + gyr + near,all-to-one
+3,3,3,0.8878,acc + gyr + near,all-to-one
+4,3,1,0.5773,acc + gyr + near,one-to-one
+4,3,2,0.8065,acc + gyr + near,one-to-one
+4,3,3,0.7708,acc + gyr + near,one-to-one
+4,3,1,0.7834,acc + gyr + near,rest-to-one
+4,3,2,0.7906,acc + gyr + near,rest-to-one
+4,3,3,0.8216,acc + gyr + near,rest-to-one
+4,3,1,0.7877,acc + gyr + near,all-to-one
+4,3,2,0.8533,acc + gyr + near,all-to-one
+4,3,3,0.8447,acc + gyr + near,all-to-one
+5,3,1,0.9365,acc + gyr + near,one-to-one
+5,3,2,0.933,acc + gyr + near,one-to-one
+5,3,3,0.8787,acc + gyr + near,one-to-one
+5,3,1,0.8852,acc + gyr + near,rest-to-one
+5,3,2,0.8704,acc + gyr + near,rest-to-one
+5,3,3,0.8551,acc + gyr + near,rest-to-one
+5,3,1,0.9442,acc + gyr + near,all-to-one
+5,3,2,0.9217,acc + gyr + near,all-to-one
+5,3,3,0.896,acc + gyr + near,all-to-one
+6,3,1,0.914,acc + gyr + near,one-to-one
+6,3,2,0.9481,acc + gyr + near,one-to-one
+6,3,3,0.9175,acc + gyr + near,one-to-one
+6,3,1,0.8659,acc + gyr + near,rest-to-one
+6,3,2,0.8758,acc + gyr + near,rest-to-one
+6,3,3,0.8243,acc + gyr + near,rest-to-one
+6,3,1,0.9018,acc + gyr + near,all-to-one
+6,3,2,0.9165,acc + gyr + near,all-to-one
+6,3,3,0.8752,acc + gyr + near,all-to-one
+7,3,1,0.9266,acc + gyr + near,one-to-one
+7,3,2,0.928,acc + gyr + near,one-to-one
+7,3,3,0.9442,acc + gyr + near,one-to-one
+7,3,1,0.8897,acc + gyr + near,rest-to-one
+7,3,2,0.8858,acc + gyr + near,rest-to-one
+7,3,3,0.8715,acc + gyr + near,rest-to-one
+7,3,1,0.9167,acc + gyr + near,all-to-one
+7,3,2,0.9398,acc + gyr + near,all-to-one
+7,3,3,0.9234,acc + gyr + near,all-to-one
+8,3,1,0.8569,acc + gyr + near,one-to-one
+8,3,2,0.8584,acc + gyr + near,one-to-one
+8,3,3,0.858,acc + gyr + near,one-to-one
+8,3,1,0.8033,acc + gyr + near,rest-to-one
+8,3,2,0.8045,acc + gyr + near,rest-to-one
+8,3,3,0.8128,acc + gyr + near,rest-to-one
+8,3,1,0.8317,acc + gyr + near,all-to-one
+8,3,2,0.8341,acc + gyr + near,all-to-one
+8,3,3,0.8509,acc + gyr + near,all-to-one
+1,3,1,0.7834,acc + gyr,one-to-one
+1,3,2,0.7897,acc + gyr,one-to-one
+1,3,3,0.78,acc + gyr,one-to-one
+1,3,1,0.6341,acc + gyr,rest-to-one
+1,3,2,0.6395,acc + gyr,rest-to-one
+1,3,3,0.6428,acc + gyr,rest-to-one
+1,3,1,0.7101,acc + gyr,all-to-one
+1,3,2,0.725,acc + gyr,all-to-one
+1,3,3,0.7213,acc + gyr,all-to-one
+2,3,1,0.6051,acc + gyr,one-to-one
+2,3,2,0.798,acc + gyr,one-to-one
+2,3,3,0.7634,acc + gyr,one-to-one
+2,3,1,0.4809,acc + gyr,rest-to-one
+2,3,2,0.6288,acc + gyr,rest-to-one
+2,3,3,0.7711,acc + gyr,rest-to-one
+2,3,1,0.5159,acc + gyr,all-to-one
+2,3,2,0.7095,acc + gyr,all-to-one
+2,3,3,0.805,acc + gyr,all-to-one
+3,3,1,0.772,acc + gyr,one-to-one
+3,3,2,0.7334,acc + gyr,one-to-one
+3,3,3,0.7657,acc + gyr,one-to-one
+3,3,1,0.6943,acc + gyr,rest-to-one
+3,3,2,0.6858,acc + gyr,rest-to-one
+3,3,3,0.7036,acc + gyr,rest-to-one
+3,3,1,0.7223,acc + gyr,all-to-one
+3,3,2,0.7275,acc + gyr,all-to-one
+3,3,3,0.7156,acc + gyr,all-to-one
+4,3,1,0.551,acc + gyr,one-to-one
+4,3,2,0.7546,acc + gyr,one-to-one
+4,3,3,0.7068,acc + gyr,one-to-one
+4,3,1,0.6869,acc + gyr,rest-to-one
+4,3,2,0.6925,acc + gyr,rest-to-one
+4,3,3,0.7292,acc + gyr,rest-to-one
+4,3,1,0.6556,acc + gyr,all-to-one
+4,3,2,0.724,acc + gyr,all-to-one
+4,3,3,0.7531,acc + gyr,all-to-one
+5,3,1,0.8673,acc + gyr,one-to-one
+5,3,2,0.872,acc + gyr,one-to-one
+5,3,3,0.7645,acc + gyr,one-to-one
+5,3,1,0.7324,acc + gyr,rest-to-one
+5,3,2,0.7343,acc + gyr,rest-to-one
+5,3,3,0.7358,acc + gyr,rest-to-one
+5,3,1,0.832,acc + gyr,all-to-one
+5,3,2,0.8302,acc + gyr,all-to-one
+5,3,3,0.7881,acc + gyr,all-to-one
+6,3,1,0.8594,acc + gyr,one-to-one
+6,3,2,0.8935,acc + gyr,one-to-one
+6,3,3,0.8634,acc + gyr,one-to-one
+6,3,1,0.7427,acc + gyr,rest-to-one
+6,3,2,0.7767,acc + gyr,rest-to-one
+6,3,3,0.6467,acc + gyr,rest-to-one
+6,3,1,0.8202,acc + gyr,all-to-one
+6,3,2,0.8393,acc + gyr,all-to-one
+6,3,3,0.7424,acc + gyr,all-to-one
+7,3,1,0.88,acc + gyr,one-to-one
+7,3,2,0.8998,acc + gyr,one-to-one
+7,3,3,0.9178,acc + gyr,one-to-one
+7,3,1,0.786,acc + gyr,rest-to-one
+7,3,2,0.7524,acc + gyr,rest-to-one
+7,3,3,0.7571,acc + gyr,rest-to-one
+7,3,1,0.8407,acc + gyr,all-to-one
+7,3,2,0.847,acc + gyr,all-to-one
+7,3,3,0.8543,acc + gyr,all-to-one
+8,3,1,0.7692,acc + gyr,one-to-one
+8,3,2,0.7682,acc + gyr,one-to-one
+8,3,3,0.7128,acc + gyr,one-to-one
+8,3,1,0.6827,acc + gyr,rest-to-one
+8,3,2,0.6683,acc + gyr,rest-to-one
+8,3,3,0.6258,acc + gyr,rest-to-one
+8,3,1,0.7129,acc + gyr,all-to-one
+8,3,2,0.7192,acc + gyr,all-to-one
+8,3,3,0.6417,acc + gyr,all-to-one
+1,3,1,0.8668,acc + near,one-to-one
+1,3,2,0.8685,acc + near,one-to-one
+1,3,3,0.864,acc + near,one-to-one
+1,3,1,0.82,acc + near,rest-to-one
+1,3,2,0.8082,acc + near,rest-to-one
+1,3,3,0.7876,acc + near,rest-to-one
+1,3,1,0.8388,acc + near,all-to-one
+1,3,2,0.8397,acc + near,all-to-one
+1,3,3,0.8243,acc + near,all-to-one
+2,3,1,0.774,acc + near,one-to-one
+2,3,2,0.8604,acc + near,one-to-one
+2,3,3,0.8488,acc + near,one-to-one
+2,3,1,0.7558,acc + near,rest-to-one
+2,3,2,0.8534,acc + near,rest-to-one
+2,3,3,0.8607,acc + near,rest-to-one
+2,3,1,0.7647,acc + near,all-to-one
+2,3,2,0.8699,acc + near,all-to-one
+2,3,3,0.8632,acc + near,all-to-one
+3,3,1,0.8497,acc + near,one-to-one
+3,3,2,0.8646,acc + near,one-to-one
+3,3,3,0.8762,acc + near,one-to-one
+3,3,1,0.8705,acc + near,rest-to-one
+3,3,2,0.8693,acc + near,rest-to-one
+3,3,3,0.8715,acc + near,rest-to-one
+3,3,1,0.8907,acc + near,all-to-one
+3,3,2,0.8709,acc + near,all-to-one
+3,3,3,0.8964,acc + near,all-to-one
+4,3,1,0.683,acc + near,one-to-one
+4,3,2,0.8584,acc + near,one-to-one
+4,3,3,0.8739,acc + near,one-to-one
+4,3,1,0.7806,acc + near,rest-to-one
+4,3,2,0.8129,acc + near,rest-to-one
+4,3,3,0.8024,acc + near,rest-to-one
+4,3,1,0.7979,acc + near,all-to-one
+4,3,2,0.8283,acc + near,all-to-one
+4,3,3,0.8483,acc + near,all-to-one
+5,3,1,0.9328,acc + near,one-to-one
+5,3,2,0.9317,acc + near,one-to-one
+5,3,3,0.8588,acc + near,one-to-one
+5,3,1,0.8694,acc + near,rest-to-one
+5,3,2,0.8545,acc + near,rest-to-one
+5,3,3,0.8369,acc + near,rest-to-one
+5,3,1,0.929,acc + near,all-to-one
+5,3,2,0.9058,acc + near,all-to-one
+5,3,3,0.8761,acc + near,all-to-one
+6,3,1,0.8658,acc + near,one-to-one
+6,3,2,0.9151,acc + near,one-to-one
+6,3,3,0.874,acc + near,one-to-one
+6,3,1,0.8521,acc + near,rest-to-one
+6,3,2,0.8753,acc + near,rest-to-one
+6,3,3,0.8095,acc + near,rest-to-one
+6,3,1,0.8674,acc + near,all-to-one
+6,3,2,0.9091,acc + near,all-to-one
+6,3,3,0.8383,acc + near,all-to-one
+7,3,1,0.9241,acc + near,one-to-one
+7,3,2,0.9393,acc + near,one-to-one
+7,3,3,0.915,acc + near,one-to-one
+7,3,1,0.882,acc + near,rest-to-one
+7,3,2,0.8687,acc + near,rest-to-one
+7,3,3,0.8556,acc + near,rest-to-one
+7,3,1,0.9122,acc + near,all-to-one
+7,3,2,0.9274,acc + near,all-to-one
+7,3,3,0.9032,acc + near,all-to-one
+8,3,1,0.8615,acc + near,one-to-one
+8,3,2,0.8134,acc + near,one-to-one
+8,3,3,0.8563,acc + near,one-to-one
+8,3,1,0.7834,acc + near,rest-to-one
+8,3,2,0.7901,acc + near,rest-to-one
+8,3,3,0.8127,acc + near,rest-to-one
+8,3,1,0.8221,acc + near,all-to-one
+8,3,2,0.824,acc + near,all-to-one
+8,3,3,0.8449,acc + near,all-to-one
+1,3,1,0.7292,acc,one-to-one
+1,3,2,0.7237,acc,one-to-one
+1,3,3,0.7261,acc,one-to-one
+1,3,1,0.6687,acc,rest-to-one
+1,3,2,0.6578,acc,rest-to-one
+1,3,3,0.6218,acc,rest-to-one
+1,3,1,0.6889,acc,all-to-one
+1,3,2,0.713,acc,all-to-one
+1,3,3,0.6827,acc,all-to-one
+2,3,1,0.6017,acc,one-to-one
+2,3,2,0.7547,acc,one-to-one
+2,3,3,0.7216,acc,one-to-one
+2,3,1,0.5007,acc,rest-to-one
+2,3,2,0.652,acc,rest-to-one
+2,3,3,0.7455,acc,rest-to-one
+2,3,1,0.5431,acc,all-to-one
+2,3,2,0.7207,acc,all-to-one
+2,3,3,0.7845,acc,all-to-one
+3,3,1,0.721,acc,one-to-one
+3,3,2,0.6993,acc,one-to-one
+3,3,3,0.7189,acc,one-to-one
+3,3,1,0.6645,acc,rest-to-one
+3,3,2,0.667,acc,rest-to-one
+3,3,3,0.7009,acc,rest-to-one
+3,3,1,0.6894,acc,all-to-one
+3,3,2,0.6837,acc,all-to-one
+3,3,3,0.736,acc,all-to-one
+4,3,1,0.5674,acc,one-to-one
+4,3,2,0.7617,acc,one-to-one
+4,3,3,0.7555,acc,one-to-one
+4,3,1,0.6843,acc,rest-to-one
+4,3,2,0.6667,acc,rest-to-one
+4,3,3,0.6867,acc,rest-to-one
+4,3,1,0.6829,acc,all-to-one
+4,3,2,0.6863,acc,all-to-one
+4,3,3,0.7353,acc,all-to-one
+5,3,1,0.8285,acc,one-to-one
+5,3,2,0.8294,acc,one-to-one
+5,3,3,0.7561,acc,one-to-one
+5,3,1,0.7122,acc,rest-to-one
+5,3,2,0.7084,acc,rest-to-one
+5,3,3,0.7079,acc,rest-to-one
+5,3,1,0.7952,acc,all-to-one
+5,3,2,0.7661,acc,all-to-one
+5,3,3,0.7515,acc,all-to-one
+6,3,1,0.8023,acc,one-to-one
+6,3,2,0.8317,acc,one-to-one
+6,3,3,0.7825,acc,one-to-one
+6,3,1,0.7,acc,rest-to-one
+6,3,2,0.6772,acc,rest-to-one
+6,3,3,0.6132,acc,rest-to-one
+6,3,1,0.7615,acc,all-to-one
+6,3,2,0.7617,acc,all-to-one
+6,3,3,0.7002,acc,all-to-one
+7,3,1,0.8917,acc,one-to-one
+7,3,2,0.8766,acc,one-to-one
+7,3,3,0.8858,acc,one-to-one
+7,3,1,0.7874,acc,rest-to-one
+7,3,2,0.7332,acc,rest-to-one
+7,3,3,0.7472,acc,rest-to-one
+7,3,1,0.8266,acc,all-to-one
+7,3,2,0.8081,acc,all-to-one
+7,3,3,0.8365,acc,all-to-one
+8,3,1,0.711,acc,one-to-one
+8,3,2,0.7215,acc,one-to-one
+8,3,3,0.691,acc,one-to-one
+8,3,1,0.6269,acc,rest-to-one
+8,3,2,0.6459,acc,rest-to-one
+8,3,3,0.6168,acc,rest-to-one
+8,3,1,0.6498,acc,all-to-one
+8,3,2,0.6748,acc,all-to-one
+8,3,3,0.6393,acc,all-to-one
+1,3,1,0.8632,gyr + near,one-to-one
+1,3,2,0.8969,gyr + near,one-to-one
+1,3,3,0.8573,gyr + near,one-to-one
+1,3,1,0.7755,gyr + near,rest-to-one
+1,3,2,0.7683,gyr + near,rest-to-one
+1,3,3,0.7567,gyr + near,rest-to-one
+1,3,1,0.8304,gyr + near,all-to-one
+1,3,2,0.8318,gyr + near,all-to-one
+1,3,3,0.8177,gyr + near,all-to-one
+2,3,1,0.7694,gyr + near,one-to-one
+2,3,2,0.8544,gyr + near,one-to-one
+2,3,3,0.845,gyr + near,one-to-one
+2,3,1,0.7469,gyr + near,rest-to-one
+2,3,2,0.825,gyr + near,rest-to-one
+2,3,3,0.8426,gyr + near,rest-to-one
+2,3,1,0.7634,gyr + near,all-to-one
+2,3,2,0.8373,gyr + near,all-to-one
+2,3,3,0.8506,gyr + near,all-to-one
+3,3,1,0.8399,gyr + near,one-to-one
+3,3,2,0.8727,gyr + near,one-to-one
+3,3,3,0.8731,gyr + near,one-to-one
+3,3,1,0.8446,gyr + near,rest-to-one
+3,3,2,0.8609,gyr + near,rest-to-one
+3,3,3,0.8589,gyr + near,rest-to-one
+3,3,1,0.8613,gyr + near,all-to-one
+3,3,2,0.883,gyr + near,all-to-one
+3,3,3,0.8855,gyr + near,all-to-one
+4,3,1,0.6377,gyr + near,one-to-one
+4,3,2,0.7723,gyr + near,one-to-one
+4,3,3,0.7521,gyr + near,one-to-one
+4,3,1,0.7568,gyr + near,rest-to-one
+4,3,2,0.7615,gyr + near,rest-to-one
+4,3,3,0.7881,gyr + near,rest-to-one
+4,3,1,0.7782,gyr + near,all-to-one
+4,3,2,0.8092,gyr + near,all-to-one
+4,3,3,0.8201,gyr + near,all-to-one
+5,3,1,0.9315,gyr + near,one-to-one
+5,3,2,0.9218,gyr + near,one-to-one
+5,3,3,0.884,gyr + near,one-to-one
+5,3,1,0.8752,gyr + near,rest-to-one
+5,3,2,0.8716,gyr + near,rest-to-one
+5,3,3,0.8402,gyr + near,rest-to-one
+5,3,1,0.9274,gyr + near,all-to-one
+5,3,2,0.9117,gyr + near,all-to-one
+5,3,3,0.8752,gyr + near,all-to-one
+6,3,1,0.9063,gyr + near,one-to-one
+6,3,2,0.9429,gyr + near,one-to-one
+6,3,3,0.9113,gyr + near,one-to-one
+6,3,1,0.8524,gyr + near,rest-to-one
+6,3,2,0.8521,gyr + near,rest-to-one
+6,3,3,0.8614,gyr + near,rest-to-one
+6,3,1,0.8963,gyr + near,all-to-one
+6,3,2,0.8908,gyr + near,all-to-one
+6,3,3,0.8897,gyr + near,all-to-one
+7,3,1,0.9163,gyr + near,one-to-one
+7,3,2,0.9505,gyr + near,one-to-one
+7,3,3,0.938,gyr + near,one-to-one
+7,3,1,0.8695,gyr + near,rest-to-one
+7,3,2,0.8698,gyr + near,rest-to-one
+7,3,3,0.8543,gyr + near,rest-to-one
+7,3,1,0.896,gyr + near,all-to-one
+7,3,2,0.9081,gyr + near,all-to-one
+7,3,3,0.8788,gyr + near,all-to-one
+8,3,1,0.8505,gyr + near,one-to-one
+8,3,2,0.8697,gyr + near,one-to-one
+8,3,3,0.8432,gyr + near,one-to-one
+8,3,1,0.8285,gyr + near,rest-to-one
+8,3,2,0.839,gyr + near,rest-to-one
+8,3,3,0.8315,gyr + near,rest-to-one
+8,3,1,0.8415,gyr + near,all-to-one
+8,3,2,0.861,gyr + near,all-to-one
+8,3,3,0.8586,gyr + near,all-to-one
+1,3,1,0.7549,gyr,one-to-one
+1,3,2,0.7663,gyr,one-to-one
+1,3,3,0.7677,gyr,one-to-one
+1,3,1,0.5876,gyr,rest-to-one
+1,3,2,0.6205,gyr,rest-to-one
+1,3,3,0.6415,gyr,rest-to-one
+1,3,1,0.6861,gyr,all-to-one
+1,3,2,0.7023,gyr,all-to-one
+1,3,3,0.7079,gyr,all-to-one
+2,3,1,0.5715,gyr,one-to-one
+2,3,2,0.7212,gyr,one-to-one
+2,3,3,0.6867,gyr,one-to-one
+2,3,1,0.4636,gyr,rest-to-one
+2,3,2,0.5862,gyr,rest-to-one
+2,3,3,0.7635,gyr,rest-to-one
+2,3,1,0.4799,gyr,all-to-one
+2,3,2,0.6445,gyr,all-to-one
+2,3,3,0.7776,gyr,all-to-one
+3,3,1,0.7344,gyr,one-to-one
+3,3,2,0.7338,gyr,one-to-one
+3,3,3,0.7533,gyr,one-to-one
+3,3,1,0.6397,gyr,rest-to-one
+3,3,2,0.6731,gyr,rest-to-one
+3,3,3,0.6612,gyr,rest-to-one
+3,3,1,0.6711,gyr,all-to-one
+3,3,2,0.7059,gyr,all-to-one
+3,3,3,0.6902,gyr,all-to-one
+4,3,1,0.5544,gyr,one-to-one
+4,3,2,0.6487,gyr,one-to-one
+4,3,3,0.6392,gyr,one-to-one
+4,3,1,0.6728,gyr,rest-to-one
+4,3,2,0.7081,gyr,rest-to-one
+4,3,3,0.6993,gyr,rest-to-one
+4,3,1,0.6537,gyr,all-to-one
+4,3,2,0.7326,gyr,all-to-one
+4,3,3,0.6931,gyr,all-to-one
+5,3,1,0.8462,gyr,one-to-one
+5,3,2,0.8453,gyr,one-to-one
+5,3,3,0.7576,gyr,one-to-one
+5,3,1,0.7119,gyr,rest-to-one
+5,3,2,0.7062,gyr,rest-to-one
+5,3,3,0.6963,gyr,rest-to-one
+5,3,1,0.8048,gyr,all-to-one
+5,3,2,0.8081,gyr,all-to-one
+5,3,3,0.7503,gyr,all-to-one
+6,3,1,0.8581,gyr,one-to-one
+6,3,2,0.8684,gyr,one-to-one
+6,3,3,0.8359,gyr,one-to-one
+6,3,1,0.7092,gyr,rest-to-one
+6,3,2,0.7449,gyr,rest-to-one
+6,3,3,0.683,gyr,rest-to-one
+6,3,1,0.7777,gyr,all-to-one
+6,3,2,0.7814,gyr,all-to-one
+6,3,3,0.7721,gyr,all-to-one
+7,3,1,0.7537,gyr,one-to-one
+7,3,2,0.8883,gyr,one-to-one
+7,3,3,0.8677,gyr,one-to-one
+7,3,1,0.7191,gyr,rest-to-one
+7,3,2,0.6906,gyr,rest-to-one
+7,3,3,0.6844,gyr,rest-to-one
+7,3,1,0.7685,gyr,all-to-one
+7,3,2,0.7875,gyr,all-to-one
+7,3,3,0.7714,gyr,all-to-one
+8,3,1,0.7546,gyr,one-to-one
+8,3,2,0.7518,gyr,one-to-one
+8,3,3,0.6932,gyr,one-to-one
+8,3,1,0.6979,gyr,rest-to-one
+8,3,2,0.6947,gyr,rest-to-one
+8,3,3,0.6181,gyr,rest-to-one
+8,3,1,0.7055,gyr,all-to-one
+8,3,2,0.726,gyr,all-to-one
+8,3,3,0.6429,gyr,all-to-one
+1,4,1,0.8063,acc + gyr + near,one-to-one
+1,4,2,0.7921,acc + gyr + near,one-to-one
+1,4,3,0.778,acc + gyr + near,one-to-one
+1,4,4,0.7927,acc + gyr + near,one-to-one
+1,4,1,0.76,acc + gyr + near,rest-to-one
+1,4,2,0.7591,acc + gyr + near,rest-to-one
+1,4,3,0.7715,acc + gyr + near,rest-to-one
+1,4,4,0.7822,acc + gyr + near,rest-to-one
+1,4,1,0.7749,acc + gyr + near,all-to-one
+1,4,2,0.7922,acc + gyr + near,all-to-one
+1,4,3,0.8035,acc + gyr + near,all-to-one
+1,4,4,0.8008,acc + gyr + near,all-to-one
+2,4,1,0.7916,acc + gyr + near,one-to-one
+2,4,2,0.8343,acc + gyr + near,one-to-one
+2,4,3,0.8161,acc + gyr + near,one-to-one
+2,4,4,0.8087,acc + gyr + near,one-to-one
+2,4,1,0.7843,acc + gyr + near,rest-to-one
+2,4,2,0.7939,acc + gyr + near,rest-to-one
+2,4,3,0.7976,acc + gyr + near,rest-to-one
+2,4,4,0.8147,acc + gyr + near,rest-to-one
+2,4,1,0.7844,acc + gyr + near,all-to-one
+2,4,2,0.8057,acc + gyr + near,all-to-one
+2,4,3,0.8088,acc + gyr + near,all-to-one
+2,4,4,0.8165,acc + gyr + near,all-to-one
+3,4,1,0.7539,acc + gyr + near,one-to-one
+3,4,2,0.7858,acc + gyr + near,one-to-one
+3,4,3,0.791,acc + gyr + near,one-to-one
+3,4,4,0.794,acc + gyr + near,one-to-one
+3,4,1,0.7738,acc + gyr + near,rest-to-one
+3,4,2,0.7955,acc + gyr + near,rest-to-one
+3,4,3,0.7967,acc + gyr + near,rest-to-one
+3,4,4,0.7839,acc + gyr + near,rest-to-one
+3,4,1,0.7758,acc + gyr + near,all-to-one
+3,4,2,0.8122,acc + gyr + near,all-to-one
+3,4,3,0.7994,acc + gyr + near,all-to-one
+3,4,4,0.7956,acc + gyr + near,all-to-one
+4,4,1,0.7865,acc + gyr + near,one-to-one
+4,4,2,0.7793,acc + gyr + near,one-to-one
+4,4,1,0.7874,acc + gyr + near,rest-to-one
+4,4,2,0.7963,acc + gyr + near,rest-to-one
+4,4,1,0.8005,acc + gyr + near,all-to-one
+4,4,2,0.806,acc + gyr + near,all-to-one
+5,4,1,0.8683,acc + gyr + near,one-to-one
+5,4,2,0.8472,acc + gyr + near,one-to-one
+5,4,3,0.8815,acc + gyr + near,one-to-one
+5,4,4,0.8637,acc + gyr + near,one-to-one
+5,4,1,0.8425,acc + gyr + near,rest-to-one
+5,4,2,0.7888,acc + gyr + near,rest-to-one
+5,4,3,0.8299,acc + gyr + near,rest-to-one
+5,4,4,0.8242,acc + gyr + near,rest-to-one
+5,4,1,0.8617,acc + gyr + near,all-to-one
+5,4,2,0.8295,acc + gyr + near,all-to-one
+5,4,3,0.8676,acc + gyr + near,all-to-one
+5,4,4,0.8453,acc + gyr + near,all-to-one
+6,4,1,0.7732,acc + gyr + near,one-to-one
+6,4,2,0.7518,acc + gyr + near,one-to-one
+6,4,3,0.7744,acc + gyr + near,one-to-one
+6,4,4,0.7937,acc + gyr + near,one-to-one
+6,4,1,0.7488,acc + gyr + near,rest-to-one
+6,4,2,0.7723,acc + gyr + near,rest-to-one
+6,4,3,0.7667,acc + gyr + near,rest-to-one
+6,4,4,0.7769,acc + gyr + near,rest-to-one
+6,4,1,0.7633,acc + gyr + near,all-to-one
+6,4,2,0.7748,acc + gyr + near,all-to-one
+6,4,3,0.7982,acc + gyr + near,all-to-one
+6,4,4,0.7832,acc + gyr + near,all-to-one
+7,4,1,0.879,acc + gyr + near,one-to-one
+7,4,2,0.8711,acc + gyr + near,one-to-one
+7,4,3,0.8846,acc + gyr + near,one-to-one
+7,4,4,0.7543,acc + gyr + near,one-to-one
+7,4,1,0.7911,acc + gyr + near,rest-to-one
+7,4,2,0.7859,acc + gyr + near,rest-to-one
+7,4,3,0.7831,acc + gyr + near,rest-to-one
+7,4,4,0.7768,acc + gyr + near,rest-to-one
+7,4,1,0.8297,acc + gyr + near,all-to-one
+7,4,2,0.8391,acc + gyr + near,all-to-one
+7,4,3,0.8435,acc + gyr + near,all-to-one
+7,4,4,0.8095,acc + gyr + near,all-to-one
+8,4,1,0.7842,acc + gyr + near,one-to-one
+8,4,2,0.7705,acc + gyr + near,one-to-one
+8,4,3,0.787,acc + gyr + near,one-to-one
+8,4,4,0.7881,acc + gyr + near,one-to-one
+8,4,1,0.7709,acc + gyr + near,rest-to-one
+8,4,2,0.7712,acc + gyr + near,rest-to-one
+8,4,3,0.7874,acc + gyr + near,rest-to-one
+8,4,4,0.7886,acc + gyr + near,rest-to-one
+8,4,1,0.7957,acc + gyr + near,all-to-one
+8,4,2,0.7807,acc + gyr + near,all-to-one
+8,4,3,0.8064,acc + gyr + near,all-to-one
+8,4,4,0.7946,acc + gyr + near,all-to-one
+1,4,1,0.6231,acc + gyr,one-to-one
+1,4,2,0.626,acc + gyr,one-to-one
+1,4,3,0.5931,acc + gyr,one-to-one
+1,4,4,0.6163,acc + gyr,one-to-one
+1,4,1,0.6205,acc + gyr,rest-to-one
+1,4,2,0.6062,acc + gyr,rest-to-one
+1,4,3,0.6091,acc + gyr,rest-to-one
+1,4,4,0.6107,acc + gyr,rest-to-one
+1,4,1,0.6236,acc + gyr,all-to-one
+1,4,2,0.6232,acc + gyr,all-to-one
+1,4,3,0.6172,acc + gyr,all-to-one
+1,4,4,0.629,acc + gyr,all-to-one
+2,4,1,0.6208,acc + gyr,one-to-one
+2,4,2,0.6555,acc + gyr,one-to-one
+2,4,3,0.6293,acc + gyr,one-to-one
+2,4,4,0.5942,acc + gyr,one-to-one
+2,4,1,0.6203,acc + gyr,rest-to-one
+2,4,2,0.595,acc + gyr,rest-to-one
+2,4,3,0.6449,acc + gyr,rest-to-one
+2,4,4,0.6786,acc + gyr,rest-to-one
+2,4,1,0.648,acc + gyr,all-to-one
+2,4,2,0.6292,acc + gyr,all-to-one
+2,4,3,0.6678,acc + gyr,all-to-one
+2,4,4,0.6573,acc + gyr,all-to-one
+3,4,1,0.5477,acc + gyr,one-to-one
+3,4,2,0.6101,acc + gyr,one-to-one
+3,4,3,0.6254,acc + gyr,one-to-one
+3,4,4,0.6495,acc + gyr,one-to-one
+3,4,1,0.5835,acc + gyr,rest-to-one
+3,4,2,0.6354,acc + gyr,rest-to-one
+3,4,3,0.6108,acc + gyr,rest-to-one
+3,4,4,0.5932,acc + gyr,rest-to-one
+3,4,1,0.5782,acc + gyr,all-to-one
+3,4,2,0.6406,acc + gyr,all-to-one
+3,4,3,0.6107,acc + gyr,all-to-one
+3,4,4,0.6187,acc + gyr,all-to-one
+4,4,1,0.639,acc + gyr,one-to-one
+4,4,2,0.6212,acc + gyr,one-to-one
+4,4,1,0.654,acc + gyr,rest-to-one
+4,4,2,0.6296,acc + gyr,rest-to-one
+4,4,1,0.6369,acc + gyr,all-to-one
+4,4,2,0.6265,acc + gyr,all-to-one
+5,4,1,0.7561,acc + gyr,one-to-one
+5,4,2,0.6875,acc + gyr,one-to-one
+5,4,3,0.7339,acc + gyr,one-to-one
+5,4,4,0.7528,acc + gyr,one-to-one
+5,4,1,0.6781,acc + gyr,rest-to-one
+5,4,2,0.5397,acc + gyr,rest-to-one
+5,4,3,0.6503,acc + gyr,rest-to-one
+5,4,4,0.6501,acc + gyr,rest-to-one
+5,4,1,0.7388,acc + gyr,all-to-one
+5,4,2,0.6215,acc + gyr,all-to-one
+5,4,3,0.6913,acc + gyr,all-to-one
+5,4,4,0.709,acc + gyr,all-to-one
+6,4,1,0.5952,acc + gyr,one-to-one
+6,4,2,0.5778,acc + gyr,one-to-one
+6,4,3,0.5917,acc + gyr,one-to-one
+6,4,4,0.6155,acc + gyr,one-to-one
+6,4,1,0.5817,acc + gyr,rest-to-one
+6,4,2,0.5725,acc + gyr,rest-to-one
+6,4,3,0.6012,acc + gyr,rest-to-one
+6,4,4,0.6206,acc + gyr,rest-to-one
+6,4,1,0.6161,acc + gyr,all-to-one
+6,4,2,0.5976,acc + gyr,all-to-one
+6,4,3,0.6359,acc + gyr,all-to-one
+6,4,4,0.637,acc + gyr,all-to-one
+7,4,1,0.7726,acc + gyr,one-to-one
+7,4,2,0.7784,acc + gyr,one-to-one
+7,4,3,0.7806,acc + gyr,one-to-one
+7,4,4,0.6083,acc + gyr,one-to-one
+7,4,1,0.6848,acc + gyr,rest-to-one
+7,4,2,0.6658,acc + gyr,rest-to-one
+7,4,3,0.6526,acc + gyr,rest-to-one
+7,4,4,0.6034,acc + gyr,rest-to-one
+7,4,1,0.7654,acc + gyr,all-to-one
+7,4,2,0.7484,acc + gyr,all-to-one
+7,4,3,0.7618,acc + gyr,all-to-one
+7,4,4,0.6014,acc + gyr,all-to-one
+8,4,1,0.5822,acc + gyr,one-to-one
+8,4,2,0.6483,acc + gyr,one-to-one
+8,4,3,0.5795,acc + gyr,one-to-one
+8,4,4,0.5827,acc + gyr,one-to-one
+8,4,1,0.5972,acc + gyr,rest-to-one
+8,4,2,0.6357,acc + gyr,rest-to-one
+8,4,3,0.6463,acc + gyr,rest-to-one
+8,4,4,0.6214,acc + gyr,rest-to-one
+8,4,1,0.625,acc + gyr,all-to-one
+8,4,2,0.63,acc + gyr,all-to-one
+8,4,3,0.6633,acc + gyr,all-to-one
+8,4,4,0.649,acc + gyr,all-to-one
+1,4,1,0.7982,acc + near,one-to-one
+1,4,2,0.7856,acc + near,one-to-one
+1,4,3,0.7752,acc + near,one-to-one
+1,4,4,0.7939,acc + near,one-to-one
+1,4,1,0.7524,acc + near,rest-to-one
+1,4,2,0.7652,acc + near,rest-to-one
+1,4,3,0.7709,acc + near,rest-to-one
+1,4,4,0.794,acc + near,rest-to-one
+1,4,1,0.7797,acc + near,all-to-one
+1,4,2,0.7686,acc + near,all-to-one
+1,4,3,0.7865,acc + near,all-to-one
+1,4,4,0.8037,acc + near,all-to-one
+2,4,1,0.7878,acc + near,one-to-one
+2,4,2,0.8256,acc + near,one-to-one
+2,4,3,0.8023,acc + near,one-to-one
+2,4,4,0.7763,acc + near,one-to-one
+2,4,1,0.7877,acc + near,rest-to-one
+2,4,2,0.8057,acc + near,rest-to-one
+2,4,3,0.7992,acc + near,rest-to-one
+2,4,4,0.8105,acc + near,rest-to-one
+2,4,1,0.7923,acc + near,all-to-one
+2,4,2,0.8187,acc + near,all-to-one
+2,4,3,0.8004,acc + near,all-to-one
+2,4,4,0.8154,acc + near,all-to-one
+3,4,1,0.7328,acc + near,one-to-one
+3,4,2,0.7985,acc + near,one-to-one
+3,4,3,0.7844,acc + near,one-to-one
+3,4,4,0.7822,acc + near,one-to-one
+3,4,1,0.7585,acc + near,rest-to-one
+3,4,2,0.7887,acc + near,rest-to-one
+3,4,3,0.7783,acc + near,rest-to-one
+3,4,4,0.7805,acc + near,rest-to-one
+3,4,1,0.7598,acc + near,all-to-one
+3,4,2,0.8011,acc + near,all-to-one
+3,4,3,0.8082,acc + near,all-to-one
+3,4,4,0.7856,acc + near,all-to-one
+4,4,1,0.782,acc + near,one-to-one
+4,4,2,0.8327,acc + near,one-to-one
+4,4,1,0.777,acc + near,rest-to-one
+4,4,2,0.795,acc + near,rest-to-one
+4,4,1,0.788,acc + near,all-to-one
+4,4,2,0.8051,acc + near,all-to-one
+5,4,1,0.8568,acc + near,one-to-one
+5,4,2,0.8332,acc + near,one-to-one
+5,4,3,0.8646,acc + near,one-to-one
+5,4,4,0.8626,acc + near,one-to-one
+5,4,1,0.8362,acc + near,rest-to-one
+5,4,2,0.7889,acc + near,rest-to-one
+5,4,3,0.8195,acc + near,rest-to-one
+5,4,4,0.8214,acc + near,rest-to-one
+5,4,1,0.8637,acc + near,all-to-one
+5,4,2,0.8112,acc + near,all-to-one
+5,4,3,0.8631,acc + near,all-to-one
+5,4,4,0.8469,acc + near,all-to-one
+6,4,1,0.7593,acc + near,one-to-one
+6,4,2,0.7369,acc + near,one-to-one
+6,4,3,0.7668,acc + near,one-to-one
+6,4,4,0.7916,acc + near,one-to-one
+6,4,1,0.7519,acc + near,rest-to-one
+6,4,2,0.7781,acc + near,rest-to-one
+6,4,3,0.7618,acc + near,rest-to-one
+6,4,4,0.7628,acc + near,rest-to-one
+6,4,1,0.7536,acc + near,all-to-one
+6,4,2,0.787,acc + near,all-to-one
+6,4,3,0.7778,acc + near,all-to-one
+6,4,4,0.7739,acc + near,all-to-one
+7,4,1,0.8342,acc + near,one-to-one
+7,4,2,0.8581,acc + near,one-to-one
+7,4,3,0.8578,acc + near,one-to-one
+7,4,4,0.7905,acc + near,one-to-one
+7,4,1,0.7827,acc + near,rest-to-one
+7,4,2,0.7686,acc + near,rest-to-one
+7,4,3,0.7775,acc + near,rest-to-one
+7,4,4,0.7552,acc + near,rest-to-one
+7,4,1,0.8174,acc + near,all-to-one
+7,4,2,0.8284,acc + near,all-to-one
+7,4,3,0.8256,acc + near,all-to-one
+7,4,4,0.7992,acc + near,all-to-one
+8,4,1,0.7684,acc + near,one-to-one
+8,4,2,0.7502,acc + near,one-to-one
+8,4,3,0.774,acc + near,one-to-one
+8,4,4,0.7792,acc + near,one-to-one
+8,4,1,0.7738,acc + near,rest-to-one
+8,4,2,0.7683,acc + near,rest-to-one
+8,4,3,0.7936,acc + near,rest-to-one
+8,4,4,0.7894,acc + near,rest-to-one
+8,4,1,0.7935,acc + near,all-to-one
+8,4,2,0.7842,acc + near,all-to-one
+8,4,3,0.8042,acc + near,all-to-one
+8,4,4,0.7887,acc + near,all-to-one
+1,4,1,0.6198,acc,one-to-one
+1,4,2,0.5855,acc,one-to-one
+1,4,3,0.5817,acc,one-to-one
+1,4,4,0.6161,acc,one-to-one
+1,4,1,0.629,acc,rest-to-one
+1,4,2,0.627,acc,rest-to-one
+1,4,3,0.6229,acc,rest-to-one
+1,4,4,0.6293,acc,rest-to-one
+1,4,1,0.6302,acc,all-to-one
+1,4,2,0.6282,acc,all-to-one
+1,4,3,0.6333,acc,all-to-one
+1,4,4,0.6341,acc,all-to-one
+2,4,1,0.5963,acc,one-to-one
+2,4,2,0.5993,acc,one-to-one
+2,4,3,0.6136,acc,one-to-one
+2,4,4,0.5964,acc,one-to-one
+2,4,1,0.6138,acc,rest-to-one
+2,4,2,0.6001,acc,rest-to-one
+2,4,3,0.6532,acc,rest-to-one
+2,4,4,0.6561,acc,rest-to-one
+2,4,1,0.6275,acc,all-to-one
+2,4,2,0.6232,acc,all-to-one
+2,4,3,0.6543,acc,all-to-one
+2,4,4,0.664,acc,all-to-one
+3,4,1,0.5316,acc,one-to-one
+3,4,2,0.6081,acc,one-to-one
+3,4,3,0.6242,acc,one-to-one
+3,4,4,0.6051,acc,one-to-one
+3,4,1,0.5979,acc,rest-to-one
+3,4,2,0.6313,acc,rest-to-one
+3,4,3,0.5907,acc,rest-to-one
+3,4,4,0.5993,acc,rest-to-one
+3,4,1,0.5921,acc,all-to-one
+3,4,2,0.6421,acc,all-to-one
+3,4,3,0.5978,acc,all-to-one
+3,4,4,0.6101,acc,all-to-one
+4,4,1,0.6203,acc,one-to-one
+4,4,2,0.6396,acc,one-to-one
+4,4,1,0.612,acc,rest-to-one
+4,4,2,0.6202,acc,rest-to-one
+4,4,1,0.6456,acc,all-to-one
+4,4,2,0.6417,acc,all-to-one
+5,4,1,0.7218,acc,one-to-one
+5,4,2,0.6476,acc,one-to-one
+5,4,3,0.6848,acc,one-to-one
+5,4,4,0.7174,acc,one-to-one
+5,4,1,0.648,acc,rest-to-one
+5,4,2,0.5517,acc,rest-to-one
+5,4,3,0.638,acc,rest-to-one
+5,4,4,0.6202,acc,rest-to-one
+5,4,1,0.6771,acc,all-to-one
+5,4,2,0.5903,acc,all-to-one
+5,4,3,0.6967,acc,all-to-one
+5,4,4,0.6701,acc,all-to-one
+6,4,1,0.5994,acc,one-to-one
+6,4,2,0.5564,acc,one-to-one
+6,4,3,0.6141,acc,one-to-one
+6,4,4,0.6038,acc,one-to-one
+6,4,1,0.5871,acc,rest-to-one
+6,4,2,0.5847,acc,rest-to-one
+6,4,3,0.6136,acc,rest-to-one
+6,4,4,0.637,acc,rest-to-one
+6,4,1,0.6336,acc,all-to-one
+6,4,2,0.6021,acc,all-to-one
+6,4,3,0.6481,acc,all-to-one
+6,4,4,0.6463,acc,all-to-one
+7,4,1,0.756,acc,one-to-one
+7,4,2,0.7373,acc,one-to-one
+7,4,3,0.7568,acc,one-to-one
+7,4,4,0.6317,acc,one-to-one
+7,4,1,0.6582,acc,rest-to-one
+7,4,2,0.663,acc,rest-to-one
+7,4,3,0.6301,acc,rest-to-one
+7,4,4,0.6102,acc,rest-to-one
+7,4,1,0.741,acc,all-to-one
+7,4,2,0.7291,acc,all-to-one
+7,4,3,0.7138,acc,all-to-one
+7,4,4,0.6566,acc,all-to-one
+8,4,1,0.5959,acc,one-to-one
+8,4,2,0.5791,acc,one-to-one
+8,4,3,0.6417,acc,one-to-one
+8,4,4,0.597,acc,one-to-one
+8,4,1,0.6133,acc,rest-to-one
+8,4,2,0.6429,acc,rest-to-one
+8,4,3,0.6786,acc,rest-to-one
+8,4,4,0.6472,acc,rest-to-one
+8,4,1,0.6234,acc,all-to-one
+8,4,2,0.6614,acc,all-to-one
+8,4,3,0.6751,acc,all-to-one
+8,4,4,0.6346,acc,all-to-one
+1,4,1,0.783,gyr + near,one-to-one
+1,4,2,0.7828,gyr + near,one-to-one
+1,4,3,0.7803,gyr + near,one-to-one
+1,4,4,0.7964,gyr + near,one-to-one
+1,4,1,0.7637,gyr + near,rest-to-one
+1,4,2,0.7722,gyr + near,rest-to-one
+1,4,3,0.7824,gyr + near,rest-to-one
+1,4,4,0.7817,gyr + near,rest-to-one
+1,4,1,0.7682,gyr + near,all-to-one
+1,4,2,0.784,gyr + near,all-to-one
+1,4,3,0.7867,gyr + near,all-to-one
+1,4,4,0.8057,gyr + near,all-to-one
+2,4,1,0.804,gyr + near,one-to-one
+2,4,2,0.8119,gyr + near,one-to-one
+2,4,3,0.8268,gyr + near,one-to-one
+2,4,4,0.8241,gyr + near,one-to-one
+2,4,1,0.7791,gyr + near,rest-to-one
+2,4,2,0.7865,gyr + near,rest-to-one
+2,4,3,0.8161,gyr + near,rest-to-one
+2,4,4,0.8146,gyr + near,rest-to-one
+2,4,1,0.7846,gyr + near,all-to-one
+2,4,2,0.7885,gyr + near,all-to-one
+2,4,3,0.8102,gyr + near,all-to-one
+2,4,4,0.8213,gyr + near,all-to-one
+3,4,1,0.7655,gyr + near,one-to-one
+3,4,2,0.7938,gyr + near,one-to-one
+3,4,3,0.8021,gyr + near,one-to-one
+3,4,4,0.7979,gyr + near,one-to-one
+3,4,1,0.7845,gyr + near,rest-to-one
+3,4,2,0.7948,gyr + near,rest-to-one
+3,4,3,0.8089,gyr + near,rest-to-one
+3,4,4,0.7921,gyr + near,rest-to-one
+3,4,1,0.7747,gyr + near,all-to-one
+3,4,2,0.7933,gyr + near,all-to-one
+3,4,3,0.8051,gyr + near,all-to-one
+3,4,4,0.802,gyr + near,all-to-one
+4,4,1,0.7643,gyr + near,one-to-one
+4,4,2,0.7472,gyr + near,one-to-one
+4,4,1,0.7904,gyr + near,rest-to-one
+4,4,2,0.7998,gyr + near,rest-to-one
+4,4,1,0.7942,gyr + near,all-to-one
+4,4,2,0.7949,gyr + near,all-to-one
+5,4,1,0.8578,gyr + near,one-to-one
+5,4,2,0.8196,gyr + near,one-to-one
+5,4,3,0.8401,gyr + near,one-to-one
+5,4,4,0.8313,gyr + near,one-to-one
+5,4,1,0.8231,gyr + near,rest-to-one
+5,4,2,0.7974,gyr + near,rest-to-one
+5,4,3,0.8339,gyr + near,rest-to-one
+5,4,4,0.8073,gyr + near,rest-to-one
+5,4,1,0.8486,gyr + near,all-to-one
+5,4,2,0.8229,gyr + near,all-to-one
+5,4,3,0.8567,gyr + near,all-to-one
+5,4,4,0.8266,gyr + near,all-to-one
+6,4,1,0.7574,gyr + near,one-to-one
+6,4,2,0.7725,gyr + near,one-to-one
+6,4,3,0.7413,gyr + near,one-to-one
+6,4,4,0.7886,gyr + near,one-to-one
+6,4,1,0.7483,gyr + near,rest-to-one
+6,4,2,0.7705,gyr + near,rest-to-one
+6,4,3,0.7794,gyr + near,rest-to-one
+6,4,4,0.7843,gyr + near,rest-to-one
+6,4,1,0.7549,gyr + near,all-to-one
+6,4,2,0.782,gyr + near,all-to-one
+6,4,3,0.7878,gyr + near,all-to-one
+6,4,4,0.7875,gyr + near,all-to-one
+7,4,1,0.8598,gyr + near,one-to-one
+7,4,2,0.8513,gyr + near,one-to-one
+7,4,3,0.8633,gyr + near,one-to-one
+7,4,4,0.7675,gyr + near,one-to-one
+7,4,1,0.7892,gyr + near,rest-to-one
+7,4,2,0.8016,gyr + near,rest-to-one
+7,4,3,0.7979,gyr + near,rest-to-one
+7,4,4,0.7849,gyr + near,rest-to-one
+7,4,1,0.8187,gyr + near,all-to-one
+7,4,2,0.8434,gyr + near,all-to-one
+7,4,3,0.8504,gyr + near,all-to-one
+7,4,4,0.8211,gyr + near,all-to-one
+8,4,1,0.7746,gyr + near,one-to-one
+8,4,2,0.7903,gyr + near,one-to-one
+8,4,3,0.7909,gyr + near,one-to-one
+8,4,4,0.7692,gyr + near,one-to-one
+8,4,1,0.7782,gyr + near,rest-to-one
+8,4,2,0.7729,gyr + near,rest-to-one
+8,4,3,0.7898,gyr + near,rest-to-one
+8,4,4,0.7986,gyr + near,rest-to-one
+8,4,1,0.7853,gyr + near,all-to-one
+8,4,2,0.7859,gyr + near,all-to-one
+8,4,3,0.8077,gyr + near,all-to-one
+8,4,4,0.8007,gyr + near,all-to-one
+1,4,1,0.5553,gyr,one-to-one
+1,4,2,0.6099,gyr,one-to-one
+1,4,3,0.5923,gyr,one-to-one
+1,4,4,0.6121,gyr,one-to-one
+1,4,1,0.5907,gyr,rest-to-one
+1,4,2,0.5864,gyr,rest-to-one
+1,4,3,0.5674,gyr,rest-to-one
+1,4,4,0.6084,gyr,rest-to-one
+1,4,1,0.5977,gyr,all-to-one
+1,4,2,0.6085,gyr,all-to-one
+1,4,3,0.5786,gyr,all-to-one
+1,4,4,0.6173,gyr,all-to-one
+2,4,1,0.5869,gyr,one-to-one
+2,4,2,0.6307,gyr,one-to-one
+2,4,3,0.6398,gyr,one-to-one
+2,4,4,0.6165,gyr,one-to-one
+2,4,1,0.6059,gyr,rest-to-one
+2,4,2,0.6202,gyr,rest-to-one
+2,4,3,0.6573,gyr,rest-to-one
+2,4,4,0.669,gyr,rest-to-one
+2,4,1,0.6306,gyr,all-to-one
+2,4,2,0.623,gyr,all-to-one
+2,4,3,0.6609,gyr,all-to-one
+2,4,4,0.6615,gyr,all-to-one
+3,4,1,0.5586,gyr,one-to-one
+3,4,2,0.5763,gyr,one-to-one
+3,4,3,0.5898,gyr,one-to-one
+3,4,4,0.6278,gyr,one-to-one
+3,4,1,0.6094,gyr,rest-to-one
+3,4,2,0.6527,gyr,rest-to-one
+3,4,3,0.5984,gyr,rest-to-one
+3,4,4,0.6402,gyr,rest-to-one
+3,4,1,0.6042,gyr,all-to-one
+3,4,2,0.6525,gyr,all-to-one
+3,4,3,0.6258,gyr,all-to-one
+3,4,4,0.6261,gyr,all-to-one
+4,4,1,0.6194,gyr,one-to-one
+4,4,2,0.5609,gyr,one-to-one
+4,4,1,0.6301,gyr,rest-to-one
+4,4,2,0.6262,gyr,rest-to-one
+4,4,1,0.6336,gyr,all-to-one
+4,4,2,0.6259,gyr,all-to-one
+5,4,1,0.7288,gyr,one-to-one
+5,4,2,0.6636,gyr,one-to-one
+5,4,3,0.7021,gyr,one-to-one
+5,4,4,0.7102,gyr,one-to-one
+5,4,1,0.693,gyr,rest-to-one
+5,4,2,0.5867,gyr,rest-to-one
+5,4,3,0.6446,gyr,rest-to-one
+5,4,4,0.623,gyr,rest-to-one
+5,4,1,0.7082,gyr,all-to-one
+5,4,2,0.6259,gyr,all-to-one
+5,4,3,0.6874,gyr,all-to-one
+5,4,4,0.6865,gyr,all-to-one
+6,4,1,0.5862,gyr,one-to-one
+6,4,2,0.6314,gyr,one-to-one
+6,4,3,0.6157,gyr,one-to-one
+6,4,4,0.6485,gyr,one-to-one
+6,4,1,0.5985,gyr,rest-to-one
+6,4,2,0.5605,gyr,rest-to-one
+6,4,3,0.622,gyr,rest-to-one
+6,4,4,0.5993,gyr,rest-to-one
+6,4,1,0.6088,gyr,all-to-one
+6,4,2,0.6147,gyr,all-to-one
+6,4,3,0.6315,gyr,all-to-one
+6,4,4,0.6186,gyr,all-to-one
+7,4,1,0.7458,gyr,one-to-one
+7,4,2,0.76,gyr,one-to-one
+7,4,3,0.6962,gyr,one-to-one
+7,4,4,0.5556,gyr,one-to-one
+7,4,1,0.6814,gyr,rest-to-one
+7,4,2,0.6284,gyr,rest-to-one
+7,4,3,0.6552,gyr,rest-to-one
+7,4,4,0.646,gyr,rest-to-one
+7,4,1,0.7472,gyr,all-to-one
+7,4,2,0.7361,gyr,all-to-one
+7,4,3,0.7209,gyr,all-to-one
+7,4,4,0.5562,gyr,all-to-one
+8,4,1,0.6019,gyr,one-to-one
+8,4,2,0.5883,gyr,one-to-one
+8,4,3,0.5763,gyr,one-to-one
+8,4,4,0.6052,gyr,one-to-one
+8,4,1,0.6394,gyr,rest-to-one
+8,4,2,0.6132,gyr,rest-to-one
+8,4,3,0.6363,gyr,rest-to-one
+8,4,4,0.6059,gyr,rest-to-one
+8,4,1,0.6402,gyr,all-to-one
+8,4,2,0.6209,gyr,all-to-one
+8,4,3,0.6102,gyr,all-to-one
+8,4,4,0.6101,gyr,all-to-one
