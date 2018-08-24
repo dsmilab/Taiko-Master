@@ -46,7 +46,7 @@ def get_event_primitive_df(who_id, song_id, order_id, scaling=True, resampling=T
     columns = event_primitive_df.columns
     columns = [col for col in columns if re.match(HIT_TYPE_REGEX, col)]
     for col in columns:
-        event_primitive_df.loc[:, col] = event_primitive_df[col].apply(transform_hit_type_label_dong_ka)
+        event_primitive_df.loc[:, col] = event_primitive_df[col].apply(transform_hit_type_label_big_small)
     return event_primitive_df
 
 
