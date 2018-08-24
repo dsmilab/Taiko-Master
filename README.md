@@ -1,5 +1,7 @@
 # Taiko-Master
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/331f51c35b59495395e6a81555c75cfb)](https://app.codacy.com/app/howeverforever/Taiko-Master?utm_source=github.com&utm_medium=referral&utm_content=dsmilab/Taiko-Master&utm_campaign=badger)
+
 This is a project teaching a newbie how to perform better in the video game [**Taiko no Tatsujin**](https://en.wikipedia.org/wiki/Taiko_no_Tatsujin).
 
 <br/>
@@ -64,7 +66,7 @@ We can interpret the local event as the following figure.
 
 ALL event primitives are resampled by **0.02s** sample rate.
 
-ALL feature without correlation are scaled by *mean* = 0 and *std* = 1 for each feature.
+ALL feature without correlation are scaled by ** *mean* = 0** and ** *std* = 1** for each feature.
 
 **F1 score** is picked as the evalution of a model.
 
@@ -139,8 +141,8 @@ Links direct to Wiki.
 | song id | name |
 |-----------------|:-----:|
 | 1 | [夢をかなえてドラえもん](http://www.wikihouse.com/taiko/index.php?%C6%F1%B0%D7%C5%D9%C9%BD%2F%A4%AB%A4%F3%A4%BF%A4%F3%2F%CC%B4%A4%F2%A4%AB%A4%CA%A4%A8%A4%C6%A5%C9%A5%E9%A4%A8%A4%E2%A4%F3) | 
-| 2 | [ウィーアー！](http://www.wikihouse.com/taiko/index.php?%C6%F1%B0%D7%C5%D9%C9%BD%2F%A4%AB%A4%F3%A4%BF%A4%F3%2F%CC%B4%A4%F2%A4%AB%A4%CA%A4%A8%A4%C6%A5%C9%A5%E9%A4%A8%A4%E2%A4%F3) | 
-| 3 | [六兆年と一夜物語](http://www.wikihouse.com/taiko/index.php?%C6%F1%B0%D7%C5%D9%C9%BD%2F%A4%AB%A4%F3%A4%BF%A4%F3%2F%CC%B4%A4%F2%A4%AB%A4%CA%A4%A8%A4%C6%A5%C9%A5%E9%A4%A8%A4%E2%A4%F3) | 
+| 2 | [ウィーアー！](http://www.wikihouse.com/taiko/index.php?%C6%F1%B0%D7%C5%D9%C9%BD%2F%A4%D5%A4%C4%A4%A6%2F%A5%A6%A5%A3%A1%BC%A5%A2%A1%BC%A1%AA%28%BD%E9%C2%E5%29) | 
+| 3 | [六兆年と一夜物語](http://www.wikihouse.com/taiko/index.php?%C6%F1%B0%D7%C5%D9%C9%BD%2F%A4%D5%A4%C4%A4%A6%2F%CF%BB%C3%FB%C7%AF%A4%C8%B0%EC%CC%EB%CA%AA%B8%EC) | 
 | 4 | [残酷な天使のテーゼ](http://www.wikihouse.com/taiko/index.php?%C6%F1%B0%D7%C5%D9%C9%BD%2F%A4%E0%A4%BA%A4%AB%A4%B7%A4%A4%2F%BB%C4%B9%F3%A4%CA%C5%B7%BB%C8%A4%CE%A5%C6%A1%BC%A5%BC) | 
 
 Sorted by difficulty in ascending order.
