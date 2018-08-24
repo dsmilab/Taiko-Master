@@ -4,11 +4,13 @@ from .play import *
 from .primitive import *
 from collections import deque
 
+import re
 import pandas as pd
 from sklearn import preprocessing
 
 __all__ = ['get_performance']
 
+NO_SCALE_REGEX = '^(\w*_CORR|hit_type|[A-Z]+\d)$'
 DELTA_T_DIVIDED_COUNT = 8
 
 
@@ -68,42 +70,41 @@ class _Performance(object):
         :return: feature engineered dataframe of primitives
         """
 
-        event_primitive_df = pd.DataFrame(columns=['hit_type'])
-        event_primitive_df['hit_type'] = [self._events[i][1] for i in range(len(self._events))]
+        labels = [label for label, _ in self._play.play_dict.items()]
+        windows = [deque() for _ in range(len(self._play.play_dict))]
+        play_ids = [0] * len(self._play.play_dict)
+        play_mats = [play_df.values for _, play_df in self._play.play_dict.items()]
 
-        for label, play_df in self._play.play_dict.items():
-            window = deque()
+        tmp_primitive_mat = []
+        # split all event times with gap "delta_t"
+        for id_, _ in enumerate(self._events):
+            event_time = self._events[id_][0]
+            hit_type = self._events[id_][1]
+            local_start_time = event_time - self._delta_t / 2
+            local_end_time = event_time + self._delta_t / 2
 
-            play_mat = play_df.values
-            play_id = 0
+            for i_ in range(len(self._play.play_dict)):
+                # slide window
+                if len(windows[i_]) == 0 and play_ids[i_] < len(play_mats[i_]):
+                    windows[i_].append(play_mats[i_][play_ids[i_]])
+                    play_ids[i_] += 1
 
-            tmp_primitive_mat = []
-            # split all event times with gap "delta_t"
-            for id_, _ in enumerate(self._events):
-                event_time = self._events[id_][0]
-                local_start_time = event_time - self._delta_t / 2
-                local_end_time = event_time + self._delta_t / 2
+                while play_ids[i_] < len(play_mats[i_]) and play_mats[i_][play_ids[i_]][0] < local_end_time:
+                    windows[i_].append(play_mats[i_][play_ids[i_]])
+                    play_ids[i_] += 1
 
-                if len(window) == 0 and play_id < len(play_mat):
-                    window.append(play_mat[play_id])
-                    play_id += 1
+                while len(windows[i_]) > 0 and windows[i_][0][0] < local_start_time:
+                    windows[i_].popleft()
 
-                while play_id < len(play_mat) and play_mat[play_id][0] < local_end_time:
-                    window.append(play_mat[play_id])
-                    play_id += 1
+            feature_row = [hit_type] + get_features(windows)
+            tmp_primitive_mat.append(feature_row)
 
-                while len(window) > 0 and window[0][0] < local_start_time:
-                    window.popleft()
-
-                tmp_primitive_mat.append(get_features(window))
-
-            tmp_primitive_df = pd.DataFrame(data=tmp_primitive_mat,
-                                            columns=[label + '_' + col for col in STAT_COLS])
-            event_primitive_df = pd.concat([event_primitive_df, tmp_primitive_df], axis=1)
+        columns = get_feature_columns(labels)
+        event_primitive_df = pd.DataFrame(data=tmp_primitive_mat,
+                                          columns=['hit_type'] + columns)
 
         near_df = self.__get_near_event_hit_type()
         event_primitive_df = pd.concat([event_primitive_df, near_df], axis=1)
-
         self._event_primitive_df = event_primitive_df
 
     def __get_near_event_hit_type(self, n_counts=2):
@@ -119,23 +120,23 @@ class _Performance(object):
         for id_ in range(len(self._events)):
             near = []
 
-            for i in range(n_counts):
+            for i_ in range(n_counts):
                 hit_type = 0
-                if id_ - 1 - i >= 0:
-                    hit_type = self._events[id_ - 1 - i][1]
+                if id_ - 1 - i_ >= 0:
+                    hit_type = self._events[id_ - 1 - i_][1]
                 near.append(hit_type)
 
-            for i in range(n_counts):
+            for i_ in range(n_counts):
                 hit_type = 0
-                if id_ + 1 + i < len(self._events):
-                    hit_type = self._events[id_ + 1 + i][1]
+                if id_ + 1 + i_ < len(self._events):
+                    hit_type = self._events[id_ + 1 + i_][1]
                 near.append(hit_type)
 
             mat.append(near)
 
         near_df = pd.DataFrame(data=mat,
-                               columns=['L' + str(i + 1) for i in range(n_counts)] +
-                                       ['R' + str(i + 1) for i in range(n_counts)])
+                               columns=['L' + str(i_ + 1) for i_ in range(n_counts)] +
+                               ['R' + str(i_ + 1) for i_ in range(n_counts)])
 
         return near_df
 
@@ -147,9 +148,9 @@ class _Performance(object):
         """
 
         scaler = preprocessing.StandardScaler()
-        columns = []
-        for label, _ in self._play.play_dict.items():
-            columns = [label + '_' + col for col in SCALE_COLUMNS]
+        columns = self._event_primitive_df.columns
+        columns = [col for col in columns if not re.match(NO_SCALE_REGEX, col)]
+
         subset = self._event_primitive_df[columns]
         train_x = [tuple(x) for x in subset.values]
         train_x = scaler.fit_transform(train_x)
