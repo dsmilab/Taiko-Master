@@ -17,4 +17,3 @@ def get_hwclock_time(local_time, delta=0):
     d = d + timedelta(seconds=int(delta))
 
     return time.mktime(d.timetuple())
-

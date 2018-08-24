@@ -4,7 +4,7 @@ from ..tools.timestamp import *
 import pandas as pd
 import numpy as np
 
-__all__ = ['load_drummer_df', 'get_record', 'get_score']
+__all__ = ['load_drummer_df', 'get_record']
 
 TAILED_ADDITIONAL_TIME = 30
 
@@ -19,10 +19,8 @@ class _Record(object):
 
     def __init__(self):
         self._drummer_df = None
-        self._result_df = None
 
         self.__load_drummer_csv()
-        self.__load_result_csv()
 
     def __load_drummer_csv(self):
         """
@@ -52,17 +50,9 @@ class _Record(object):
 
         self._drummer_df = df
 
-    def __load_result_csv(self):
-        df = pd.read_csv(RESULT_TABLE_PATH)
-        self._result_df = df
-
     @property
     def drummer_df(self):
         return self._drummer_df
-
-    @property
-    def result_df(self):
-        return self._result_df
 
 
 def load_drummer_df():
@@ -78,7 +68,7 @@ def get_record(who_id, song_id, order_id):
     :param order_id: # of performance repetitively
     :return: the desired unique record
     """
-    df = _Record().drummer_df
+    df = load_drummer_df()
     df = df[(df['drummer_id'] == who_id) &
             (df['song_id'] == song_id) &
             (df['performance_order'] == order_id)]
@@ -92,27 +82,3 @@ def get_record(who_id, song_id, order_id):
     row = df.iloc[0]
 
     return row
-
-
-def get_score(who_id, song_id, order_id):
-    """
-    Get the score from result info.
-
-    :param who_id: # of drummer
-    :param song_id: # of song
-    :param order_id: # of performance repetitively
-    :return: the desired unique record
-    """
-    df = _Record().result_df
-    df = df[(df['drummer_id'] == who_id) &
-            (df['song_id'] == song_id) &
-            (df['performance_order'] == order_id)]
-
-    if len(df) == 0:
-        raise KeyError('No matched performances.')
-    elif len(df) > 1:
-        raise KeyError('Duplicated matched performances.')
-
-    # assume matched case is unique
-    row = df.iloc[0]
-    return row['score'].astype(np.int32)

@@ -35,10 +35,26 @@ class _Note(object):
         self._note_df = pd.read_csv(os.path.join(TABLE_PATH, note_file_name))
         self._note_df.drop(DROPPED_COLUMNS, axis=1, inplace=True)
         self._note_df.columns = RENAMED_COLUMNS
+        self._note_df.loc[:, 'label'] = self._note_df['label'].apply(transform_hit_type_label)
 
     @property
     def note_df(self):
         return self._note_df
+
+
+def transform_hit_type_label(label):
+    """
+    Relabel the column.
+
+    :param label: original label
+    :return: transformed label
+    """
+
+    if label in [1, 2, 3, 4]:
+        return 1
+    elif label in [5, 6]:
+        return 2
+    return 0
 
 
 def load_note_df(who_id, song_id, order_id):
