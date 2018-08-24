@@ -4,7 +4,11 @@ import pandas as pd
 import numpy as np
 import math
 
-__all__ = ['get_features']
+from scipy.spatial.distance import euclidean
+from fastdtw import fastdtw
+
+__all__ = ['get_features',
+           'get_feature_columns']
 
 
 class _Primitive(object):
@@ -26,294 +30,191 @@ class _Primitive(object):
         while len(window) > 0:
             mat.append(window.popleft())
         df = pd.DataFrame(mat, columns=SENSOR_COLUMNS)
-        rms_df = df[['timestamp', 'imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz']].copy()
+        rms_df = df[RMS_COLS[2:]].copy()
 
         # acceleration movement intensity (AMI)
-        rms_df['a_rms'] = (rms_df['imu_ax'] ** 2 + rms_df['imu_ay'] ** 2 + rms_df['imu_az'] ** 2).apply(math.sqrt)
+        rms_df[RMS_COLS[0]] = (rms_df[RMS_COLS[2]] ** 2 +
+                               rms_df[RMS_COLS[3]] ** 2 +
+                               rms_df[RMS_COLS[4]] ** 2).apply(math.sqrt)
 
         # gyroscope movement intensity (GMI)
-        rms_df['g_rms'] = (rms_df['imu_gx'] ** 2 + rms_df['imu_gy'] ** 2 + rms_df['imu_gz'] ** 2).apply(math.sqrt)
-
+        rms_df[RMS_COLS[1]] = (rms_df[RMS_COLS[5]] ** 2 +
+                               rms_df[RMS_COLS[6]] ** 2 +
+                               rms_df[RMS_COLS[7]] ** 2).apply(math.sqrt)
         self._rms_df = rms_df
 
     def __retrieve_features(self):
-        aai = self.__get_aai()
-        gai = self.__get_gai()
 
-        mami = self.__get_mami()
-        mgmi = self.__get_mgmi()
+        ai_s = [self.__get_ai(col) for col in RMS_COLS]
+        vi_s = [self.__get_vi(col, ai) for col, ai in zip(RMS_COLS, ai_s)]
+        mmi_s = [self.__get_mdmi(col)for col in RMS_COLS]
 
-        avi = self.__get_avi(aai)
-        gvi = self.__get_gvi(gai)
+        asma = self.__get_sma(RMS_COLS[2:5])
+        gsma = self.__get_sma(RMS_COLS[5:8])
 
-        asma = self.__get_asma()
-        gsma = self.__get_gsma()
+        aae = self.__get_ae(RMS_COLS[0])
+        are = self.__get_ae(RMS_COLS[1])
 
-        aae = self.__get_aae()
-        are = self.__get_are()
+        # standard deviation intensity
+        sdi_s = [math.sqrt(sdi) for sdi in vi_s]
 
-        # acceleration standard deviation intensity
-        asdi = math.sqrt(avi)
-        # gyroscope standard deviation intensity
-        gsdi = math.sqrt(gvi)
+        iqr_s = [self.__get_iqr(col) for col in RMS_COLS]
+        fr_s = [self.__get_full_range(col) for col in RMS_COLS]
 
-        air = self.__get_air()
-        gir = self.__get_gir()
+        freqx_s_s = np.array([self.__get_fft_coef(col, 3) for col in RMS_COLS])
+        freqx_s = freqx_s_s.reshape(len(RMS_COLS) * 3).tolist()
 
-        # ass = self.__get_ass(aai, avi)
-        # gss = self.__get_gss(gai, gvi)
+        # ass = self.__get_ss(RMS_COLS[0], aai, avi)
+        # gss = self.__get_ss(RMS_COLS[1], gai, gvi)
         #
-        # aks = self.__get_aks(aai, avi)
-        # gks = self.__get_gks(gai, gvi)
+        # aks = self.__get_ks(RMS_COLS[0], aai, avi)
+        # gks = self.__get_ks(RMS_COLS[1], gai, gvi)
 
-        a_zero_cross = self.__get_a_zero_cross(mami)
-        g_zero_cross = self.__get_g_zero_cross(mgmi)
+        median_cross_s = [self.__get_median_cross(col, mmi) for col, mmi in zip(RMS_COLS, mmi_s)]
+        mean_cross_s = [self.__get_mean_cross(col, ai) for col, ai in zip(RMS_COLS, ai_s)]
+        zero_cross_s = [self.__get_zero_cross(col) for col in RMS_COLS[2:]]
 
-        a_mean_cross = self.__get_a_mean_cross(aai)
-        g_mean_cross = self.__get_g_mean_cross(gai)
+        a_xy_corr = self.__get_corr(RMS_COLS[2], RMS_COLS[3])
+        a_yz_corr = self.__get_corr(RMS_COLS[3], RMS_COLS[4])
+        a_zx_corr = self.__get_corr(RMS_COLS[4], RMS_COLS[2])
 
-        a_xy_corr = self.__get_a_xy_corr()
-        a_yz_corr = self.__get_a_yz_corr()
-        a_zx_corr = self.__get_a_zx_corr()
+        g_xy_corr = self.__get_corr(RMS_COLS[5], RMS_COLS[6])
+        g_yz_corr = self.__get_corr(RMS_COLS[6], RMS_COLS[7])
+        g_zx_corr = self.__get_corr(RMS_COLS[7], RMS_COLS[5])
 
-        g_xy_corr = self.__get_g_xy_corr()
-        g_yz_corr = self.__get_g_yz_corr()
-        g_zx_corr = self.__get_g_zx_corr()
+        return ai_s +\
+            vi_s +\
+            mmi_s +\
+            [asma, gsma, aae, are] +\
+            sdi_s +\
+            iqr_s +\
+            fr_s +\
+            freqx_s +\
+            median_cross_s +\
+            mean_cross_s +\
+            zero_cross_s +\
+            [a_xy_corr, a_yz_corr, a_zx_corr,
+                g_xy_corr, g_yz_corr, g_zx_corr]
 
-        return [aai,
-                avi,
-                asma,
-                gai,
-                gvi,
-                gsma,
-                aae,
-                are,
-                mami,
-                mgmi,
-                asdi,
-                gsdi,
-                air,
-                gir,
-                # ass,
-                # gss,
-                # aks,
-                # gks,
-                a_zero_cross,
-                g_zero_cross,
-                a_mean_cross,
-                g_mean_cross,
-                a_xy_corr,
-                a_yz_corr,
-                a_zx_corr,
-                g_xy_corr,
-                g_yz_corr,
-                g_zx_corr]
+    def __get_ai(self, col):
+        #  average intensity (AI)
+        ai = self._rms_df[col].sum() / len(self._rms_df)
+        return ai
 
-    def __get_aai(self):
-        # acceleration average intensity (AAI)
-        aai = self._rms_df['a_rms'].sum() / len(self._rms_df)
-        return aai
-
-    def __get_gai(self):
-        # gyroscope average intensity (GAI)
-        gai = self._rms_df['g_rms'].sum() / len(self._rms_df)
-        return gai
-
-    def __get_mami(self):
+    def __get_mdmi(self, col):
         # median of AMI
-        mami = self._rms_df['a_rms'].median()
-        return mami
+        mdmi = self._rms_df[col].median()
+        return mdmi
 
-    def __get_mgmi(self):
-        # median of GMI
-        mgmi = self._rms_df['g_rms'].median()
-        return mgmi
-
-    def __get_avi(self, aai):
-        # acceleration variance intensity (AVI)
-        avi = 0
+    def __get_vi(self, col, ai):
+        # variance intensity (VI)
+        vi = 0
         for i in range(len(self._rms_df)):
             row = self._rms_df.iloc[i]
-            mit = float(row['a_rms'])
-            avi += (mit - aai) ** 2
-        avi /= len(self._rms_df)
-        return avi
+            mit = float(row[col])
+            vi += (mit - ai) ** 2
+        vi /= len(self._rms_df)
+        return vi
 
-    def __get_gvi(self, gai):
-        # gyroscope variance intensity (GVI)
-        gvi = 0
-        for i in range(len(self._rms_df)):
-            row = self._rms_df.iloc[i]
-            mit = float(row['g_rms'])
-            gvi += (mit - gai) ** 2
-        gvi /= len(self._rms_df)
-        return gvi
+    def __get_sma(self, cols):
+        # normalized signal magnitude area (SMA)
+        sma = (self._rms_df[cols[0]].apply(abs).sum() +
+               self._rms_df[cols[1]].apply(abs).sum() +
+               self._rms_df[cols[2]].apply(abs).sum()) / len(self._rms_df)
+        return sma
 
-    def __get_asma(self):
-        # acceleration normalized signal magnitude area (ASMA)
-        asma = (self._rms_df['imu_ax'].apply(abs).sum() +
-                self._rms_df['imu_ay'].apply(abs).sum() +
-                self._rms_df['imu_az'].apply(abs).sum()) / len(self._rms_df)
-        return asma
-
-    def __get_gsma(self):
-        # gyroscope normalized signal magnitude area (GSMA)
-        gsma = (self._rms_df['imu_gx'].apply(abs).sum() +
-                self._rms_df['imu_gy'].apply(abs).sum() +
-                self._rms_df['imu_gz'].apply(abs).sum()) / len(self._rms_df)
-        return gsma
-
-    def __get_aae(self):
-        # averaged acceleration energy (AAE)
-        aae = do_fft(self._rms_df['a_rms']) / len(self._rms_df)
+    def __get_ae(self, col):
+        # averaged energy (AE)
+        aae = do_fft(self._rms_df[col]) / len(self._rms_df)
         return aae
 
-    def __get_are(self):
-        # averaged rotation energy (ARE)
-        are = do_fft(self._rms_df['g_rms']) / len(self._rms_df)
-        return are
-
-    def __get_ass(self, aai, avi):
-        # acceleration skewness which is the degree of asymmetry of the sensor signal distribution (ASS)
-        ass_child = 0
+    def __get_ss(self, col, ai, vi):
+        # skewness which is the degree of asymmetry of the sensor signal distribution (SS)
+        ss_child = 0
         for i in range(len(self._rms_df)):
             row = self._rms_df.iloc[i]
-            mit = float(row['a_rms'])
-            ass_child += (mit - aai) ** 3
-        ass_child /= len(self._rms_df)
-        ass = ass_child / math.pow(avi, 3.0 / 2.0)
-        return ass
+            mit = float(row[col])
+            ss_child += (mit - ai) ** 3
+        ss_child /= len(self._rms_df)
+        ss = ss_child / math.pow(vi, 3.0 / 2.0)
+        return ss
 
-    def __get_gss(self, gai, gvi):
-        # gyroscope skewness which is the degree of asymmetry of the sensor signal distribution (GSS)
-        gss_child = 0
+    def __get_ks(self, col, ai, vi):
+        # kurtosis which is the degree of peakedness of the sensor signal distribution (AKS)
+        ks_child = 0
         for i in range(len(self._rms_df)):
             row = self._rms_df.iloc[i]
-            mit = float(row['g_rms'])
-            gss_child += (mit - gai) ** 3
-        gss_child /= len(self._rms_df)
-        gss = gss_child / math.pow(gvi, 3.0 / 2.0)
-        return gss
+            mit = float(row[col])
+            ks_child += (mit - ai) ** 4
+        ks_child /= len(self._rms_df)
+        ks = ks_child / (vi ** 3) - 3
+        return ks
 
-    def __get_aks(self, aai, avi):
-        # acceleration kurtosis which is the degree of peakedness of the sensor signal distribution (AKS)
-        aks_child = 0
-        for i in range(len(self._rms_df)):
-            row = self._rms_df.iloc[i]
-            mit = float(row['a_rms'])
-            aks_child += (mit - aai) ** 4
-        aks_child /= len(self._rms_df)
-        aks = aks_child / (avi ** 3) - 3
-        return aks
+    def __get_full_range(self, col):
+        full_range = max(self._rms_df[col]) - min(self._rms_df[col])
+        return full_range
 
-    def __get_gks(self, gai, gvi):
-        # gyroscope kurtosis which is the degree of peakedness of the sensor signal distribution (GKS)
-        gks_child = 0
-        for i in range(len(self._rms_df)):
-            row = self._rms_df.iloc[i]
-            mit = float(row['g_rms'])
-            gks_child += (mit - gai) ** 4
-        gks_child /= len(self._rms_df)
-        gks = gks_child / (gvi ** 3) - 3
-        return gks
+    def __get_iqr(self, col):
+        # interquartile range (IQR)
+        iqr = self._rms_df[col].quantile(0.75) - self._rms_df[col].quantile(0.25)
+        return iqr
 
-    def __get_air(self):
-        # acceleration interquartile range (AIR)
-        air = self._rms_df['a_rms'].quantile(0.75) - self._rms_df['a_rms'].quantile(0.25)
-        return air
-
-    def __get_gir(self):
-        # gyroscope interquartile range (GIR)
-        gir = self._rms_df['g_rms'].quantile(0.75) - self._rms_df['g_rms'].quantile(0.25)
-        return gir
-
-    def __get_a_zero_cross(self, mami):
-        # the total number of times the acceleration signal changes form positive to negative or negative or vice versa
-        a_zero_cross = 0
+    def __get_zero_cross(self, col):
+        # the total number of times the signal changes form positive to negative or negative or vice versa
+        zero_cross = 0
         for i in range(1, len(self._rms_df)):
             prev_row = self._rms_df.iloc[i - 1]
             now_row = self._rms_df.iloc[i]
-            if (prev_row['a_rms'] <= mami) and (now_row['a_rms'] > mami):
-                a_zero_cross += 1
-            elif (prev_row['a_rms'] >= mami) and (now_row['a_rms'] < mami):
-                a_zero_cross += 1
-        a_zero_cross /= len(self._rms_df)
-        return a_zero_cross
+            if (prev_row[col] < 0) and (now_row[col] >= 0):
+                zero_cross += 1
+            elif (prev_row[col] > 0) and (now_row[col] <= 0):
+                zero_cross += 1
+        zero_cross /= len(self._rms_df)
+        return zero_cross
 
-    def __get_g_zero_cross(self, mgmi):
-        # the total number of times the gyroscope signal changes form positive to negative or negative or vice versa
-        g_zero_cross = 0
+    def __get_median_cross(self, col, mdmi):
+        median_cross = 0
         for i in range(1, len(self._rms_df)):
             prev_row = self._rms_df.iloc[i - 1]
             now_row = self._rms_df.iloc[i]
-            if (prev_row['g_rms'] <= mgmi) and (now_row['g_rms'] > mgmi):
-                g_zero_cross += 1
-            elif (prev_row['g_rms'] >= mgmi) and (now_row['g_rms'] < mgmi):
-                g_zero_cross += 1
-        g_zero_cross /= len(self._rms_df)
-        return g_zero_cross
+            if (prev_row[col] < mdmi) and (now_row[col] >= mdmi):
+                median_cross += 1
+            elif (prev_row[col] > mdmi) and (now_row[col] <= mdmi):
+                median_cross += 1
+        median_cross /= len(self._rms_df)
+        return median_cross
 
-    def __get_a_mean_cross(self, aai):
+    def __get_mean_cross(self, col, ai):
         # the total number of times the acceleration signal changes form below average to above average or vice versa
-        a_mean_cross = 0
+        mean_cross = 0
         for i in range(1, len(self._rms_df)):
             prev_row = self._rms_df.iloc[i - 1]
             now_row = self._rms_df.iloc[i]
-            if (prev_row['a_rms'] >= aai) and (now_row['a_rms'] < aai):
-                a_mean_cross += 1
-            elif (prev_row['a_rms'] <= aai) and (now_row['a_rms'] > aai):
-                a_mean_cross += 1
-        a_mean_cross /= len(self._rms_df)
-        return a_mean_cross
+            if (prev_row[col] > ai) and (now_row[col] <= ai):
+                mean_cross += 1
+            elif (prev_row[col] < ai) and (now_row[col] >= ai):
+                mean_cross += 1
+        mean_cross /= len(self._rms_df)
+        return mean_cross
 
-    def __get_g_mean_cross(self, gai):
-        # the total number of times the gyroscope signal changes form below average to above average or vice versa
-        g_mean_cross = 0
-        for i in range(1, len(self._rms_df)):
-            prev_row = self._rms_df.iloc[i - 1]
-            now_row = self._rms_df.iloc[i]
-            if (prev_row['g_rms'] >= gai) and (now_row['g_rms'] < gai):
-                g_mean_cross += 1
-            elif (prev_row['g_rms'] <= gai) and (now_row['g_rms'] > gai):
-                g_mean_cross += 1
-        g_mean_cross /= len(self._rms_df)
-        return g_mean_cross
+    def __get_fft_coef(self, col, max_n_counts):
+        freqx = get_fft_coef(self._rms_df[col])
+        return freqx[-max_n_counts:]
 
-    def __get_a_xy_corr(self):
-        # correlation between two acceleration X, Y axes
-        a_xy_corr = self._rms_df['imu_ax'].corr(self._rms_df['imu_ay'])
-        return a_xy_corr
-
-    def __get_a_yz_corr(self):
-        # correlation between two acceleration Y, Z axes
-        a_yz_corr = self._rms_df['imu_ay'].corr(self._rms_df['imu_az'])
-        return a_yz_corr
-
-    def __get_a_zx_corr(self):
-        # correlation between two acceleration X, Z axes
-        a_zx_corr = self._rms_df['imu_az'].corr(self._rms_df['imu_ax'])
-        return a_zx_corr
-
-    def __get_g_xy_corr(self):
-        # correlation between two gyroscope X, Y axes
-        g_xy_corr = self._rms_df['imu_gx'].corr(self._rms_df['imu_gy'])
-        return g_xy_corr
-
-    def __get_g_yz_corr(self):
-        # correlation between two gyroscope Y, Z axes
-        g_yz_corr = self._rms_df['imu_gy'].corr(self._rms_df['imu_gz'])
-        return g_yz_corr
-
-    def __get_g_zx_corr(self):
-        # correlation between two gyroscope X, Z axes
-        g_zx_corr = self._rms_df['imu_gz'].corr(self._rms_df['imu_gx'])
-        return g_zx_corr
+    def __get_corr(self, col1, col2):
+        # correlation between two columns
+        corr = self._rms_df[col1].corr(self._rms_df[col2])
+        return corr
 
     def __get_evas(self):
         # eigenvalues of dominant directions (EVA)
         w = np.linalg.eig(self._rms_df[['imu_ax', 'imu_ay', 'imu_az']].corr().values)
         evas = w[np.argpartition(w, -2)[-2:]]
         return evas
+
+    @property
+    def rms_df(self):
+        return self._rms_df
 
     @property
     def features(self):
@@ -333,12 +234,65 @@ def do_fft(data):
     return energy
 
 
-def get_features(window):
+def get_fft_coef(data):
+    freqx = np.fft.fft(data) / math.sqrt(len(data))
+    freqx = sorted(np.abs(freqx))
+
+    return freqx
+
+
+def get_dtw_distance(rms_df1, rms_df2, col):
+    x = np.array(rms_df1[col])
+    y = np.array(rms_df2[col])
+    distance, _ = fastdtw(x, y, dist=euclidean)
+    return distance
+
+
+def get_features(windows):
     """
     Get all engineered features from the window.
 
-    :param window: the range of sensor data we care about
+    :param windows: the range of sensor data we care about
     :return: engineered features
     """
 
-    return _Primitive(window).features
+    primitives = [_Primitive(window) for window in windows]
+
+    feature_row = []
+    for prim in primitives:
+        feature_row.extend(prim.features)
+
+    # C(n, 2)
+    for col in RMS_COLS:
+        for i_ in range(len(primitives)):
+            for j_ in range(len(primitives)):
+                if i_ >= j_:
+                    continue
+                dtw_distance = get_dtw_distance(primitives[i_].rms_df, primitives[j_].rms_df, col)
+                feature_row.append(dtw_distance)
+
+    return feature_row
+
+
+def get_feature_columns(labels):
+    """
+
+    :param labels:
+    :return:
+    """
+
+    feature_names = []
+
+    for label in labels:
+        columns = [label + '_' + col for col in STAT_COLS]
+        feature_names.extend(columns)
+
+    for i_ in range(len(labels)):
+        for j_ in range(len(labels)):
+            if i_ >= j_:
+                continue
+            suffix_cols = [prefix_ + '_' + suffix_ for prefix_, suffix_ in zip(PREFIX_COLS, [SUFFIX_COLS[10]] * 8)]
+            columns = [labels[i_] + labels[j_] + '_' + col for col in suffix_cols]
+            feature_names.extend(columns)
+
+    return feature_names

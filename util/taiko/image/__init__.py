@@ -1,1 +1,1 @@
-from .scoreboard import *
+from .board import *
