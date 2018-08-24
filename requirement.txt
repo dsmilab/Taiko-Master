@@ -1,0 +1,10 @@
+fastdtw>=0.3.2
+numpy>=1.14.3
+pandas>=0.23.0
+python>=3.6.5
+scikit-learn>=0.19.1
+scipy>=1.1.0
+seaborn>=0.9.0
+tensorflow==1.9.0
+Keras==2.0.8
+
