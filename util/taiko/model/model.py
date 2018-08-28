@@ -243,6 +243,8 @@ class SVM(_Model):
         return scores
 
     def _run(self, train_df, test_df, kernel):
+        train_df.drop_duplicates(inplace=True)
+
         x = train_df.drop(['hit_type'], axis=1)
         y = train_df['hit_type']
 
@@ -254,7 +256,7 @@ class SVM(_Model):
 
         best_f1 = -1
         best_y_test = None
-        for C_ in [0.01, 0.1, 1, 10, 100, 1000]:
+        for C_ in [0.01, 0.1, 1, 10]:
             model = SVC(C=C_,
                         kernel=my_params['kernel'])
             model.fit(x, y)
