@@ -11,9 +11,18 @@ HIT_TYPE_REGEX = '^(hit_type|[A-Z]+\d)$'
 __all__ = ['get_event_primitive_df']
 
 
-def get_event_primitive_df(who_id, song_id, order_id, scaling=True, resampling=True, acc=True, gyr=True, near=True):
+def get_event_primitive_df(who_id, song_id, order_id,
+                           scaling=True,
+                           resampling=True,
+                           acc=True,
+                           gyr=True,
+                           near=True,
+                           label_group='origin'):
     if who_id == 4 and song_id == 4 and order_id in [3, 4]:
         raise ValueError('Corrupted EP')
+
+    if label_group not in ['single_stream', 'dong_ka', 'big_small', 'balloon']:
+        raise ValueError('label_group Error!')
 
     boolean_dict = {True: 'y', False: 'n'}
     resampling_boolean = {True: '0.02S', False: None}
@@ -43,14 +52,28 @@ def get_event_primitive_df(who_id, song_id, order_id, scaling=True, resampling=T
         columns = [col for col in event_primitive_df.columns if re.match(NEAR_REGEX, col)]
         event_primitive_df.drop(columns, axis=1, inplace=True)
 
+    # set corresponding transform hit type function
+    transform_hit_type_label = None
+    if label_group == 'single_stream':
+        transform_hit_type_label = transform_hit_type_label_single_stream
+    elif label_group == 'dong_ka':
+        transform_hit_type_label = transform_hit_type_label_dong_ka
+    elif label_group == 'big_small':
+        transform_hit_type_label = transform_hit_type_label_big_small
+    elif label_group == 'balloon':
+        transform_hit_type_label = transform_hit_type_label_balloon
+
     columns = event_primitive_df.columns
     columns = [col for col in columns if re.match(HIT_TYPE_REGEX, col)]
     for col in columns:
-        event_primitive_df.loc[:, col] = event_primitive_df[col].apply(transform_hit_type_label_big_small)
+        event_primitive_df.loc[:, col] = event_primitive_df[col].apply(transform_hit_type_label)
+
+    event_primitive_df.dropna(inplace=True)
+
     return event_primitive_df
 
 
-def transform_hit_type_label(label):
+def transform_hit_type_label_single_stream(label):
     """
     Relabel the column.
 
@@ -82,7 +105,7 @@ def transform_hit_type_label_dong_ka(label):
     return 0
 
 
-def transform_hit_type_label_ship(label):
+def transform_hit_type_label_balloon(label):
     """
     Relabel the column.
 
