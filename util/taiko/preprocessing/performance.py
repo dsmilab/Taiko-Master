@@ -10,7 +10,7 @@ import numpy as np
 from sklearn import preprocessing
 from imblearn.over_sampling import SMOTE
 
-__all__ = ['get_performance', 'do_over_sampled']
+__all__ = ['get_performance', 'do_over_sampled', 'do_scaling']
 
 DELTA_T_DIVIDED_COUNT = 8
 
@@ -45,7 +45,8 @@ class _Performance(object):
         self.__build_event_primitive_df()
 
         if scale:
-            self.__scale()
+            new_df = do_scaling(self._event_primitive_df)
+            self._event_primitive_df = new_df
 
     def __retrieve_event(self):
         """
@@ -141,23 +142,6 @@ class _Performance(object):
 
         return near_df
 
-    def __scale(self):
-        """
-        Scale values of required features.
-
-        :return: nothing
-        """
-
-        scaler = preprocessing.StandardScaler()
-        columns = self._event_primitive_df.columns
-        columns = [col for col in columns if not re.match(NO_SCALE_REGEX, col)]
-
-        subset = self._event_primitive_df[columns]
-        train_x = [tuple(x) for x in subset.values]
-        train_x = scaler.fit_transform(train_x)
-        df = pd.DataFrame(train_x, columns=columns)
-        self._event_primitive_df.update(df)
-
     @property
     def event_primitive_df(self):
         return self._event_primitive_df
@@ -176,6 +160,26 @@ def get_performance(who_id, song_id, order_id, scale=True, resample=RESAMPLE_RAT
     """
 
     return _Performance(who_id, song_id, order_id, scale, resample)
+
+
+def do_scaling(df):
+    """
+    Scale values of required features.
+
+    :return: nothing
+    """
+
+    scaler = preprocessing.StandardScaler()
+    columns = df.columns
+    columns = [col for col in columns if not re.match(NO_SCALE_REGEX, col)]
+
+    subset = df[columns]
+    train_x = [tuple(x) for x in subset.values]
+    train_x = scaler.fit_transform(train_x)
+    new_df = pd.DataFrame(data=train_x, columns=columns)
+    df.update(new_df)
+
+    return df
 
 
 def do_over_sampled(df):

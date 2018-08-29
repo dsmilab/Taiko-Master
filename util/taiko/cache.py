@@ -25,7 +25,7 @@ def get_event_primitive_df(who_id, song_id, order_id,
     boolean_dict = {True: 'y', False: 'n'}
     resampling_boolean = {True: '0.02S', False: None}
 
-    filename = '%d-%d-%d-%s%s' % (who_id, song_id, order_id, boolean_dict[scaling], boolean_dict[resampling])
+    filename = '%d-%d-%d-%s' % (who_id, song_id, order_id, boolean_dict[resampling])
 
     try:
         event_primitive_df = pd.read_csv('CSV/event_primitive/' + filename + '.csv')
@@ -33,10 +33,9 @@ def get_event_primitive_df(who_id, song_id, order_id,
         event_primitive_df = get_performance(who_id,
                                              song_id,
                                              order_id,
-                                             scaling,
-                                             resampling_boolean[resampling]).event_primitive_df
+                                             scale=False,
+                                             resample=resampling_boolean[resampling]).event_primitive_df
 
-        filename = '%d-%d-%d-%s%s' % (who_id, song_id, order_id, boolean_dict[scaling], boolean_dict[resampling])
         event_primitive_df.to_csv('CSV/event_primitive/' + filename + '.csv', index=False, float_format='%.4g')
 
     # set corresponding transform hit type function
@@ -55,8 +54,13 @@ def get_event_primitive_df(who_id, song_id, order_id,
     for col in columns:
         event_primitive_df.loc[:, col] = event_primitive_df[col].apply(transform_hit_type_label)
 
+    event_primitive_df.dropna(inplace=True)
+
     if over_sampled:
         event_primitive_df = do_over_sampled(event_primitive_df)
+
+    if scaling:
+        event_primitive_df = do_scaling(event_primitive_df)
 
     if not acc:
         columns = [col for col in event_primitive_df.columns if re.match(ACC_REGEX, col)]
@@ -69,8 +73,6 @@ def get_event_primitive_df(who_id, song_id, order_id,
     if not near:
         columns = [col for col in event_primitive_df.columns if re.match(NEAR_REGEX, col)]
         event_primitive_df.drop(columns, axis=1, inplace=True)
-
-    event_primitive_df.dropna(inplace=True)
 
     return event_primitive_df
 
