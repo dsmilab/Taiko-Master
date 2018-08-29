@@ -2,15 +2,16 @@ from ..cache import *
 from ..io.record import *
 from ..tools.score import *
 
-from abc import abstractmethod
 import numpy as np
 import pandas as pd
 import lightgbm as lgb
 from sklearn import metrics
+from abc import abstractmethod
 from sklearn.svm import SVC
 from sklearn.metrics import classification_report
+from sklearn.neighbors import KNeighborsClassifier
 
-__all__ = ['LGBM', 'SVM']
+__all__ = ['LGBM', 'SVM', 'KNN']
 
 
 class _Model(object):
@@ -205,6 +206,48 @@ class SVM(_Model):
             model = SVC(C=C_,
                         kernel=my_params['kernel'],
                         max_iter=100)
+            model.fit(x, y)
+
+            y_test = model.predict(x_test)
+            f1_score = round(metrics.f1_score(y_test, y_true, average='weighted'), 4)
+
+            if f1_score > best_f1:
+                best_f1 = max(best_f1, f1_score)
+                best_y_test = y_test
+
+        print(classification_report(y_true, best_y_test))
+
+        return best_f1
+
+
+class KNN(_Model):
+
+    def __init__(self, song_id, acc=True, gyr=True, near=False, label_group='single_stream'):
+        super(KNN, self).__init__(song_id, acc, gyr, near, label_group)
+        self._params = {}
+
+    def run(self, test_who, mode='one-to-one', n_neighbors=5):
+        return super(KNN, self)._run(test_who, mode, self._evaluate, n_neighbors)
+
+    def _evaluate(self, train_df, test_df, *args):
+        n_neighbors = args[0]
+
+        train_df.drop_duplicates(inplace=True)
+
+        x = train_df.drop(['hit_type'], axis=1)
+        y = train_df['hit_type']
+
+        x_test = test_df.drop(['hit_type'], axis=1)
+        y_true = test_df['hit_type']
+
+        my_params = self._params
+        my_params['n_neighbors'] = n_neighbors
+
+        best_f1 = -1
+        best_y_test = None
+        for K_ in [5, 10, 20, 50]:
+            model = KNeighborsClassifier(n_neighbors=K_,
+                                         n_jobs=-1)
             model.fit(x, y)
 
             y_test = model.predict(x_test)
