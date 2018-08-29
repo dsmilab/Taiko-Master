@@ -15,11 +15,11 @@ __all__ = ['LGBM', 'SVM', 'KNN']
 
 
 class _Model(object):
-    def __init__(self, song_id, acc, gyr, near, label_group):
+    def __init__(self, song_id, acc, gyr, near, over_sampled, label_group):
         self._ep_dict = {}
-        self._load_event_primitive(song_id, acc, gyr, near, label_group)
+        self._load_event_primitive(song_id, acc, gyr, near, over_sampled, label_group)
 
-    def _load_event_primitive(self, song_id, acc, gyr, near, label_group):
+    def _load_event_primitive(self, song_id, acc, gyr, near, over_sampled, label_group):
         df = load_drummer_df()
         df = df[df['song_id'] == song_id]
         df = df[['drummer_id', 'performance_order']]
@@ -33,6 +33,7 @@ class _Model(object):
                                                acc=acc,
                                                gyr=gyr,
                                                near=near,
+                                               over_sampled=over_sampled,
                                                label_group=label_group)
             except ValueError:
                 continue
@@ -121,8 +122,8 @@ class _Model(object):
 
 
 class LGBM(_Model):
-    def __init__(self, song_id, acc=True, gyr=True, near=True, label_group='single_stream'):
-        super(LGBM, self).__init__(song_id, acc, gyr, near, label_group)
+    def __init__(self, song_id, acc=True, gyr=True, near=True, over_sampled=True, label_group='single_stream'):
+        super(LGBM, self).__init__(song_id, acc, gyr, near, over_sampled, label_group)
         self._params = dict({
             'learning_rate': 0.1,
             'application': 'multiclass',
@@ -176,8 +177,8 @@ class LGBM(_Model):
 
 class SVM(_Model):
 
-    def __init__(self, song_id, acc=True, gyr=True, near=False, label_group='single_stream'):
-        super(SVM, self).__init__(song_id, acc, gyr, near, label_group)
+    def __init__(self, song_id, acc=True, gyr=True, near=False, over_sampled=True, label_group='single_stream'):
+        super(SVM, self).__init__(song_id, acc, gyr, near, over_sampled, label_group)
         self._params = dict({
             'C': 1,
             'kernel': 'rbf'
@@ -222,8 +223,8 @@ class SVM(_Model):
 
 class KNN(_Model):
 
-    def __init__(self, song_id, acc=True, gyr=True, near=False, label_group='single_stream'):
-        super(KNN, self).__init__(song_id, acc, gyr, near, label_group)
+    def __init__(self, song_id, acc=True, gyr=True, near=False, over_sampled=True, label_group='single_stream'):
+        super(KNN, self).__init__(song_id, acc, gyr, near, over_sampled, label_group)
         self._params = {}
 
     def run(self, test_who, mode='one-to-one', n_neighbors=5):

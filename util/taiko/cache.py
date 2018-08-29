@@ -1,12 +1,9 @@
 from .preprocessing.performance import *
+from .config import *
 
 import pandas as pd
 import re
 
-ACC_REGEX = '^\w*_A[XYZ]{0,2}_\w*$'
-GYR_REGEX = '^\w*_G[XYZ]{0,2}_\w*$'
-NEAR_REGEX = '^[LR]\d+$'
-HIT_TYPE_REGEX = '^(hit_type|[A-Z]+\d)$'
 
 __all__ = ['get_event_primitive_df']
 
@@ -17,11 +14,12 @@ def get_event_primitive_df(who_id, song_id, order_id,
                            acc=True,
                            gyr=True,
                            near=True,
+                           over_sampled=False,
                            label_group='origin'):
     if who_id == 4 and song_id == 4 and order_id in [3, 4]:
         raise ValueError('Corrupted EP')
 
-    if label_group not in ['single_stream', 'dong_ka', 'big_small', 'balloon']:
+    if label_group not in ['origin', 'single_stream', 'dong_ka', 'big_small', 'balloon']:
         raise ValueError('label_group Error!')
 
     boolean_dict = {True: 'y', False: 'n'}
@@ -37,23 +35,12 @@ def get_event_primitive_df(who_id, song_id, order_id,
                                              order_id,
                                              scaling,
                                              resampling_boolean[resampling]).event_primitive_df
+
         filename = '%d-%d-%d-%s%s' % (who_id, song_id, order_id, boolean_dict[scaling], boolean_dict[resampling])
         event_primitive_df.to_csv('CSV/event_primitive/' + filename + '.csv', index=False, float_format='%.4g')
 
-    if not acc:
-        columns = [col for col in event_primitive_df.columns if re.match(ACC_REGEX, col)]
-        event_primitive_df.drop(columns, axis=1, inplace=True)
-
-    if not gyr:
-        columns = [col for col in event_primitive_df.columns if re.match(GYR_REGEX, col)]
-        event_primitive_df.drop(columns, axis=1, inplace=True)
-
-    if not near:
-        columns = [col for col in event_primitive_df.columns if re.match(NEAR_REGEX, col)]
-        event_primitive_df.drop(columns, axis=1, inplace=True)
-
     # set corresponding transform hit type function
-    transform_hit_type_label = None
+    transform_hit_type_label = transform_hit_type_label_origin
     if label_group == 'single_stream':
         transform_hit_type_label = transform_hit_type_label_single_stream
     elif label_group == 'dong_ka':
@@ -68,9 +55,34 @@ def get_event_primitive_df(who_id, song_id, order_id,
     for col in columns:
         event_primitive_df.loc[:, col] = event_primitive_df[col].apply(transform_hit_type_label)
 
+    if over_sampled:
+        event_primitive_df = do_over_sampled(event_primitive_df)
+
+    if not acc:
+        columns = [col for col in event_primitive_df.columns if re.match(ACC_REGEX, col)]
+        event_primitive_df.drop(columns, axis=1, inplace=True)
+
+    if not gyr:
+        columns = [col for col in event_primitive_df.columns if re.match(GYR_REGEX, col)]
+        event_primitive_df.drop(columns, axis=1, inplace=True)
+
+    if not near:
+        columns = [col for col in event_primitive_df.columns if re.match(NEAR_REGEX, col)]
+        event_primitive_df.drop(columns, axis=1, inplace=True)
+
     event_primitive_df.dropna(inplace=True)
 
     return event_primitive_df
+
+
+def transform_hit_type_label_origin(label):
+    """
+    Relabel the column.
+
+    :param label: original label
+    :return: transformed label
+    """
+    return label
 
 
 def transform_hit_type_label_single_stream(label):

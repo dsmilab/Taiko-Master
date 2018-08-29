@@ -55,3 +55,10 @@ SCALE_COLUMNS = STAT_COLS[:-6]
 
 # plot
 COLORS = ['black', 'red', 'blue', 'yellow', 'green', 'cyan', 'purple']
+
+# regex
+ACC_REGEX = '^\w*_A[XYZ]{0,2}_\w*$'
+GYR_REGEX = '^\w*_G[XYZ]{0,2}_\w*$'
+NEAR_REGEX = '^[LR]\d+$'
+HIT_TYPE_REGEX = '^(hit_type|[A-Z]+\d)$'
+NO_SCALE_REGEX = '^(\w*_CORR|hit_type|[A-Z]+\d)$'

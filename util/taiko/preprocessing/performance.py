@@ -6,11 +6,12 @@ from collections import deque
 
 import re
 import pandas as pd
+import numpy as np
 from sklearn import preprocessing
+from imblearn.over_sampling import SMOTE
 
-__all__ = ['get_performance']
+__all__ = ['get_performance', 'do_over_sampled']
 
-NO_SCALE_REGEX = '^(\w*_CORR|hit_type|[A-Z]+\d)$'
 DELTA_T_DIVIDED_COUNT = 8
 
 
@@ -175,3 +176,26 @@ def get_performance(who_id, song_id, order_id, scale=True, resample=RESAMPLE_RAT
     """
 
     return _Performance(who_id, song_id, order_id, scale, resample)
+
+
+def do_over_sampled(df):
+    x_columns, y_columns = [], []
+    for col in df.columns:
+        if re.match('hit_type', col):
+            y_columns.append(col)
+        else:
+            x_columns.append(col)
+
+    x = df.drop(y_columns, axis=1)
+    y = df[y_columns]
+    y = np.ravel(y)
+
+    x_resampled, y_resampled = SMOTE(k_neighbors=3, random_state=0).fit_sample(x, y)
+
+    x_df = pd.DataFrame(columns=x_columns, data=x_resampled)
+    y_df = pd.DataFrame(columns=y_columns, data=y_resampled)
+
+    new_df = pd.concat([x_df, y_df], axis=1)
+    new_df = new_df[df.columns]
+
+    return new_df
