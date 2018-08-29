@@ -45,8 +45,7 @@ class _Performance(object):
         self.__build_event_primitive_df()
 
         if scale:
-            new_df = do_scaling(self._event_primitive_df)
-            self._event_primitive_df = new_df
+            self._event_primitive_df = do_scaling(self._event_primitive_df)
 
     def __retrieve_event(self):
         """

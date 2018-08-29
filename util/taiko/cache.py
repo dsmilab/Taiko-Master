@@ -55,6 +55,7 @@ def get_event_primitive_df(who_id, song_id, order_id,
         event_primitive_df.loc[:, col] = event_primitive_df[col].apply(transform_hit_type_label)
 
     event_primitive_df.dropna(inplace=True)
+    event_primitive_df.reset_index(drop=True, inplace=True)
 
     if over_sampled:
         event_primitive_df = do_over_sampled(event_primitive_df)
