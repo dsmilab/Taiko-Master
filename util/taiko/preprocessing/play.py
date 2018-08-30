@@ -20,12 +20,15 @@ class _Play(object):
         first_hit_time: timestamp where the first note occurs
     """
 
-    def __init__(self, rec, is_zero_adjust, resample):
+    def __init__(self, who_id, song_id, order_id, is_zero_adjust, resample):
+        rec = get_record(who_id, song_id, order_id)
+
         self._play_dict = {}
         self._start_time, self._end_time = None, None
         self._first_hit_time = None
 
         self.__set_hw_time(rec)
+        self._events = self.__retrieve_event(who_id, song_id, order_id)
         self._play_dict['R'] = self.__build_play_df(RIGHT_HAND, is_zero_adjust, resample)
         self._play_dict['L'] = self.__build_play_df(LEFT_HAND, is_zero_adjust, resample)
 
@@ -76,6 +79,22 @@ class _Play(object):
 
         return play_df
 
+    def __retrieve_event(self, who_id, song_id, order_id):
+        """
+        Retrieve event which means note occurs of the song.
+
+        :return: 2D array
+        """
+
+        events = []
+        note_df = load_note_df(who_id, song_id, order_id)
+        # spot vertical mark lines
+        for _, row in note_df.iterrows():
+            hit_type = int(row['label'])
+            events.append((self._first_hit_time + row['timestamp'], hit_type))
+
+        return events
+
     @property
     def play_dict(self):
         return self._play_dict
@@ -92,6 +111,10 @@ class _Play(object):
     def first_hit_time(self):
         return self._first_hit_time
 
+    @property
+    def events(self):
+        return self._events
+
 
 def get_play(who_id, song_id, order_id, is_adjust_zero=True, resample=RESAMPLE_RATE):
     """
@@ -105,5 +128,4 @@ def get_play(who_id, song_id, order_id, is_adjust_zero=True, resample=RESAMPLE_R
     :return:
     """
 
-    rec = get_record(who_id, song_id, order_id)
-    return _Play(rec, is_adjust_zero, resample)
+    return _Play(who_id, song_id, order_id, is_adjust_zero, resample)

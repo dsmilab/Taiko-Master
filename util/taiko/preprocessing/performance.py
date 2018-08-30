@@ -37,7 +37,7 @@ class _Performance(object):
         self._note_df = load_note_df(who_id, song_id, order_id)
         self._play = get_play(who_id, song_id, order_id, resample=resample)
 
-        self._events = self.__retrieve_event()
+        self._events = self._play.events
         self._time_unit = self._note_df['time_unit'].min()
         self._bar_unit = self._time_unit * 8
         self._delta_t = self._bar_unit / DELTA_T_DIVIDED_COUNT
@@ -46,23 +46,6 @@ class _Performance(object):
 
         if scale:
             self._event_primitive_df = do_scaling(self._event_primitive_df)
-
-    def __retrieve_event(self):
-        """
-        Retrieve event which means note occurs of the song.
-
-        :return: 2D array
-        """
-
-        events = []
-
-        first_hit_time = self._play.first_hit_time
-        # spot vertical mark lines
-        for _, row in self._note_df.iterrows():
-            hit_type = int(row['label'])
-            events.append((first_hit_time + row['timestamp'], hit_type))
-
-        return events
 
     def __build_event_primitive_df(self):
         """

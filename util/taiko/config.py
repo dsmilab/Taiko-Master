@@ -41,6 +41,7 @@ STAT_COLS = [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFI
             [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS[2:], [SUFFIX_COLS[9]] * 6)] +\
             ['AXY_CORR', 'AYZ_CORR', 'AZX_CORR', 'GXY_CORR', 'GYZ_CORR', 'GZX_CORR']
 
+KEYWORD_COLS = SUFFIX_COLS + ['SMA', 'AE', 'CORR']
 
 ZERO_ADJ_COL = ['imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz', 'msu_ax', 'msu_ay', 'msu_az']
 
@@ -54,7 +55,7 @@ SENSOR_COLUMNS = [ALL_COLUMNS[0]] + ALL_COLUMNS[2:]
 SCALE_COLUMNS = STAT_COLS[:-6]
 
 # plot
-COLORS = ['black', 'red', 'blue', 'yellow', 'green', 'cyan', 'purple']
+COLORS = ['black', 'red', 'blue', 'yellow', 'green', 'cyan', 'purple', 'magenta']
 
 # regex
 ACC_REGEX = '^\w*_A[XYZ]{0,2}_\w*$'
