@@ -6,18 +6,15 @@ from tqdm import tqdm
 import sys
 
 LABEL_GROUP = 'single_stream'
+KERNEL = 'linear'
 OVER_SAMPLED = False
-SCALING = True
 
 
 def main():
     result_df = pd.DataFrame(
         columns=['test_who', 'song_id', 'test_order', 'f1_score', 'feat', 'mode'])
     MODE = ['one-to-one', 'rest-to-one', 'all-to-one']
-    MAPP = {(True, True, True): 'acc + gyr + near',
-            (True, True, False): 'acc + gyr',
-            (True, False, True): 'acc + near',
-            (False, True, True): 'gyr + near',
+    MAPP = {(True, True, False): 'acc + gyr',
             (True, False, False): 'acc',
             (False, True, False): 'gyr',
            }
@@ -33,10 +30,10 @@ def main():
                     if OVER_SAMPLED and near:
                         continue
 
-                    model = tk.LGBM(song + 1, acc, gyr, near, scaling=SCALING, over_sampled=OVER_SAMPLED, label_group=LABEL_GROUP)
+                    model = tk.SVM(song + 1, acc, gyr, near, over_sampled=OVER_SAMPLED, label_group=LABEL_GROUP)
                     for who in tqdm(range(8)):
                         for mode in MODE:
-                            res = model.run(who + 1, mode=mode)
+                            res = model.run(who + 1, kernel=KERNEL, mode=mode)
                             for key, val in res.items():
                                 result_df.loc[id_] = [who + 1,
                                                       song + 1,
@@ -46,13 +43,12 @@ def main():
                                                       mode]
                                 id_ += 1
 
-    result_df.to_csv('CSV/lgbm_result_' + LABEL_GROUP + '_' + str(OVER_SAMPLED) + '_' + str(SCALING) + '.csv', index=False)
+    result_df.to_csv('CSV/' + KERNEL + '_SVM_result_' + LABEL_GROUP + '_' + str(OVER_SAMPLED) + '.csv', index=False)
 
 
 if __name__ == '__main__':
-    LABEL_GROUP = sys.argv[1]
-    if sys.argv[2] == 'true':
+    KERNEL = sys.argv[1]
+    LABEL_GROUP = sys.argv[2]
+    if sys.argv[3] == 'true':
         OVER_SAMPLED = True
-    if sys.argv[3] == 'false':
-        SCALING = False
     main()
