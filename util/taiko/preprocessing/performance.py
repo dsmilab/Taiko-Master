@@ -6,11 +6,12 @@ from collections import deque
 
 import re
 import pandas as pd
+import numpy as np
 from sklearn import preprocessing
+from imblearn.over_sampling import SMOTE
 
-__all__ = ['get_performance']
+__all__ = ['get_performance', 'do_over_sampled', 'do_scaling']
 
-NO_SCALE_REGEX = '^(\w*_CORR|hit_type|[A-Z]+\d)$'
 DELTA_T_DIVIDED_COUNT = 8
 
 
@@ -36,7 +37,7 @@ class _Performance(object):
         self._note_df = load_note_df(who_id, song_id, order_id)
         self._play = get_play(who_id, song_id, order_id, resample=resample)
 
-        self._events = self.__retrieve_event()
+        self._events = self._play.events
         self._time_unit = self._note_df['time_unit'].min()
         self._bar_unit = self._time_unit * 8
         self._delta_t = self._bar_unit / DELTA_T_DIVIDED_COUNT
@@ -44,24 +45,7 @@ class _Performance(object):
         self.__build_event_primitive_df()
 
         if scale:
-            self.__scale()
-
-    def __retrieve_event(self):
-        """
-        Retrieve event which means note occurs of the song.
-
-        :return: 2D array
-        """
-
-        events = []
-
-        first_hit_time = self._play.first_hit_time
-        # spot vertical mark lines
-        for _, row in self._note_df.iterrows():
-            hit_type = int(row['label'])
-            events.append((first_hit_time + row['timestamp'], hit_type))
-
-        return events
+            self._event_primitive_df = do_scaling(self._event_primitive_df)
 
     def __build_event_primitive_df(self):
         """
@@ -140,23 +124,6 @@ class _Performance(object):
 
         return near_df
 
-    def __scale(self):
-        """
-        Scale values of required features.
-
-        :return: nothing
-        """
-
-        scaler = preprocessing.StandardScaler()
-        columns = self._event_primitive_df.columns
-        columns = [col for col in columns if not re.match(NO_SCALE_REGEX, col)]
-
-        subset = self._event_primitive_df[columns]
-        train_x = [tuple(x) for x in subset.values]
-        train_x = scaler.fit_transform(train_x)
-        df = pd.DataFrame(train_x, columns=columns)
-        self._event_primitive_df.update(df)
-
     @property
     def event_primitive_df(self):
         return self._event_primitive_df
@@ -175,3 +142,46 @@ def get_performance(who_id, song_id, order_id, scale=True, resample=RESAMPLE_RAT
     """
 
     return _Performance(who_id, song_id, order_id, scale, resample)
+
+
+def do_scaling(df):
+    """
+    Scale values of required features.
+
+    :return: nothing
+    """
+
+    scaler = preprocessing.StandardScaler()
+    columns = df.columns
+    columns = [col for col in columns if not re.match(NO_SCALE_REGEX, col)]
+
+    subset = df[columns]
+    train_x = [tuple(x) for x in subset.values]
+    train_x = scaler.fit_transform(train_x)
+    new_df = pd.DataFrame(data=train_x, columns=columns)
+    df.update(new_df)
+
+    return df
+
+
+def do_over_sampled(df):
+    x_columns, y_columns = [], []
+    for col in df.columns:
+        if re.match('hit_type', col):
+            y_columns.append(col)
+        else:
+            x_columns.append(col)
+
+    x = df.drop(y_columns, axis=1)
+    y = df[y_columns]
+    y = np.ravel(y)
+
+    x_resampled, y_resampled = SMOTE(k_neighbors=3, random_state=0).fit_sample(x, y)
+
+    x_df = pd.DataFrame(columns=x_columns, data=x_resampled)
+    y_df = pd.DataFrame(columns=y_columns, data=y_resampled)
+
+    new_df = pd.concat([x_df, y_df], axis=1)
+    new_df = new_df[df.columns]
+
+    return new_df

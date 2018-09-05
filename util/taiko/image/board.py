@@ -1,7 +1,7 @@
 from ..config import *
 from ..tools.score import *
 from ..io.record import *
-import abc
+from abc import abstractmethod
 import os
 import numpy as np
 
@@ -35,11 +35,11 @@ class _Board(object):
         self._workspace = os.path.join(BB_CAPTURE_PATH, directory)
         self._files = sorted(next(os.walk(self._workspace))[2])
 
-    @abc.abstractmethod
+    @abstractmethod
     def _process_images(self):
         raise NotImplementedError("Please Implement this method")
 
-    @abc.abstractmethod
+    @abstractmethod
     def _process_scores(self, all_scores):
         raise NotImplementedError("Please Implement this method")
 
