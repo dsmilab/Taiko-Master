@@ -169,7 +169,7 @@ class LGBM(_Model):
         y_pred = model.predict(x_test, num_iteration=model.best_iteration)
         y_test = pd.Series(data=[np.argmax(xx) for xx in y_pred])
 
-        f1_score = round(metrics.f1_score(y_true, y_test, average='weighted'), 4)
+        f1_score = round(metrics.f1_score(y_true, y_test, average='macro'), 4)
 
         print(classification_report(y_true, y_test))
 
@@ -211,7 +211,7 @@ class SVM(_Model):
             model.fit(x, y)
 
             y_test = model.predict(x_test)
-            f1_score = round(metrics.f1_score(y_true, y_test, average='weighted'), 4)
+            f1_score = round(metrics.f1_score(y_true, y_test, average='macro'), 4)
 
             if f1_score > best_f1:
                 best_f1 = max(best_f1, f1_score)
@@ -253,7 +253,7 @@ class KNN(_Model):
             model.fit(x, y)
 
             y_test = model.predict(x_test)
-            f1_score = round(metrics.f1_score(y_true, y_test, average='weighted'), 4)
+            f1_score = round(metrics.f1_score(y_true, y_test, average='macro'), 4)
 
             if f1_score > best_f1:
                 best_f1 = max(best_f1, f1_score)
