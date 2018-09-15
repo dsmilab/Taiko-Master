@@ -12,7 +12,6 @@ def get_datetime(utc0_time, delta=28800):
 
 def main():
     with mss.mss() as sct:
-        count = 0
         ts = time.time()
         st = 'capture_' + get_datetime(ts).strftime('%Y_%m_%d_%H_%M_%S')
         os.mkdir('bb_capture/' + st)
@@ -27,6 +26,7 @@ def main():
                 save_filename = '%04d-%.4f.png' % (count, now_time)
                 mss.tools.to_png(img.rgb, img.size, output='bb_capture/' + st + '/' + save_filename)
                 count += 1
+
         except KeyboardInterrupt:
             ts = time.time()
             st = get_datetime(ts).strftime('%Y_%m_%d_%H_%M_%S')

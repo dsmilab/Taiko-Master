@@ -3,23 +3,42 @@ import paramiko
 import threading
 import sys
 
-SSH_ADDRESS_1 = "10.0.1.39"
-SSH_ADDRESS_2 = "10.0.1.44"
-SSH_USERNAME = "debian"
-SSH_RECORD_COMMAND = "cd Projects/beagle; python read10axis.py -6;"
-SSH_KILL_COMMAND = "pkill -f python;"
+SSH_BB_ADDRESS_1 = "10.0.1.39"
+SSH_BB_ADDRESS_2 = "10.0.1.44"
+SSH_VIDEO_ADDRESS = "140.113.25.42"
+
+# linux
+LINUX_BB_COMMAND = "cd Projects/beagle; python read10axis.py -6;"
+
+# windows
+WIN32_VIDEO_COMMAND = "cd Desktop/gui & python .\\capture.py"
+
+# linux
+LINUX_KILL_COMMAND = "pkill -f python;"
+WIN32_KILL_COMMAND = "tskill python"
 
 
-def work(host_ip, command):
+def work(host_ip, is_kill):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
-    with open('data/passwd.tk', 'r') as f:
+    with open('../data/connect_host/' + host_ip + '.dsmi', 'r') as f:
+        opcode = f.readline()[:-1]
+        username = f.readline()[:-1]
         pwd = f.readline()[:-1]
-
         try:
-            ssh.connect(host_ip, username=SSH_USERNAME, password=pwd)
-            ssh.exec_command(command)
+            ssh.connect(host_ip, username=username, password=pwd)
+            if opcode == 'sensor':
+                if is_kill:
+                    ssh.exec_command(LINUX_KILL_COMMAND)
+                else:
+                    ssh.exec_command(LINUX_BB_COMMAND)
+            elif opcode == 'video':
+                if is_kill:
+                    ssh.exec_command(WIN32_KILL_COMMAND)
+                else:
+                    ssh.exec_command(WIN32_VIDEO_COMMAND)
+
             print('connect %s ok' % host_ip)
 
         except Exception as e:
@@ -34,14 +53,11 @@ def main():
     args = vars(parser.parse_args())
     is_kill = args['kill']
 
-    hosts = [SSH_ADDRESS_1, SSH_ADDRESS_2]
-    threads = []
-    for h in hosts:
-        command = SSH_RECORD_COMMAND
-        if is_kill:
-            command = SSH_KILL_COMMAND
+    hosts = [SSH_BB_ADDRESS_1, SSH_BB_ADDRESS_2, SSH_VIDEO_ADDRESS]
 
-        t = threading.Thread(target=work, args=(h, command,))
+    threads = []
+    for host in hosts:
+        t = threading.Thread(target=work, args=(host, is_kill,))
         t.start()
         threads.append(t)
 
