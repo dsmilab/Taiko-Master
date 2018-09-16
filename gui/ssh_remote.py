@@ -45,26 +45,28 @@ def record_sensor(host_ip, is_kill):
 
 
 def record_video(is_kill):
-    if not is_kill:
-        proc = subprocess.Popen(['python', 'capture.py'], stdout=subprocess.PIPE)
-        with open('~tmp.tmp', 'w') as f:
-            f.write(str(proc.pid))
-            f.close()
-    else:
+    if is_kill:
         with open('~tmp.tmp', 'r') as f:
             pid = int(f.readline())
             if platform.system() == 'Windows':
                 os.system('taskkill /F /PID ' + str(pid))
                 print('kill pid:%d ok' % pid)
+
             elif platform.system() == 'Linux':
                 os.system('kill -9 ' + str(pid))
                 print('kill pid:%d ok' % pid)
+
             else:
                 sys.stderr.write('Unknown OS\n')
                 sys.stderr.flush()
-            f.close()
 
+            f.close()
         os.remove('~tmp.tmp')
+    else:
+        proc = subprocess.Popen(['python', 'capture.py'], stdout=subprocess.PIPE)
+        with open('~tmp.tmp', 'w') as f:
+            f.write(str(proc.pid))
+            f.close()
 
 
 def main():

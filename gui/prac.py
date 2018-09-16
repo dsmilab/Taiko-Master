@@ -7,29 +7,41 @@ class GUI(Tk):
     def __init__(self, master=None):
         Tk.__init__(self, master)
         self.title('Taiko Master v0.3.1')
-        self.geometry('400x600')
+        self.geometry('1024x768')
 
-        """Create Submit Button"""
-        self._submitButton = Button(master, text="start")
-        self._submitButton.bind('<Button-1>', self.click_start_button)
-        self._submitButton.place(x=100, y=100, width=200, height=50)
+        self._buttons = {
+            'start': Button(master, text="start"),
+            'stop': Button(master, text="stop"),
+            'spider': Button(master, text="spider")
+        }
 
-        """Create stop Button"""
-        self._stopButton = Button(master, text="stop")
-        self._stopButton.bind('<Button-1>', self.click_stop_button)
-        self._stopButton.place_forget()
+        self.__create_start_btn()
+
+    def __create_start_btn(self):
+        self._buttons['start'].bind('<Button-1>', self.click_start_button)
+        self._buttons['start'].place(x=100, y=100, width=200, height=50)
+
+    def __create_stop_btn(self):
+        self._buttons['stop'].bind('<Button-1>', self.click_stop_button)
+        self._buttons['stop'].place(x=100, y=100, width=200, height=50)
+
+    def __create_spider_btn(self):
+        self._buttons['spider'].bind('<Button-1>', self.click_spider_button)
+        self._buttons['spider'].place(x=100, y=500, width=200, height=50)
 
     def click_start_button(self, event):
-        """ handle button click event and output text from entry area"""
         os.system('python ssh_remote.py')
-        self._submitButton.place_forget()
-        self._stopButton.place(x=100, y=100, width=200, height=50)
+        self._buttons['start'].place_forget()
+        self.__create_stop_btn()
+        self.__create_spider_btn()
 
     def click_stop_button(self, event):
-        """ handle button click event and output text from entry area"""
         os.system('python ssh_remote.py -kill')
-        self._stopButton.place_forget()
-        self._submitButton.place(x=100, y=100, width=200, height=50)
+        self._buttons['stop'].place_forget()
+        self.__create_start_btn()
+
+    def click_spider_button(self, event):
+        os.system('python spider.py')
 
 
 if __name__ == "__main__":
