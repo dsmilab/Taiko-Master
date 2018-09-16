@@ -6,18 +6,18 @@ LEFT_HAND = 1
 BASE_PATH = os.path.dirname(os.path.realpath(__file__))
 
 # io.arm
-LEFT_PATH = os.path.join(BASE_PATH, '../../data/bb_left_forearm_csv/')
-RIGHT_PATH = os.path.join(BASE_PATH, '../../data/bb_right_forearm_csv/')
+LEFT_PATH = os.path.join(BASE_PATH, '../data/bb_left_forearm_csv/')
+RIGHT_PATH = os.path.join(BASE_PATH, '../data/bb_right_forearm_csv/')
 
 # io.record
-TABLE_PATH = os.path.join(BASE_PATH, '../../data/taiko_tables/')
+TABLE_PATH = os.path.join(BASE_PATH, '../data/taiko_tables/')
 PLAY_TABLE_PATH = os.path.join(TABLE_PATH, 'taiko_play.csv')
 SONG_TABLE_PATH = os.path.join(TABLE_PATH, 'taiko_song.csv')
 DRUMMER_TABLE_PATH = os.path.join(TABLE_PATH, 'taiko_drummer.csv')
 RESULT_TABLE_PATH = os.path.join(TABLE_PATH, 'taiko_result.csv')
 
 # image.scoreboard
-BB_CAPTURE_PATH = os.path.join(BASE_PATH, '../../bb_capture_output/')
+BB_CAPTURE_PATH = os.path.join(BASE_PATH, '../bb_capture_output/')
 MNIST_MODEL_PATH = os.path.join(BASE_PATH, 'model/mnist_model.h5')
 
 # preprocessing.primitive
