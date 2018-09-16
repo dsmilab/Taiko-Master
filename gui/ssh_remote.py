@@ -16,12 +16,8 @@ SSH_BB_ADDRESS_2 = "10.0.1.44"
 # linux
 LINUX_BB_COMMAND = "cd Projects/beagle; python read10axis.py -6;"
 
-# windows
-WIN32_VIDEO_COMMAND = "cd Desktop/gui & python .\\capture.py"
-
 # linux
 LINUX_KILL_COMMAND = "pkill -f python;"
-WIN32_KILL_COMMAND = "tskill python"
 
 
 def record_sensor(host_ip, is_kill):
@@ -68,20 +64,15 @@ def record_video(is_kill):
                 sys.stderr.flush()
             f.close()
 
-        # os.remove('~tmp.tmp')
+        os.remove('~tmp.tmp')
 
 
-def main(*args):
-    my_kill = False
-    if len(args) > 0:
-        my_kill = True
+def main():
     parser = argparse.ArgumentParser(description='Collect data from BeagleBone Blue')
     parser.add_argument('-kill', help='stop record', action='store_true')
 
     args_ = vars(parser.parse_args())
     is_kill = args_['kill']
-    if my_kill:
-        is_kill = True
 
     hosts = [SSH_BB_ADDRESS_1, SSH_BB_ADDRESS_2]
 
