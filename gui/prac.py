@@ -30,15 +30,17 @@ class GUI(Tk):
         self._buttons['spider'].place(x=100, y=500, width=200, height=50)
 
     def click_start_button(self, event):
-        os.system('python ssh_remote.py')
+        # os.system('python ssh_remote.py')
         self._buttons['start'].place_forget()
         self.__create_stop_btn()
         self.__create_spider_btn()
 
     def click_stop_button(self, event):
-        os.system('python ssh_remote.py -kill')
+        # os.system('python ssh_remote.py -kill')
         self._buttons['stop'].place_forget()
         self.__create_start_btn()
+        os.system('python spider.py')
+        os.system('python putter.py')
 
     def click_spider_button(self, event):
         os.system('python spider.py')
