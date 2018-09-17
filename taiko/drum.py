@@ -23,7 +23,6 @@ Y_ANCHOR = 85
 def get_play_start_time(img_dir):
     model = load_model(DRUM_IMG_MODEL_PATH)
     files = sorted(next(os.walk(img_dir))[2])
-    print(files)
 
     for file_id, filename in enumerate(files):
         img = imread(img_dir + '/' + filename)

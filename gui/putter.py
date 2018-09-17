@@ -12,6 +12,7 @@ SSH_CONFIG_PATH = '../data/connect_host/'
 
 SSH_GPU_ADDRESS = "140.114.36.104"
 
+REMOTE_PROJECT_PATH = "PyCharmPojects/Taiko-Master"
 REMOTE_SAVE_PATH = "PyCharmPojects/Taiko-Master/bb_capture_output"
 BB_CAPTURE_PATH = 'bb_capture/'
 
@@ -27,6 +28,43 @@ def _get_img_dir():
     return img_dir
 
 
+def upload_screenshot(sftp):
+    img_dir = _get_img_dir()
+    img_dir_path = os.path.join(BB_CAPTURE_PATH, img_dir)
+
+    files = next(os.walk(img_dir_path))[2]
+    remote_dir = os.path.join(REMOTE_SAVE_PATH, img_dir)
+    print(remote_dir)
+
+    try:
+        sftp.mkdir(remote_dir)
+    except IOError:
+        pass
+
+    for filename in files:
+        local_file = os.path.join(img_dir_path, filename)
+        remote_file = os.path.join(remote_dir, filename)
+        print(filename)
+        sftp.put(local_file, remote_file)
+
+
+def upload_sensor_data(sftp):
+    files = next(os.walk('sensor_data'))[2]
+    left_items = list(filter(lambda name: name[:5] == 'left_', files))
+    left_file = max(left_items)
+    remote_dir = os.path.join(REMOTE_PROJECT_PATH, 'data', 'bb_left_forearm_csv')
+    local_file = os.path.join('sensor_data', left_file)
+    remote_file = os.path.join(remote_dir, left_file)
+    sftp.put(local_file, remote_file)
+
+    right_items = list(filter(lambda name: name[:6] == 'right_', files))
+    right_file = max(right_items)
+    remote_dir = os.path.join(REMOTE_PROJECT_PATH, 'data', 'bb_right_forearm_csv')
+    local_file = os.path.join('sensor_data', right_file)
+    remote_file = os.path.join(remote_dir, right_file)
+    sftp.put(local_file, remote_file)
+
+
 def put_file(host_ip):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -35,28 +73,12 @@ def put_file(host_ip):
         username = f.readline()[:-1]
         pwd = f.readline()[:-1]
 
+        img_dir = _get_img_dir()
         try:
             ssh.connect(host_ip, username=username, password=pwd)
             sftp = ssh.open_sftp()
-
-            img_dir = _get_img_dir()
-            img_dir_path = os.path.join(BB_CAPTURE_PATH, img_dir)
-
-            files = next(os.walk(img_dir_path))[2]
-            remote_dir = os.path.join(REMOTE_SAVE_PATH, img_dir)
-            print(remote_dir)
-
-            try:
-                sftp.mkdir(remote_dir)
-            except IOError:
-                pass
-
-            for filename in files:
-                local_file = os.path.join(img_dir_path, filename)
-                remote_file = os.path.join(remote_dir, filename)
-                print(filename)
-                sftp.put(local_file, remote_file)
-
+            upload_screenshot(sftp)
+            upload_sensor_data(sftp)
             command = LOGIN_COMMAND + "python taiko/drum.py %s %s %s %s" % ('howeverover', 'M', '1', img_dir[-19:])
             stdin, stdout, stderr = ssh.exec_command(command)
             song_start_time = str(stdout.read())[-16:-1]
