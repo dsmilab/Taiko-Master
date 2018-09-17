@@ -16,7 +16,7 @@ SSH_BB_ADDRESS_2 = "10.0.1.44"
 CSV_PATH = "Projects/beagle"
 
 
-def transfer_file(host_ip):
+def transfer_file(host_ip, prefix=''):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
@@ -29,8 +29,11 @@ def transfer_file(host_ip):
             sftp = ssh.open_sftp()
             remote_items = sftp.listdir(CSV_PATH)
             csv_items = list(filter(lambda name: name[-4:] == '.csv', remote_items))
-            target_file = max(csv_items)
-            sftp.get(os.path.join(CSV_PATH, target_file), target_file)
+            remote_file = max(csv_items)
+            local_file = 'sensor_data/' + prefix + '_' + remote_file
+            sys.stdout.write('Reading from %s ...\n' % host_ip)
+            sys.stdout.flush()
+            sftp.get(os.path.join(CSV_PATH, remote_file), local_file)
 
         except Exception as e:
             sys.stderr.write("SSH connection error: {0}\n".format(e))
@@ -38,7 +41,20 @@ def transfer_file(host_ip):
 
 
 def main():
-    transfer_file(SSH_BB_ADDRESS_1)
+    if not os.path.isdir('sensor_data'):
+        os.mkdir('sensor_data')
+
+    hosts = [SSH_BB_ADDRESS_1, SSH_BB_ADDRESS_2]
+    handedness = ['left', 'right']
+
+    threads = []
+    for host, hand in zip(hosts, handedness):
+        p = threading.Thread(target=transfer_file, args=(host, hand,))
+        p.start()
+        threads.append(p)
+
+    for p_ in threads:
+        p_.join()
 
 
 if __name__ == '__main__':
