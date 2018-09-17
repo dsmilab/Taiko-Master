@@ -22,3 +22,17 @@ util/taiko/preprocessing/__pycache__/
 util/\.ipynb_checkpoints/
 
 util/CSV/
+
+gui/bb_capture/
+
+taiko/__pycache__/
+
+taiko/io/__pycache__/
+
+taiko/model/__pycache__/
+
+taiko/image/__pycache__/
+
+taiko/tools/__pycache__/
+
+taiko/preprocessing/__pycache__/

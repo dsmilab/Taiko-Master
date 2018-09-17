@@ -18,7 +18,7 @@ RESULT_TABLE_PATH = os.path.join(TABLE_PATH, 'taiko_result.csv')
 
 # image.scoreboard
 BB_CAPTURE_PATH = os.path.join(BASE_PATH, '../bb_capture_output/')
-MNIST_MODEL_PATH = os.path.join(BASE_PATH, 'model/mnist_model.h5')
+MNIST_MODEL_PATH = os.path.join(BASE_PATH, 'image/mnist_model.h5')
 
 # preprocessing.primitive
 RMS_COLS = ['a_rms', 'g_rms', 'imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz']
