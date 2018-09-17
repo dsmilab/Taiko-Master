@@ -1,6 +1,7 @@
+from config import *
 import os
 import numpy as np
-
+import sys
 from keras.models import load_model
 
 from skimage.io import imread
@@ -16,7 +17,7 @@ Y_ANCHOR = 85
 
 
 def get_play_start_time(img_dir):
-    model = load_model('drum_img_model.h5')
+    model = load_model(DRUM_IMG_MODEL_PATH)
     files = sorted(next(os.walk(img_dir))[2])
 
     for file_id, filename in enumerate(files):
@@ -28,6 +29,16 @@ def get_play_start_time(img_dir):
         x_train = x_train.reshape(x_train.shape[0], IMG_ROWS, IMG_COLS, 1)
         x = model.predict_classes(x_train)[0]
         if x == 1:
-            cap = float(file[5:-4])
+            cap = float(filename[5:-4])
             return cap
     return None
+
+
+def main():
+    sys.stdout.write(str(get_play_start_time('tmp_capture/')))
+
+    return 0
+
+
+if __name__ == '__main__':
+    main()

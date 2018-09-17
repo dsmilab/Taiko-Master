@@ -15,6 +15,9 @@ SSH_GPU_ADDRESS = "140.114.36.104"
 REMOTE_SAVE_PATH = "PyCharmPojects/Taiko-Master/tmp_capture"
 BB_CAPUTRE_PATH = 'bb_capture/'
 
+LOGIN_COMMAND = "PATH='/usr/bin/anaconda3/bin'; export PATH;" +\
+                "cd PyCharmPojects/Taiko-Master/; python taiko/drum.py;"
+
 
 def _get_img_dir():
     dirs = next(os.walk(BB_CAPUTRE_PATH))[1]
@@ -39,7 +42,9 @@ def put_file(host_ip):
                 local_file = os.path.join(img_dir, filename)
                 remote_file = os.path.join(REMOTE_SAVE_PATH, filename)
                 sftp.put(local_file, remote_file)
-
+            stdin, stdout, stderr = ssh.exec_command(LOGIN_COMMAND)
+            song_start_time = str(stdout.read())[-16:-1]
+            print(song_start_time)
         except Exception as e:
             sys.stderr.write("SSH connection error: {0}\n".format(e))
             sys.stderr.flush()
