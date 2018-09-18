@@ -52,8 +52,6 @@ def main(argv):
     difficulty = argv[3]
     record_start_time = argv[4]
     record_start_time = convert_datetime_format(record_start_time)
-    sys.stdout.write('ssssssssssssssss')
-    sys.stdout.flush()
 
     print(who_name, gender, song_id, record_start_time)
     drummer_df = pd.read_csv(DRUMMER_TABLE_PATH)

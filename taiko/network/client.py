@@ -16,7 +16,7 @@ LINUX_KILL_COMMAND = "pkill -f python;"
 
 # GPU
 LOGIN_COMMAND = "PATH='/usr/bin/anaconda3/bin'; export PATH;" +\
-                "cd %s; " % REMOTE_BASE_PATH
+                "cd %s; " % SERVER_PROJECT_PATH
 
 UPDATE_DB_COMMAND = "python taiko/drum.py"
 
@@ -278,9 +278,9 @@ class TaikoClient(object):
                 self._ssh.connect(host_ip_, username=username_, password=pwd_)
                 print(command_)
                 stdin, stdout, stderr = self._ssh.exec_command(command_)
-                sys.stderr.write(str(stdout.read()))
-                sys.stderr.write('\n')
-                sys.stderr.flush()
+                # sys.stderr.write(str(stdout.read()))
+                # sys.stderr.write('\n')
+                # sys.stderr.flush()
 
                 sys.stdout.write('%s\n' % tips_)
                 sys.stdout.flush()

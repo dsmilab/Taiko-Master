@@ -12,6 +12,7 @@ class GUI(Tk):
         self.title('Taiko Master v0.3.2')
         self.geometry('1024x768')
         self._client = TaikoClient()
+
         self._buttons = {
             'start': Button(master, text="start"),
             'stop': Button(master, text="stop"),
@@ -24,6 +25,7 @@ class GUI(Tk):
             'player_name': Entry(master, bg='lightgray'),
             'song_id': Entry(master, bg='lightblue'),
         }
+
         self._frame = {
             'difficulty': LabelFrame(master),
             'gender': LabelFrame(master),
@@ -134,10 +136,10 @@ class GUI(Tk):
 
     def click_update_db_button(self, event):
         player_name = self._entry['player_name'].get()
-        difficulty = self._var['difficulty'].get()
         gender = self._var['gender'].get()
         song_id = self._entry['song_id'].get()
-        self._client.update_database(player_name, difficulty, gender, song_id)
+        difficulty = self._var['difficulty'].get()
+        self._client.update_database(player_name, gender, song_id, difficulty)
 
 
 if __name__ == "__main__":
