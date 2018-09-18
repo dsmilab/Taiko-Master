@@ -16,6 +16,9 @@ SONG_TABLE_PATH = os.path.join(TABLE_PATH, 'taiko_song.csv')
 DRUMMER_TABLE_PATH = os.path.join(TABLE_PATH, 'taiko_drummer.csv')
 RESULT_TABLE_PATH = os.path.join(TABLE_PATH, 'taiko_result.csv')
 
+# io.capture
+SCREENSHOT_PATH = os.path.join(BASE_PATH, '../tmp/bb_capture/')
+
 # image.scoreboard
 BB_CAPTURE_PATH = os.path.join(BASE_PATH, '../bb_capture_output/')
 MNIST_MODEL_PATH = os.path.join(BASE_PATH, 'image/mnist_model.h5')

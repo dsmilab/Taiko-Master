@@ -8,8 +8,6 @@ import sys
 import os
 
 __all__ = ['TaikoClient']
-# SSH_BB_ADDRESS_1 = "10.0.1.39"
-# SSH_BB_ADDRESS_2 = "10.0.1.44"
 
 # linux
 LINUX_BB_COMMAND = "cd Projects/beagle; python read10axis.py -6;"
@@ -25,7 +23,7 @@ class TaikoClient(object):
         self._video_pid = None
         print('client esb')
 
-    def record_sensor(self, is_kill):
+    def record_sensor(self, is_kill=False):
         def __record_sensor(host_ip_, username_, pwd_, command_, tips_=''):
             try:
                 self._ssh.connect(host_ip_, username=username_, password=pwd_)
@@ -54,15 +52,18 @@ class TaikoClient(object):
                     p.join()
 
             except Exception as e:
-                sys.stderr.write("IO error: {0}\n".format(e))
+                sys.stderr.write("error: {0}\n".format(e))
                 sys.stderr.flush()
 
-    def record_video(self, is_kill):
+    def record_video(self, is_kill=False):
         try:
             if is_kill:
                 with open('~tmp.tmp', 'r') as f:
-                    pid = int(f.readline())
-                    self._video_pid = pid
+                    if self._video_pid is None:
+                        self._video_pid = int(f.readline())
+
+                    pid = self._video_pid
+                    self._video_pid = None
 
                     if platform.system() == 'Windows':
                         os.system('taskkill /F /PID ' + str(pid))
@@ -77,13 +78,20 @@ class TaikoClient(object):
                         sys.stderr.flush()
 
                     f.close()
+                    sys.stdout.write('[pid=%d] stop capturing screenshot locally.\n' % pid)
+                    sys.stdout.flush()
+
                 os.remove('~tmp.tmp')
 
             else:
-                proc = subprocess.Popen(['python', 'capture.py'], stdout=subprocess.PIPE)
+                capture_exe_path = os.path.join(BASE_PATH, 'capture.py')
+                proc = subprocess.Popen(['python', capture_exe_path], stdout=subprocess.PIPE)
+                self._video_pid = proc.pid
                 with open('~tmp.tmp', 'w') as f:
-                    f.write(str(proc.pid))
+                    f.write(str(self._video_pid))
                     f.close()
+                    sys.stdout.write('[pid=%d] start capturing screenshot locally...\n' % self._video_pid)
+                    sys.stdout.flush()
 
         except Exception as e:
             sys.stderr.write("IO error: {0}\n".format(e))
