@@ -95,8 +95,8 @@ class TaikoClient(object):
             sys.stderr.write("IO error: {0}\n".format(e))
             sys.stderr.flush()
 
-    def transfer_file(self):
-        def __transfer_file(host_ip_, username_, pwd_, prefix_):
+    def download_sensor(self):
+        def __download_sensor(host_ip_, username_, pwd_, prefix_):
             try:
                 self._ssh.connect(host_ip_, username=username_, password=pwd_)
                 sftp = self._ssh.open_sftp()
@@ -127,7 +127,57 @@ class TaikoClient(object):
                     pwd = f.readline()[:-1]
                     _prefix = f.readline()[:-1]
 
-                    p = threading.Thread(target=__transfer_file, args=(host_ip, username, pwd, _prefix,))
+                    p = threading.Thread(target=__download_sensor, args=(host_ip, username, pwd, _prefix,))
+                    p.start()
+                    p.join()
+
+            except Exception as e:
+                sys.stderr.write("error: {0}\n".format(e))
+                sys.stderr.flush()
+
+    def upload_sensor(self):
+        def __upload_sensor(host_ip_, username_, pwd_, tasks_):
+            try:
+                self._ssh.connect(host_ip_, username=username_, password=pwd_)
+                sftp = self._ssh.open_sftp()
+
+                for local_file_, remote_file_ in tasks_:
+                    sftp.put(local_file_, remote_file_)
+
+                sys.stdout.write('Uploading sensor data to %s ...\n' % host_ip)
+                sys.stdout.flush()
+
+            except Exception as ee:
+                sys.stderr.write("SSH connection error: {0}\n".format(ee))
+                sys.stderr.flush()
+
+        settings = next(os.walk(SSH_CONFIG_PATH))[2]
+        server_settings = list(filter(lambda name: name[-4:] == '.gpu', settings))
+
+        for filename in server_settings:
+            host_ip = filename[:-4]
+            try:
+                with open(os.path.join(SSH_CONFIG_PATH, filename), 'r') as f:
+                    username = f.readline()[:-1]
+                    pwd = f.readline()[:-1]
+
+                    files = next(os.walk(LOCAL_SENSOR_PATH))[2]
+                    left_items = list(filter(lambda name: name[:2] == 'L_', files))
+                    right_items = list(filter(lambda name: name[:2] == 'R_', files))
+
+                    left_filename = max(left_items)
+                    right_filename = max(right_items)
+
+                    tasks = []
+                    local_file = os.path.join(LOCAL_SENSOR_PATH, left_filename)
+                    remote_file = os.path.join(SERVER_LEFT_PATH, left_filename)
+                    tasks.append((local_file, remote_file))
+
+                    local_file = os.path.join(LOCAL_SENSOR_PATH, right_filename)
+                    remote_file = os.path.join(SERVER_RIGHT_PATH, right_filename)
+                    tasks.append((local_file, remote_file))
+
+                    p = threading.Thread(target=__upload_sensor, args=(host_ip, username, pwd, tasks))
                     p.start()
                     p.join()
 

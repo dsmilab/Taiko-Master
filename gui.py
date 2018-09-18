@@ -15,11 +15,13 @@ class GUI(Tk):
         self._buttons = {
             'start': Button(master, text="start"),
             'stop': Button(master, text="stop"),
-            'spider': Button(master, text="spider")
+            'spider': Button(master, text="spider"),
+            'upload': Button(master, text='upload')
         }
 
         self.__create_start_btn()
         self.__create_stop_btn()
+        self.__create_upload_btn()
 
     def __create_start_btn(self):
         self._buttons['start'].bind('<Button-1>', self.click_start_button)
@@ -33,6 +35,10 @@ class GUI(Tk):
         self._buttons['spider'].bind('<Button-1>', self.click_spider_button)
         self._buttons['spider'].place(x=100, y=500, width=200, height=50)
 
+    def __create_upload_btn(self):
+        self._buttons['upload'].bind('<Button-1>', self.click_upload_button)
+        self._buttons['upload'].place(x=100, y=400, width=200, height=50)
+
     def click_start_button(self, event):
         self._client.record_sensor()
         self._client.record_screenshot()
@@ -43,11 +49,13 @@ class GUI(Tk):
     def click_stop_button(self, event):
         self._client.record_sensor(is_kill=True)
         self._client.record_screenshot(is_kill=True)
-        self._client.transfer_file()
+        self._client.download_sensor()
         # self._buttons['stop'].place_forget()
         self.__create_start_btn()
-        # os.system('python spider.py')
         # os.system('python putter.py')
+
+    def click_upload_button(self, event):
+        self._client.upload_sensor()
 
     def click_spider_button(self, event):
         os.system('python spider.py')

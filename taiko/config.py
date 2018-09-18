@@ -17,8 +17,12 @@ DRUMMER_TABLE_PATH = os.path.join(TABLE_PATH, 'taiko_drummer.csv')
 RESULT_TABLE_PATH = os.path.join(TABLE_PATH, 'taiko_result.csv')
 
 # network.client
-REMOTE_BASE_PATH = "Projects/beagle"
+REMOTE_BASE_PATH = 'Projects/beagle'
 LOCAL_SENSOR_PATH = os.path.join(BASE_PATH, '../tmp/sensor_data/')
+
+SERVER_PROJECT_PATH = 'PyCharmPojects/Taiko-Master'
+SERVER_LEFT_PATH = os.path.join(SERVER_PROJECT_PATH, 'data/bb_left_forearm_csv')
+SERVER_RIGHT_PATH = os.path.join(SERVER_PROJECT_PATH, 'data/bb_right_forearm_csv')
 
 # capture.py
 LOCAL_SCREENSHOT_PATH = os.path.join(BASE_PATH, '../tmp/bb_capture/')
