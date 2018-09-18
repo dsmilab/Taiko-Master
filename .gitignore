@@ -38,3 +38,5 @@ taiko/tools/__pycache__/
 taiko/preprocessing/__pycache__/
 
 gui/sensor_data/
+
+tmp/

@@ -1,4 +1,5 @@
 from tkinter import *
+from taiko.network.client import TaikoClient
 import os
 
 
@@ -6,9 +7,9 @@ class GUI(Tk):
 
     def __init__(self, master=None):
         Tk.__init__(self, master)
-        self.title('Taiko Master v0.3.1')
+        self.title('Taiko Master v0.3.2')
         self.geometry('1024x768')
-
+        self._client = TaikoClient()
         self._buttons = {
             'start': Button(master, text="start"),
             'stop': Button(master, text="stop"),
@@ -30,13 +31,13 @@ class GUI(Tk):
         self._buttons['spider'].place(x=100, y=500, width=200, height=50)
 
     def click_start_button(self, event):
-        # os.system('python ssh_remote.py')
+        self._client.record_sensor(is_kill=False)
         self._buttons['start'].place_forget()
         self.__create_stop_btn()
         self.__create_spider_btn()
 
     def click_stop_button(self, event):
-        # os.system('python ssh_remote.py -kill')
+        self._client.record_sensor(is_kill=True)
         self._buttons['stop'].place_forget()
         self.__create_start_btn()
         os.system('python spider.py')
