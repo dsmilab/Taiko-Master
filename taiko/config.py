@@ -16,8 +16,13 @@ SONG_TABLE_PATH = os.path.join(TABLE_PATH, 'taiko_song.csv')
 DRUMMER_TABLE_PATH = os.path.join(TABLE_PATH, 'taiko_drummer.csv')
 RESULT_TABLE_PATH = os.path.join(TABLE_PATH, 'taiko_result.csv')
 
-# io.capture
-SCREENSHOT_PATH = os.path.join(BASE_PATH, '../tmp/bb_capture/')
+# network.client
+REMOTE_BASE_PATH = "Projects/beagle"
+LOCAL_SENSOR_PATH = os.path.join(BASE_PATH, '../tmp/sensor_data/')
+
+# capture.py
+LOCAL_SCREENSHOT_PATH = os.path.join(BASE_PATH, '../tmp/bb_capture/')
+
 
 # image.scoreboard
 BB_CAPTURE_PATH = os.path.join(BASE_PATH, '../bb_capture_output/')

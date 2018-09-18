@@ -16,7 +16,7 @@ def record_screenshot(bg_exe=True):
             ts = time.time()
             st = 'capture_' + get_datetime(ts).strftime('%Y_%m_%d_%H_%M_%S')
 
-            local_dir = os.path.join(SCREENSHOT_PATH, st)
+            local_dir = os.path.join(LOCAL_SCREENSHOT_PATH, st)
             if not os.path.isdir(local_dir):
                 os.mkdir(local_dir)
 

@@ -1,6 +1,5 @@
 from ..config import *
 import platform
-import argparse
 import paramiko
 import threading
 import subprocess
@@ -10,7 +9,7 @@ import os
 __all__ = ['TaikoClient']
 
 # linux
-LINUX_BB_COMMAND = "cd Projects/beagle; python read10axis.py -6;"
+LINUX_BB_COMMAND = "cd %s; python read10axis.py -6;" % REMOTE_BASE_PATH
 
 # linux
 LINUX_KILL_COMMAND = "pkill -f python;"
@@ -21,7 +20,6 @@ class TaikoClient(object):
         self._ssh = paramiko.SSHClient()
         self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self._video_pid = None
-        print('client esb')
 
     def record_sensor(self, is_kill=False):
         def __record_sensor(host_ip_, username_, pwd_, command_, tips_=''):
@@ -55,7 +53,7 @@ class TaikoClient(object):
                 sys.stderr.write("error: {0}\n".format(e))
                 sys.stderr.flush()
 
-    def record_video(self, is_kill=False):
+    def record_screenshot(self, is_kill=False):
         try:
             if is_kill:
                 with open('~tmp.tmp', 'r') as f:
@@ -96,3 +94,43 @@ class TaikoClient(object):
         except Exception as e:
             sys.stderr.write("IO error: {0}\n".format(e))
             sys.stderr.flush()
+
+    def transfer_file(self):
+        def __transfer_file(host_ip_, username_, pwd_, prefix_):
+            try:
+                self._ssh.connect(host_ip_, username=username_, password=pwd_)
+                sftp = self._ssh.open_sftp()
+
+                remote_items = sftp.listdir(REMOTE_BASE_PATH)
+                csv_items = list(filter(lambda name: name[-4:] == '.csv', remote_items))
+                remote_filename = max(csv_items)
+
+                sys.stdout.write('Reading from %s ...\n' % host_ip)
+                sys.stdout.flush()
+
+                remote_file = os.path.join(REMOTE_BASE_PATH, remote_filename)
+                local_file = os.path.join(LOCAL_SENSOR_PATH, prefix_ + '_' + remote_filename)
+                sftp.get(remote_file, local_file)
+
+            except Exception as ee:
+                sys.stderr.write("SSH connection error: {0}\n".format(ee))
+                sys.stderr.flush()
+
+        settings = next(os.walk(SSH_CONFIG_PATH))[2]
+        sensor_settings = list(filter(lambda name: name[-3:] == '.bb', settings))
+
+        for filename in sensor_settings:
+            host_ip = filename[:-3]
+            try:
+                with open(os.path.join(SSH_CONFIG_PATH, filename), 'r') as f:
+                    username = f.readline()[:-1]
+                    pwd = f.readline()[:-1]
+                    _prefix = f.readline()[:-1]
+
+                    p = threading.Thread(target=__transfer_file, args=(host_ip, username, pwd, _prefix,))
+                    p.start()
+                    p.join()
+
+            except Exception as e:
+                sys.stderr.write("error: {0}\n".format(e))
+                sys.stderr.flush()

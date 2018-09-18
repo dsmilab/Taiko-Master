@@ -35,15 +35,15 @@ class GUI(Tk):
 
     def click_start_button(self, event):
         self._client.record_sensor()
-        self._client.record_video()
+        self._client.record_screenshot()
         # self._buttons['start'].place_forget()
         self.__create_stop_btn()
         self.__create_spider_btn()
 
     def click_stop_button(self, event):
         self._client.record_sensor(is_kill=True)
-        self._client.record_video(is_kill=True)
-
+        self._client.record_screenshot(is_kill=True)
+        self._client.transfer_file()
         # self._buttons['stop'].place_forget()
         self.__create_start_btn()
         # os.system('python spider.py')
