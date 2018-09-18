@@ -14,12 +14,19 @@ LINUX_BB_COMMAND = "cd %s; python read10axis.py -6;" % REMOTE_BASE_PATH
 # linux
 LINUX_KILL_COMMAND = "pkill -f python;"
 
+# GPU
+LOGIN_COMMAND = "PATH='/usr/bin/anaconda3/bin'; export PATH;" +\
+                "cd %s; " % REMOTE_BASE_PATH
+
+UPDATE_DB_COMMAND = "python taiko/drum.py"
+
 
 class TaikoClient(object):
     def __init__(self):
         self._ssh = paramiko.SSHClient()
         self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self._video_pid = None
+        self._start_datetime = None
 
     def record_sensor(self, is_kill=False):
         def __record_sensor(host_ip_, username_, pwd_, command_, tips_=''):
@@ -40,14 +47,18 @@ class TaikoClient(object):
         for filename in sensor_settings:
             host_ip = filename[:-3]
             try:
+                threads = []
                 with open(os.path.join(SSH_CONFIG_PATH, filename), 'r') as f:
                     username = f.readline()[:-1]
                     pwd = f.readline()[:-1]
                     command = LINUX_KILL_COMMAND if is_kill else LINUX_BB_COMMAND
                     tips = 'kill %s ok' % host_ip if is_kill else 'connect %s ok' % host_ip
-                    p = threading.Thread(target=__record_sensor, args=(host_ip, username, pwd, command, tips))
-                    p.start()
-                    p.join()
+                    thread = threading.Thread(target=__record_sensor, args=(host_ip, username, pwd, command, tips))
+                    thread.start()
+                    threads.append(thread)
+
+                for thread in threads:
+                    thread.join()
 
             except Exception as e:
                 sys.stderr.write("error: {0}\n".format(e))
@@ -105,12 +116,15 @@ class TaikoClient(object):
                 csv_items = list(filter(lambda name: name[-4:] == '.csv', remote_items))
                 remote_filename = max(csv_items)
 
-                sys.stdout.write('Reading from %s ...\n' % host_ip)
-                sys.stdout.flush()
-
                 remote_file = os.path.join(REMOTE_BASE_PATH, remote_filename)
                 local_file = os.path.join(LOCAL_SENSOR_PATH, prefix_ + '_' + remote_filename)
+
+                sys.stdout.write('Reading from %s ...\n' % host_ip)
+                sys.stdout.flush()
                 sftp.get(remote_file, local_file)
+
+                sys.stdout.write('Reading done.\n' % host_ip)
+                sys.stdout.flush()
 
             except Exception as ee:
                 sys.stderr.write("SSH connection error: {0}\n".format(ee))
@@ -122,14 +136,18 @@ class TaikoClient(object):
         for filename in sensor_settings:
             host_ip = filename[:-3]
             try:
+                threads = []
                 with open(os.path.join(SSH_CONFIG_PATH, filename), 'r') as f:
                     username = f.readline()[:-1]
                     pwd = f.readline()[:-1]
                     _prefix = f.readline()[:-1]
 
-                    p = threading.Thread(target=__download_sensor, args=(host_ip, username, pwd, _prefix,))
-                    p.start()
-                    p.join()
+                    thread = threading.Thread(target=__download_sensor, args=(host_ip, username, pwd, _prefix,))
+                    thread.start()
+                    threads.append(thread)
+
+                for thread in threads:
+                    thread.join()
 
             except Exception as e:
                 sys.stderr.write("error: {0}\n".format(e))
@@ -160,6 +178,7 @@ class TaikoClient(object):
         for filename in server_settings:
             host_ip = filename[:-4]
             try:
+                threads = []
                 with open(os.path.join(SSH_CONFIG_PATH, filename), 'r') as f:
                     username = f.readline()[:-1]
                     pwd = f.readline()[:-1]
@@ -180,9 +199,12 @@ class TaikoClient(object):
                     remote_file = os.path.join(SERVER_RIGHT_PATH, right_filename)
                     tasks.append((local_file, remote_file))
 
-                    p = threading.Thread(target=__upload_sensor, args=(host_ip, username, pwd, tasks))
-                    p.start()
-                    p.join()
+                    thread = threading.Thread(target=__upload_sensor, args=(host_ip, username, pwd, tasks))
+                    thread.start()
+                    threads.append(thread)
+
+                for thread in threads:
+                    thread.join()
 
             except Exception as e:
                 sys.stderr.write("error: {0}\n".format(e))
@@ -218,12 +240,14 @@ class TaikoClient(object):
         for filename in server_settings:
             host_ip = filename[:-4]
             try:
+                threads = []
                 with open(os.path.join(SSH_CONFIG_PATH, filename), 'r') as f:
                     username = f.readline()[:-1]
                     pwd = f.readline()[:-1]
 
                     screenshot_dirs = next(os.walk(LOCAL_SCREENSHOT_PATH))[1]
                     img_dir = max(screenshot_dirs)
+                    self._start_datetime = img_dir[-19:]
 
                     local_dir = os.path.join(LOCAL_SCREENSHOT_PATH, img_dir)
                     remote_dir = os.path.join(SERVER_SCREENSHOT_PATH, img_dir)
@@ -237,10 +261,57 @@ class TaikoClient(object):
                         remote_file = os.path.join(remote_dir, filename_)
                         tasks.append((local_file, remote_file))
 
-                    p = threading.Thread(target=__upload_screenshot, args=(host_ip, username, pwd, tasks, remote_dir))
-                    p.start()
-                    p.join()
+                    thread = threading.Thread(target=__upload_screenshot, args=(host_ip, username, pwd, tasks, remote_dir))
+                    thread.start()
+                    threads.append(thread)
+
+                for thread in threads:
+                    thread.join()
 
             except Exception as e:
                 sys.stderr.write("error: {0}\n".format(e))
                 sys.stderr.flush()
+
+    def update_database(self, player_name, gender, song_id, difficulty):
+        def __update_database(host_ip_, username_, pwd_, command_, tips_=''):
+            try:
+                self._ssh.connect(host_ip_, username=username_, password=pwd_)
+                print(command_)
+                stdin, stdout, stderr = self._ssh.exec_command(command_)
+                sys.stderr.write(str(stdout.read()))
+                sys.stderr.write('\n')
+                sys.stderr.flush()
+
+                sys.stdout.write('%s\n' % tips_)
+                sys.stdout.flush()
+
+            except Exception as ee:
+                sys.stderr.write("SSH connection error: {0}\n".format(ee))
+                sys.stderr.flush()
+
+        settings = next(os.walk(SSH_CONFIG_PATH))[2]
+        server_settings = list(filter(lambda name: name[-4:] == '.gpu', settings))
+
+        for filename in server_settings:
+            host_ip = filename[:-4]
+            try:
+                threads = []
+                with open(os.path.join(SSH_CONFIG_PATH, filename), 'r') as f:
+                    username = f.readline()[:-1]
+                    pwd = f.readline()[:-1]
+                    command = LOGIN_COMMAND
+                    command += UPDATE_DB_COMMAND
+                    command += " %s %s %s %s %s" % (player_name, gender, str(song_id), difficulty, self._start_datetime)
+                    tips = 'Update database done.'
+
+                    thread = threading.Thread(target=__update_database, args=(host_ip, username, pwd, command, tips))
+                    thread.start()
+                    threads.append(thread)
+
+                for thread in threads:
+                    thread.join()
+
+            except Exception as e:
+                sys.stderr.write("error: {0}\n".format(e))
+                sys.stderr.flush()
+

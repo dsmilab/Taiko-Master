@@ -33,8 +33,8 @@ def get_play_start_time(img_dir):
         x_train = x_train.reshape(x_train.shape[0], IMG_ROWS, IMG_COLS, 1)
         x = model.predict_classes(x_train)[0]
         if x == 1:
-            cap = float(filename[5:-4])
-            return cap
+            timestamp = float(filename[5:-4])
+            return timestamp
     return None
 
 
@@ -44,13 +44,17 @@ def convert_datetime_format(ori_start_time):
 
 
 def main(argv):
-    if len(argv) < 4:
+    if len(argv) < 5:
         return 1
     who_name = argv[0]
     gender = argv[1]
     song_id = int(argv[2])
-    record_start_time = argv[3]
+    difficulty = argv[3]
+    record_start_time = argv[4]
     record_start_time = convert_datetime_format(record_start_time)
+    sys.stdout.write('ssssssssssssssss')
+    sys.stdout.flush()
+
     print(who_name, gender, song_id, record_start_time)
     drummer_df = pd.read_csv(DRUMMER_TABLE_PATH)
     if not (who_name in list(drummer_df.name)):
@@ -81,7 +85,7 @@ def main(argv):
         pid = max(play_df.pid) + 1
 
     index_ = play_df.index[-1] + 1
-    play_df.loc[index_] = [pid, who_id, song_id, performance_order, 'easy', record_start_time, first_hit_time]
+    play_df.loc[index_] = [pid, who_id, song_id, performance_order, difficulty, record_start_time, first_hit_time]
     play_df.to_csv(PLAY_TABLE_PATH, index=False)
 
     return 0
