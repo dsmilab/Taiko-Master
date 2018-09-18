@@ -56,6 +56,7 @@ class GUI(Tk):
 
     def click_upload_button(self, event):
         self._client.upload_sensor()
+        self._client.upload_screenshot()
 
     def click_spider_button(self, event):
         os.system('python spider.py')

@@ -23,6 +23,7 @@ LOCAL_SENSOR_PATH = os.path.join(BASE_PATH, '../tmp/sensor_data/')
 SERVER_PROJECT_PATH = 'PyCharmPojects/Taiko-Master'
 SERVER_LEFT_PATH = os.path.join(SERVER_PROJECT_PATH, 'data/bb_left_forearm_csv')
 SERVER_RIGHT_PATH = os.path.join(SERVER_PROJECT_PATH, 'data/bb_right_forearm_csv')
+SERVER_SCREENSHOT_PATH = os.path.join(SERVER_PROJECT_PATH, 'bb_capture_output')
 
 # capture.py
 LOCAL_SCREENSHOT_PATH = os.path.join(BASE_PATH, '../tmp/bb_capture/')

@@ -141,10 +141,13 @@ class TaikoClient(object):
                 self._ssh.connect(host_ip_, username=username_, password=pwd_)
                 sftp = self._ssh.open_sftp()
 
+                sys.stdout.write('Uploading sensor data to %s ...\n' % host_ip)
+                sys.stdout.flush()
+
                 for local_file_, remote_file_ in tasks_:
                     sftp.put(local_file_, remote_file_)
 
-                sys.stdout.write('Uploading sensor data to %s ...\n' % host_ip)
+                sys.stdout.write('Upload sensor data done.\n')
                 sys.stdout.flush()
 
             except Exception as ee:
@@ -178,6 +181,63 @@ class TaikoClient(object):
                     tasks.append((local_file, remote_file))
 
                     p = threading.Thread(target=__upload_sensor, args=(host_ip, username, pwd, tasks))
+                    p.start()
+                    p.join()
+
+            except Exception as e:
+                sys.stderr.write("error: {0}\n".format(e))
+                sys.stderr.flush()
+
+    def upload_screenshot(self):
+        def __upload_screenshot(host_ip_, username_, pwd_, tasks_, remote_dir_):
+            try:
+                self._ssh.connect(host_ip_, username=username_, password=pwd_)
+                sftp = self._ssh.open_sftp()
+
+                try:
+                    sftp.mkdir(remote_dir_)
+                except IOError:
+                    pass
+
+                sys.stdout.write('Uploading screenshot to %s ...\n' % host_ip)
+                sys.stdout.flush()
+
+                for local_file_, remote_file_ in tasks_:
+                    sftp.put(local_file_, remote_file_)
+
+                sys.stdout.write('Upload screenshot done.\n')
+                sys.stdout.flush()
+
+            except Exception as ee:
+                sys.stderr.write("SSH connection error: {0}\n".format(ee))
+                sys.stderr.flush()
+
+        settings = next(os.walk(SSH_CONFIG_PATH))[2]
+        server_settings = list(filter(lambda name: name[-4:] == '.gpu', settings))
+
+        for filename in server_settings:
+            host_ip = filename[:-4]
+            try:
+                with open(os.path.join(SSH_CONFIG_PATH, filename), 'r') as f:
+                    username = f.readline()[:-1]
+                    pwd = f.readline()[:-1]
+
+                    screenshot_dirs = next(os.walk(LOCAL_SCREENSHOT_PATH))[1]
+                    img_dir = max(screenshot_dirs)
+
+                    local_dir = os.path.join(LOCAL_SCREENSHOT_PATH, img_dir)
+                    remote_dir = os.path.join(SERVER_SCREENSHOT_PATH, img_dir)
+
+                    files = next(os.walk(local_dir))[2]
+
+                    tasks = []
+
+                    for filename_ in files:
+                        local_file = os.path.join(local_dir, filename_)
+                        remote_file = os.path.join(remote_dir, filename_)
+                        tasks.append((local_file, remote_file))
+
+                    p = threading.Thread(target=__upload_screenshot, args=(host_ip, username, pwd, tasks, remote_dir))
                     p.start()
                     p.join()
 
