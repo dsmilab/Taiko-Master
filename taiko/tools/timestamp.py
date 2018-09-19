@@ -1,7 +1,9 @@
-from datetime import datetime, timedelta
 import time
+from datetime import datetime, timedelta
 
-__all__ = ['get_hwclock_time', 'get_datetime']
+__all__ = ['get_hwclock_time',
+           'get_datetime',
+           'convert_datetime_format']
 
 
 def get_hwclock_time(local_time, delta=0):
@@ -23,3 +25,8 @@ def get_datetime(utc0_time, delta=0):
     d = datetime.fromtimestamp(utc0_time) + timedelta(seconds=int(delta))
     utc8 = datetime.fromtimestamp(time.mktime(d.timetuple()))
     return utc8
+
+
+def convert_datetime_format(ori_start_time):
+    d = datetime.strptime(ori_start_time, '%Y_%m_%d_%H_%M_%S')
+    return d.strftime('%m/%d/%Y %H:%M:%S')

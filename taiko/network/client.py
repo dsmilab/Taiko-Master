@@ -18,7 +18,7 @@ LINUX_KILL_COMMAND = "pkill -f python;"
 LOGIN_COMMAND = "PATH='/usr/bin/anaconda3/bin'; export PATH;" +\
                 "cd %s; " % SERVER_PROJECT_PATH
 
-UPDATE_DB_COMMAND = "python taiko/drum.py"
+UPDATE_DB_COMMAND = "python taiko/update_db.py"
 
 
 class TaikoClient(object):
@@ -261,7 +261,8 @@ class TaikoClient(object):
                         remote_file = os.path.join(remote_dir, filename_)
                         tasks.append((local_file, remote_file))
 
-                    thread = threading.Thread(target=__upload_screenshot, args=(host_ip, username, pwd, tasks, remote_dir))
+                    thread = threading.Thread(target=__upload_screenshot,
+                                              args=(host_ip, username, pwd, tasks, remote_dir))
                     thread.start()
                     threads.append(thread)
 
@@ -276,11 +277,7 @@ class TaikoClient(object):
         def __update_database(host_ip_, username_, pwd_, command_, tips_=''):
             try:
                 self._ssh.connect(host_ip_, username=username_, password=pwd_)
-                print(command_)
-                stdin, stdout, stderr = self._ssh.exec_command(command_)
-                # sys.stderr.write(str(stdout.read()))
-                # sys.stderr.write('\n')
-                # sys.stderr.flush()
+                self._ssh.exec_command(command_)
 
                 sys.stdout.write('%s\n' % tips_)
                 sys.stdout.flush()
@@ -314,4 +311,3 @@ class TaikoClient(object):
             except Exception as e:
                 sys.stderr.write("error: {0}\n".format(e))
                 sys.stderr.flush()
-

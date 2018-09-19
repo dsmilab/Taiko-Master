@@ -22,7 +22,7 @@ class GUI(Tk):
         }
 
         self._entry = {
-            'player_name': Entry(master, bg='lightgray'),
+            'drummer_name': Entry(master, bg='lightgray'),
             'song_id': Entry(master, bg='lightblue'),
         }
 
@@ -96,8 +96,8 @@ class GUI(Tk):
             widget.pack(anchor=W)
 
     def __create_player_tbx(self):
-        self._entry['player_name'].place(x=400, y=200, height=80, width=300)
-        self._entry['player_name'].config(font=("Helvetica", 30))
+        self._entry['drummer_name'].place(x=400, y=200, height=80, width=300)
+        self._entry['drummer_name'].config(font=("Helvetica", 30))
 
     def __create_song_id_tbx(self):
         self._entry['song_id'].place(x=700, y=400, height=80, width=50)
@@ -121,21 +121,21 @@ class GUI(Tk):
         self._client.upload_screenshot()
 
     def click_analyze_button(self, event):
-        sys.stdout.write(self._entry['player_name'].get())
-        sys.stdout.write('\n')
+        sys.stderr.write(self._entry['player_name'].get())
+        sys.stderr.write('\n')
 
-        sys.stdout.write(self._var['difficulty'].get())
-        sys.stdout.write('\n')
+        sys.stderr.write(self._var['difficulty'].get())
+        sys.stderr.write('\n')
 
-        sys.stdout.write(self._var['gender'].get())
-        sys.stdout.write('\n')
+        sys.stderr.write(self._var['gender'].get())
+        sys.stderr.write('\n')
 
-        sys.stdout.write(self._entry['song_id'].get())
-        sys.stdout.write('\n')
-        sys.stdout.flush()
+        sys.stderr.write(self._entry['song_id'].get())
+        sys.stderr.write('\n')
+        sys.stderr.flush()
 
     def click_update_db_button(self, event):
-        player_name = self._entry['player_name'].get()
+        player_name = self._entry['drummer_name'].get()
         gender = self._var['gender'].get()
         song_id = self._entry['song_id'].get()
         difficulty = self._var['difficulty'].get()
