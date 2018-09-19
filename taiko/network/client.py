@@ -274,12 +274,17 @@ class TaikoClient(object):
                 sys.stderr.flush()
 
     def update_database(self, player_name, gender, song_id, difficulty):
-        def __update_database(host_ip_, username_, pwd_, command_, tips_=''):
+        def __update_database(host_ip_, username_, pwd_, command_):
             try:
                 self._ssh.connect(host_ip_, username=username_, password=pwd_)
-                self._ssh.exec_command(command_)
+                stdin, stdout, stderr = self._ssh.exec_command(command_)
 
-                sys.stdout.write('%s\n' % tips_)
+                key_msg = str(stdout.read())[-4:-1]
+                if key_msg == ENTRY_SUCCESS:
+                    sys.stdout.write('Update database ok\n')
+                else:
+                    sys.stdout.write('update database fail\n')
+
                 sys.stdout.flush()
 
             except Exception as ee:
@@ -299,9 +304,8 @@ class TaikoClient(object):
                     command = LOGIN_COMMAND
                     command += UPDATE_DB_COMMAND
                     command += " %s %s %s %s %s" % (player_name, gender, str(song_id), difficulty, self._start_datetime)
-                    tips = 'Update database done.'
 
-                    thread = threading.Thread(target=__update_database, args=(host_ip, username, pwd, command, tips))
+                    thread = threading.Thread(target=__update_database, args=(host_ip, username, pwd, command,))
                     thread.start()
                     threads.append(thread)
 

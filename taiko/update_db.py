@@ -11,7 +11,13 @@ def main(argv):
     difficulty = argv[3]
     ori_record_start_time = argv[4]
 
-    Database.insert_play(who_name, gender, song_id, difficulty, ori_record_start_time)
+    try:
+        Database.insert_play(who_name, gender, song_id, difficulty, ori_record_start_time)
+        sys.stdout.write('@0@')
+    except RuntimeError:
+        sys.stdout.write('@1@')
+
+    sys.stdout.flush()
     return 0
 
 

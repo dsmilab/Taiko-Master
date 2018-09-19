@@ -38,6 +38,9 @@ DRUM_IMG_MODEL_PATH = os.path.join(BASE_PATH, 'image/drum_img_model.h5')
 # connect.ssh
 SSH_CONFIG_PATH = os.path.join(BASE_PATH, '../data/connect_host/')
 
+# .database
+ENTRY_SUCCESS = '@0@'
+
 # preprocessing.primitive
 RMS_COLS = ['a_rms', 'g_rms', 'imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz']
 
