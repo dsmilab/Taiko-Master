@@ -32,7 +32,7 @@ class _ArmData(object):
         # trace the directory and read all of them
         files = next(os.walk(arm_csv_path))[2]
         script_df = [
-            pd.read_csv(os.path.join(arm_csv_path, filename), dtype={
+            pd.read_csv(posixpath.join(arm_csv_path, filename), dtype={
                 'timestamp': np.float64
             }) for filename in files
         ]

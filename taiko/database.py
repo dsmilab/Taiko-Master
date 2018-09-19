@@ -5,11 +5,6 @@ import pandas as pd
 
 __all__ = ['Database']
 
-IMG_ROWS = 65
-IMG_COLS = 65
-X_ANCHOR = 95
-Y_ANCHOR = 85
-
 
 class Database(object):
     def __init__(self):

@@ -32,7 +32,7 @@ class _Board(object):
         d = datetime.strptime(row['start_time'], '%m/%d/%Y %H:%M:%S')
         directory = d.strftime('bb_capture.capture_%Y_%m_%d_%H_%M_%S')
 
-        self._workspace = os.path.join(BB_CAPTURE_PATH, directory)
+        self._workspace = posixpath.join(BB_CAPTURE_PATH, directory)
         self._files = sorted(next(os.walk(self._workspace))[2])
 
     @abstractmethod
@@ -53,7 +53,7 @@ class _ResultBoard(_Board):
 
     def _process_images(self):
         for filename in reversed(self._files):
-            img = imread(os.path.join(self._workspace, filename))
+            img = imread(posixpath.join(self._workspace, filename))
 
             all_digits = []
             for pos in range(1, len(DIGIT_COUNTS)):
@@ -131,7 +131,7 @@ class _ScoreBoard(_Board):
         all_digits = []
 
         for filename in self._files[self._score_start_frame: self._score_end_frame]:
-            img = imread(os.path.join(self._workspace, filename))
+            img = imread(posixpath.join(self._workspace, filename))
             digits = []
             for digit in range(DIGIT_COUNTS[0]):
                 cropped = img[X_ANCHOR[0]: X_ANCHOR[0] + IMG_ROWS[0],

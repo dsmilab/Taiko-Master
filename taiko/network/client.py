@@ -48,7 +48,7 @@ class TaikoClient(object):
             host_ip = filename[:-3]
             try:
                 threads = []
-                with open(os.path.join(SSH_CONFIG_PATH, filename), 'r') as f:
+                with open(posixpath.join(SSH_CONFIG_PATH, filename), 'r') as f:
                     username = f.readline()[:-1]
                     pwd = f.readline()[:-1]
                     command = LINUX_KILL_COMMAND if is_kill else LINUX_BB_COMMAND
@@ -93,7 +93,7 @@ class TaikoClient(object):
                 os.remove('~tmp.tmp')
 
             else:
-                capture_exe_path = os.path.join(BASE_PATH, 'capture.py')
+                capture_exe_path = posixpath.join(BASE_PATH, 'capture.py')
                 proc = subprocess.Popen(['python', capture_exe_path], stdout=subprocess.PIPE)
                 self._video_pid = proc.pid
                 with open('~tmp.tmp', 'w') as f:
@@ -116,8 +116,8 @@ class TaikoClient(object):
                 csv_items = list(filter(lambda name: name[-4:] == '.csv', remote_items))
                 remote_filename = max(csv_items)
 
-                remote_file = os.path.join(REMOTE_BASE_PATH, remote_filename)
-                local_file = os.path.join(LOCAL_SENSOR_PATH, prefix_ + '_' + remote_filename)
+                remote_file = posixpath.join(REMOTE_BASE_PATH, remote_filename)
+                local_file = posixpath.join(LOCAL_SENSOR_PATH, prefix_ + '_' + remote_filename)
 
                 sys.stdout.write('Reading from %s ...\n' % host_ip)
                 sys.stdout.flush()
@@ -137,7 +137,7 @@ class TaikoClient(object):
             host_ip = filename[:-3]
             try:
                 threads = []
-                with open(os.path.join(SSH_CONFIG_PATH, filename), 'r') as f:
+                with open(posixpath.join(SSH_CONFIG_PATH, filename), 'r') as f:
                     username = f.readline()[:-1]
                     pwd = f.readline()[:-1]
                     _prefix = f.readline()[:-1]
@@ -179,7 +179,7 @@ class TaikoClient(object):
             host_ip = filename[:-4]
             try:
                 threads = []
-                with open(os.path.join(SSH_CONFIG_PATH, filename), 'r') as f:
+                with open(posixpath.join(SSH_CONFIG_PATH, filename), 'r') as f:
                     username = f.readline()[:-1]
                     pwd = f.readline()[:-1]
 
@@ -191,12 +191,12 @@ class TaikoClient(object):
                     right_filename = max(right_items)
 
                     tasks = []
-                    local_file = os.path.join(LOCAL_SENSOR_PATH, left_filename)
-                    remote_file = os.path.join(SERVER_LEFT_PATH, left_filename)
+                    local_file = posixpath.join(LOCAL_SENSOR_PATH, left_filename)
+                    remote_file = posixpath.join(SERVER_LEFT_PATH, left_filename)
                     tasks.append((local_file, remote_file))
 
-                    local_file = os.path.join(LOCAL_SENSOR_PATH, right_filename)
-                    remote_file = os.path.join(SERVER_RIGHT_PATH, right_filename)
+                    local_file = posixpath.join(LOCAL_SENSOR_PATH, right_filename)
+                    remote_file = posixpath.join(SERVER_RIGHT_PATH, right_filename)
                     tasks.append((local_file, remote_file))
 
                     thread = threading.Thread(target=__upload_sensor, args=(host_ip, username, pwd, tasks))
@@ -241,7 +241,7 @@ class TaikoClient(object):
             host_ip = filename[:-4]
             try:
                 threads = []
-                with open(os.path.join(SSH_CONFIG_PATH, filename), 'r') as f:
+                with open(posixpath.join(SSH_CONFIG_PATH, filename), 'r') as f:
                     username = f.readline()[:-1]
                     pwd = f.readline()[:-1]
 
@@ -249,16 +249,16 @@ class TaikoClient(object):
                     img_dir = max(screenshot_dirs)
                     self._start_datetime = img_dir[-19:]
 
-                    local_dir = os.path.join(LOCAL_SCREENSHOT_PATH, img_dir)
-                    remote_dir = os.path.join(SERVER_SCREENSHOT_PATH, img_dir)
+                    local_dir = posixpath.join(LOCAL_SCREENSHOT_PATH, img_dir)
+                    remote_dir = posixpath.join(SERVER_SCREENSHOT_PATH, img_dir)
 
                     files = next(os.walk(local_dir))[2]
 
                     tasks = []
 
                     for filename_ in files:
-                        local_file = os.path.join(local_dir, filename_)
-                        remote_file = os.path.join(remote_dir, filename_)
+                        local_file = posixpath.join(local_dir, filename_)
+                        remote_file = posixpath.join(remote_dir, filename_)
                         tasks.append((local_file, remote_file))
 
                     thread = threading.Thread(target=__upload_screenshot,
@@ -298,7 +298,7 @@ class TaikoClient(object):
             host_ip = filename[:-4]
             try:
                 threads = []
-                with open(os.path.join(SSH_CONFIG_PATH, filename), 'r') as f:
+                with open(posixpath.join(SSH_CONFIG_PATH, filename), 'r') as f:
                     username = f.readline()[:-1]
                     pwd = f.readline()[:-1]
                     command = LOGIN_COMMAND

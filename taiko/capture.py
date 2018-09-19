@@ -1,7 +1,7 @@
 from config import *
 from tools.timestamp import *
 
-import os
+import posixpath
 import sys
 import time
 import threading
@@ -16,8 +16,8 @@ def record_screenshot(bg_exe=True):
             ts = time.time()
             st = 'capture_' + get_datetime(ts).strftime('%Y_%m_%d_%H_%M_%S')
 
-            local_dir = os.path.join(LOCAL_SCREENSHOT_PATH, st)
-            if not os.path.isdir(local_dir):
+            local_dir = posixpath.join(LOCAL_SCREENSHOT_PATH, st)
+            if not posixpath.isdir(local_dir):
                 os.mkdir(local_dir)
 
             sys.stdout.write('[%s] Start capturing screenshot...\n' % st)
@@ -29,7 +29,7 @@ def record_screenshot(bg_exe=True):
                     img = sct.grab(monitor)
                     now_time = time.time()
                     save_filename = '%04d-%.4f.png' % (count, now_time)
-                    local_file = os.path.join(local_dir, save_filename)
+                    local_file = posixpath.join(local_dir, save_filename)
                     mss.tools.to_png(img.rgb, img.size, output=local_file)
                     count += 1
 

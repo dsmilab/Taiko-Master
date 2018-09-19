@@ -1,5 +1,12 @@
 from tkinter import *
 from taiko.network.client import TaikoClient
+from taiko.config import *
+import platform
+
+if platform.system() == 'Windows':
+    ACTIVE = 'normal'
+elif platform.system() == 'Linux':
+    ACTIVE = 'active'
 
 
 class GUI(Tk):
@@ -114,7 +121,7 @@ class GUI(Tk):
         self._entry['song_id'].config(font=("Helvetica", 20))
 
     def click_start_button(self, event):
-        if str(self._buttons['start']['state']) == 'active':
+        if self._buttons['start']['state'] == ACTIVE:
             self._client.record_sensor()
             self._client.record_screenshot()
             # self._buttons['start'].place_forget()
@@ -123,7 +130,7 @@ class GUI(Tk):
         self.refresh()
 
     def click_stop_button(self, event):
-        if str(self._buttons['stop'].config('state')) == 'normal':
+        if self._buttons['stop']['state'] == ACTIVE:
             self._client.record_sensor(is_kill=True)
             self._client.record_screenshot(is_kill=True)
             self._client.download_sensor()
@@ -133,14 +140,14 @@ class GUI(Tk):
         self.refresh()
 
     def click_upload_button(self, event):
-        if str(self._buttons['upload']['state']) == 'active':
+        if self._buttons['upload']['state'] == ACTIVE:
             self._client.upload_sensor()
             self._client.upload_screenshot()
             self._stage = 3
         self.refresh()
 
     def click_analyze_button(self, event):
-        if str(self._buttons['analyze']['state']) == 'active':
+        if self._buttons['analyze']['state'] == ACTIVE:
             sys.stderr.write(self._entry['drummer_name'].get())
             sys.stderr.write('\n')
 
@@ -156,7 +163,7 @@ class GUI(Tk):
         self.refresh()
 
     def click_update_db_button(self, event):
-        if str(self._buttons['update_db']['state']) == 'active':
+        if self._buttons['update_db']['state'] == ACTIVE:
             player_name = self._entry['drummer_name'].get()
             gender = self._var['gender'].get()
             song_id = self._entry['song_id'].get()
@@ -165,12 +172,11 @@ class GUI(Tk):
         self.refresh()
 
     def refresh(self):
-
         if self._entry['drummer_name'].get() == '':
             self._buttons['update_db'].config(state='disabled')
         else:
             if self._entry['song_id'].get().isdigit() and self._stage >= 3:
-                self._buttons['update_db'].config(state='active')
+                self._buttons['update_db'].config(state=ACTIVE)
 
 
 if __name__ == "__main__":
