@@ -1,24 +1,45 @@
 import os
-
+import posixpath
 # constant
 RIGHT_HAND = 0
 LEFT_HAND = 1
-BASE_PATH = os.path.dirname(os.path.realpath(__file__))
+BASE_PATH = os.path.dirname(os.path.realpath(__file__)).replace('\\', '/')
 
 # io.arm
-LEFT_PATH = os.path.join(BASE_PATH, '../../data/bb_left_forearm_csv/')
-RIGHT_PATH = os.path.join(BASE_PATH, '../../data/bb_right_forearm_csv/')
+LEFT_PATH = posixpath.join(BASE_PATH, '../data/bb_left_forearm_csv/')
+RIGHT_PATH = posixpath.join(BASE_PATH, '../data/bb_right_forearm_csv/')
 
 # io.record
-TABLE_PATH = os.path.join(BASE_PATH, '../../data/taiko_tables/')
-PLAY_TABLE_PATH = os.path.join(TABLE_PATH, 'taiko_play.csv')
-SONG_TABLE_PATH = os.path.join(TABLE_PATH, 'taiko_song.csv')
-DRUMMER_TABLE_PATH = os.path.join(TABLE_PATH, 'taiko_drummer.csv')
-RESULT_TABLE_PATH = os.path.join(TABLE_PATH, 'taiko_result.csv')
+TABLE_PATH = posixpath.join(BASE_PATH, '../data/taiko_tables/')
+PLAY_TABLE_PATH = posixpath.join(TABLE_PATH, 'taiko_play.csv')
+SONG_TABLE_PATH = posixpath.join(TABLE_PATH, 'taiko_song.csv')
+DRUMMER_TABLE_PATH = posixpath.join(TABLE_PATH, 'taiko_drummer.csv')
+RESULT_TABLE_PATH = posixpath.join(TABLE_PATH, 'taiko_result.csv')
+
+# network.client
+REMOTE_BASE_PATH = 'Projects/beagle'
+LOCAL_SENSOR_PATH = posixpath.join(BASE_PATH, '../tmp/sensor_data/')
+
+SERVER_PROJECT_PATH = 'PyCharmPojects/Taiko-Master'
+SERVER_LEFT_PATH = posixpath.join(SERVER_PROJECT_PATH, 'data/bb_left_forearm_csv')
+SERVER_RIGHT_PATH = posixpath.join(SERVER_PROJECT_PATH, 'data/bb_right_forearm_csv')
+SERVER_SCREENSHOT_PATH = posixpath.join(SERVER_PROJECT_PATH, 'bb_capture_output')
+
+# capture.py
+LOCAL_SCREENSHOT_PATH = posixpath.join(BASE_PATH, '../tmp/bb_capture/')
+
 
 # image.scoreboard
-BB_CAPTURE_PATH = os.path.join(BASE_PATH, '../../bb_capture_output/')
-MNIST_MODEL_PATH = os.path.join(BASE_PATH, 'model/mnist_model.h5')
+BB_CAPTURE_PATH = posixpath.join(BASE_PATH, '../bb_capture_output/')
+MNIST_MODEL_PATH = posixpath.join(BASE_PATH, 'image/mnist_model.h5')
+
+DRUM_IMG_MODEL_PATH = posixpath.join(BASE_PATH, 'image/drum_img_model.h5')
+
+# connect.ssh
+SSH_CONFIG_PATH = posixpath.join(BASE_PATH, '../data/connect_host/')
+
+# .database
+ENTRY_SUCCESS = '@0@'
 
 # preprocessing.primitive
 RMS_COLS = ['a_rms', 'g_rms', 'imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz']

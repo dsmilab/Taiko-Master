@@ -32,7 +32,7 @@ class _Note(object):
         difficulty = get_record(who_id, song_id, order_id)['difficulty']
         note_file_name = NOTE_MAGIC_STR % (self._song_id, difficulty)
 
-        self._note_df = pd.read_csv(os.path.join(TABLE_PATH, note_file_name))
+        self._note_df = pd.read_csv(posixpath.join(TABLE_PATH, note_file_name))
         self._note_df.drop(DROPPED_COLUMNS, axis=1, inplace=True)
         self._note_df.columns = RENAMED_COLUMNS
 

@@ -19,11 +19,10 @@ def get_event_primitive_df(who_id, song_id, order_id,
     if who_id == 4 and song_id == 4 and order_id in [3, 4]:
         raise ValueError('Corrupted EP')
 
-    if label_group not in ['origin', 'single_stream', 'dong_ka', 'big_small', 'balloon']:
+    if label_group not in ['origin', 'single_stream', 'don_ka', 'big_small', 'balloon']:
         raise ValueError('label_group Error!')
 
     boolean_dict = {True: 'y', False: 'n'}
-    resampling_boolean = {True: '0.02S', False: None}
 
     filename = '%d-%d-%d-%s' % (who_id, song_id, order_id, boolean_dict[resampling])
 
@@ -34,7 +33,7 @@ def get_event_primitive_df(who_id, song_id, order_id,
                                              song_id,
                                              order_id,
                                              scale=False,
-                                             resample=resampling_boolean[resampling]).event_primitive_df
+                                             resample=resampling).event_primitive_df
 
         event_primitive_df.to_csv('CSV/event_primitive/' + filename + '.csv', index=False, float_format='%.4g')
 
@@ -42,8 +41,8 @@ def get_event_primitive_df(who_id, song_id, order_id,
     transform_hit_type_label = transform_hit_type_label_origin
     if label_group == 'single_stream':
         transform_hit_type_label = transform_hit_type_label_single_stream
-    elif label_group == 'dong_ka':
-        transform_hit_type_label = transform_hit_type_label_dong_ka
+    elif label_group == 'don_ka':
+        transform_hit_type_label = transform_hit_type_label_don_ka
     elif label_group == 'big_small':
         transform_hit_type_label = transform_hit_type_label_big_small
     elif label_group == 'balloon':
@@ -103,7 +102,7 @@ def transform_hit_type_label_single_stream(label):
     return 0
 
 
-def transform_hit_type_label_dong_ka(label):
+def transform_hit_type_label_don_ka(label):
     """
     Relabel the column.
 

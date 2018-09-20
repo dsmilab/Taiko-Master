@@ -8,11 +8,10 @@ import re
 import pandas as pd
 import numpy as np
 from sklearn import preprocessing
+from scipy.stats import mode
 from imblearn.over_sampling import SMOTE
 
 __all__ = ['get_performance', 'do_over_sampled', 'do_scaling']
-
-DELTA_T_DIVIDED_COUNT = 8
 
 
 class _Performance(object):
@@ -38,9 +37,8 @@ class _Performance(object):
         self._play = get_play(who_id, song_id, order_id, resample=resample)
 
         self._events = self._play.events
-        self._time_unit = self._note_df['time_unit'].min()
-        self._bar_unit = self._time_unit * 8
-        self._delta_t = self._bar_unit / DELTA_T_DIVIDED_COUNT
+        self._time_unit = mode(self._note_df['time_unit'])[0]
+        self._delta_t = self._time_unit
 
         self.__build_event_primitive_df()
 
@@ -129,7 +127,7 @@ class _Performance(object):
         return self._event_primitive_df
 
 
-def get_performance(who_id, song_id, order_id, scale=True, resample=RESAMPLE_RATE):
+def get_performance(who_id, song_id, order_id, scale=True, resample=True):
     """
     Get the performance.
 
