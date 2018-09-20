@@ -1,6 +1,5 @@
 from tkinter import *
 from taiko.network.client import TaikoClient
-from taiko.config import *
 import platform
 
 if platform.system() == 'Windows':
@@ -134,6 +133,11 @@ class GUI(Tk):
             self._client.record_sensor(is_kill=True)
             self._client.record_screenshot(is_kill=True)
             self._client.download_sensor()
+
+            player_name = self._entry['drummer_name'].get()
+            song_id = self._entry['song_id'].get()
+            self._client.update_local_record_table(player_name, song_id)
+
             # self._buttons['stop'].place_forget()
             self.__create_start_btn()
             self._stage = 2

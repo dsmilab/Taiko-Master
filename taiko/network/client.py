@@ -5,6 +5,7 @@ import threading
 import subprocess
 import sys
 import os
+import pandas as pd
 
 __all__ = ['TaikoClient']
 
@@ -27,6 +28,12 @@ class TaikoClient(object):
         self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self._video_pid = None
         self._start_datetime = None
+        self._local_filename = {}
+
+    def reset(self):
+        self._video_pid = None
+        self._start_datetime = None
+        self._local_filename = {}
 
     def record_sensor(self, is_kill=False):
         def __record_sensor(host_ip_, username_, pwd_, command_, tips_=''):
@@ -41,6 +48,7 @@ class TaikoClient(object):
                 sys.stderr.write("SSH connection error: {0}\n".format(ee))
                 sys.stderr.flush()
 
+        self.reset()
         settings = next(os.walk(SSH_CONFIG_PATH))[2]
         sensor_settings = list(filter(lambda name: name[-3:] == '.bb', settings))
 
@@ -90,11 +98,16 @@ class TaikoClient(object):
                     sys.stdout.write('[pid=%d] stop capturing screenshot locally.\n' % pid)
                     sys.stdout.flush()
 
+                    screenshot_dirs = next(os.walk(LOCAL_SCREENSHOT_PATH))[1]
+                    img_dir = max(screenshot_dirs)
+                    self._local_filename['capture'] = img_dir
+
                 os.remove('~tmp.tmp')
 
             else:
                 capture_exe_path = posixpath.join(BASE_PATH, 'capture.py')
                 proc = subprocess.Popen(['python', capture_exe_path], stdout=subprocess.PIPE)
+
                 self._video_pid = proc.pid
                 with open('~tmp.tmp', 'w') as f:
                     f.write(str(self._video_pid))
@@ -122,6 +135,7 @@ class TaikoClient(object):
                 sys.stdout.write('Reading from %s ...\n' % host_ip)
                 sys.stdout.flush()
                 sftp.get(remote_file, local_file)
+                self._local_filename[prefix_] = prefix_ + '_' + remote_filename
 
                 sys.stdout.write('Reading done.\n' % host_ip)
                 sys.stdout.flush()
@@ -315,3 +329,24 @@ class TaikoClient(object):
             except Exception as e:
                 sys.stderr.write("error: {0}\n".format(e))
                 sys.stderr.flush()
+
+    def update_local_record_table(self, player_name, song_id):
+        left_sensor_datetime = self._local_filename['L']
+        right_sensor_datetime = self._local_filename['R']
+        capture_datetime = self._local_filename['capture']
+
+        try:
+            record_df = pd.read_csv(LOCAL_RECORD_TABLE_PATH)
+            index_ = 0
+            if len(record_df) > 0:
+                index_ = record_df.index[-1] + 1
+            record_df.loc[index_] = [player_name, song_id, left_sensor_datetime, right_sensor_datetime, capture_datetime]
+            record_df.to_csv(LOCAL_RECORD_TABLE_PATH, index=False)
+
+            sys.stdout.write('Update local table ok\n')
+            sys.stdout.flush()
+
+        except Exception as e:
+                sys.stderr.write("error: {0}\n".format(e))
+                sys.stderr.flush()
+

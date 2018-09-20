@@ -19,6 +19,7 @@ RESULT_TABLE_PATH = posixpath.join(TABLE_PATH, 'taiko_result.csv')
 # network.client
 REMOTE_BASE_PATH = 'Projects/beagle'
 LOCAL_SENSOR_PATH = posixpath.join(BASE_PATH, '../tmp/sensor_data/')
+LOCAL_RECORD_TABLE_PATH = posixpath.join(BASE_PATH, '../tmp/record_table.csv')
 
 SERVER_PROJECT_PATH = 'PyCharmPojects/Taiko-Master'
 SERVER_LEFT_PATH = posixpath.join(SERVER_PROJECT_PATH, 'data/bb_left_forearm_csv')
