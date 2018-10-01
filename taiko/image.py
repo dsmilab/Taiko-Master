@@ -44,6 +44,7 @@ class ResultProcessor(metaclass=Singleton):
 
     def process(self, pic_path):
         rp = ResultProcessor
+
         img = imread(pic_path)
         all_digits = []
         for pos in range(len(rp.DIGIT_COUNTS)):
@@ -70,6 +71,7 @@ class ResultProcessor(metaclass=Singleton):
 
     def __process_scores(self, all_scores):
         rp = ResultProcessor
+
         result_dict = {}
         front = 0
         for pos in range(len(rp.DIGIT_COUNTS)):
@@ -100,10 +102,11 @@ class DrumProcessor(metaclass=Singleton):
 
     def process(self, pic_path):
         dp = DrumProcessor
+
         img = imread(pic_path)
-        img = img[dp.X_ANCHOR:dp.X_ANCHOR + dp.IMG_ROWS, dp.Y_ANCHOR:dp.Y_ANCHOR + dp.IMG_COLS]
-        img = rgb2grey(img)
-        x_train = [img]
+        cropped = img[dp.X_ANCHOR:dp.X_ANCHOR + dp.IMG_ROWS, dp.Y_ANCHOR:dp.Y_ANCHOR + dp.IMG_COLS]
+        cropped = rgb2grey(cropped)
+        x_train = [cropped]
         x_train = np.asarray(x_train)
         x_train = x_train.reshape(x_train.shape[0], dp.IMG_ROWS, dp.IMG_COLS, 1)
         x = self._model.predict_classes(x_train)[0]

@@ -5,6 +5,10 @@ RIGHT_HAND = 0
 LEFT_HAND = 1
 BASE_PATH = os.path.dirname(os.path.realpath(__file__)).replace('\\', '/')
 
+
+HOME_PATH = posixpath.join(BASE_PATH, '../data/alpha/')
+
+
 # io.arm
 LEFT_PATH = posixpath.join(BASE_PATH, '../data/bb_left_forearm_csv/')
 RIGHT_PATH = posixpath.join(BASE_PATH, '../data/bb_right_forearm_csv/')

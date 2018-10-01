@@ -1,5 +1,4 @@
 from ..config import *
-from ..io.note import *
 from .play import *
 from .primitive import *
 from collections import deque

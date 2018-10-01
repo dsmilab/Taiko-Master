@@ -1,6 +1,6 @@
 from taiko.config import *
 from taiko.tools.score import *
-from taiko.io.record import *
+from taiko.record import *
 from abc import abstractmethod
 import os
 import numpy as np
