@@ -32,7 +32,7 @@ LOCAL_SCREENSHOT_PATH = posixpath.join(BASE_PATH, '../tmp/bb_capture/')
 
 # image.scoreboard
 BB_CAPTURE_PATH = posixpath.join(BASE_PATH, '../bb_capture_output/')
-MNIST_MODEL_PATH = posixpath.join(BASE_PATH, 'image/mnist_model.h5')
+MNIST_MODEL_PATH = posixpath.join(BASE_PATH, 'external/mnist_model.h5')
 
 DRUM_IMG_MODEL_PATH = posixpath.join(BASE_PATH, 'image/drum_img_model.h5')
 
