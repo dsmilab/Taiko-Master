@@ -44,8 +44,6 @@ class ResultProcessor(object):
                               Y_ANCHOR[pos] + digit * IMG_COLS[pos]:Y_ANCHOR[pos] + (digit + 1) * IMG_COLS[pos]]
                 cropped = resize(cropped, (TARGET_IMG_ROWS, TARGET_IMG_COLS),
                                  mode='constant', preserve_range=False)
-                imshow(cropped)
-                plt.show()
                 cropped = rgb2grey(cropped)
                 digits.append(cropped)
 
