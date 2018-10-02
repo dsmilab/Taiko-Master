@@ -1,5 +1,5 @@
 from ..config import *
-from .play import *
+from taiko.play import *
 from .primitive import *
 from collections import deque
 

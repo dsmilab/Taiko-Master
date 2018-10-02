@@ -3,7 +3,9 @@ import numpy as np
 from .config import *
 from glob import glob
 
-__all__ = ['load_arm_df', 'load_note_df']
+__all__ = ['load_arm_df',
+           'load_note_df',
+           'get_capture_dir_path']
 
 
 class _Note(object):
@@ -54,10 +56,13 @@ class _ArmData(object):
 
         arm_path = files[0]
         arm_df = pd.read_csv(arm_path, dtype={
-            'timestamp': np.float64
+            'timestamp': np.float64,
         })
 
+        arm_df.drop(arm_df.tail(1).index, inplace=True)
         arm_df = arm_df[_ArmData.REMAINED_COLUMNS]
+        for col in _ArmData.REMAINED_COLUMNS:
+            arm_df[col] = arm_df[col].astype(np.float64)
 
         self._arm_df = arm_df
 
@@ -68,3 +73,15 @@ class _ArmData(object):
 
 def load_arm_df(who_name, arm_filename):
     return _ArmData(who_name, arm_filename).arm_df
+
+
+def get_capture_dir_path(who_name, capture_dir_name):
+    files = glob(posixpath.join(HOME_PATH, who_name, 'day[0-9]', 'bb_capture', capture_dir_name))
+
+    if len(files) > 1:
+        raise ValueError('More than one item matched')
+    elif len(files) == 0:
+        raise ValueError('No capture directory matched')
+
+    capture_dir_path = files[0]
+    return capture_dir_path

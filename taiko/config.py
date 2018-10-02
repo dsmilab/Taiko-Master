@@ -69,7 +69,7 @@ STAT_COLS = [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFI
 
 KEYWORD_COLS = SUFFIX_COLS + ['SMA', 'AE', 'CORR']
 
-ZERO_ADJ_COL = ['imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz', 'msu_ax', 'msu_ay', 'msu_az']
+ZERO_ADJ_COL = ['imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz']
 
 ALL_COLUMNS = ['timestamp', 'wall_time', 'imu_temp',
                'imu_ax', 'imu_ay', 'imu_az',
