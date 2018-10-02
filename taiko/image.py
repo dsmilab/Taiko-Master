@@ -61,7 +61,7 @@ class ResultProcessor(metaclass=Singleton):
 
         all_digits = np.asarray(all_digits)
         all_digits = all_digits.reshape(all_digits.shape[0], rp.TARGET_IMG_ROWS, rp.TARGET_IMG_COLS, 1)
-        all_scores = self._model.predict_classes(all_digits)
+        all_scores = self._model.predict_classes(all_digits, verbose=0)
 
         processed_result = self.__process_scores(all_scores)
         if processed_result:
@@ -109,7 +109,7 @@ class DrumProcessor(metaclass=Singleton):
         x_train = [cropped]
         x_train = np.asarray(x_train)
         x_train = x_train.reshape(x_train.shape[0], dp.IMG_ROWS, dp.IMG_COLS, 1)
-        x = self._model.predict_classes(x_train)[0]
+        x = self._model.predict_classes(x_train, verbose=0)[0]
 
         return True if x == 1 else False
 

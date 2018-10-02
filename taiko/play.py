@@ -22,10 +22,10 @@ class _Play(object):
     }
 
     INTRO_LENGTH_DICT = {
-        1: 2.18,
-        2: 2.00,
-        3: 1.82,
-        4: 1.94,
+        1: 2.18 - 1.8,
+        2: 2.00 - 1.8,
+        3: 1.82 - 1.8,
+        4: 1.94 - 1.8,
     }
 
     def __init__(self, song_id, raw_arm_df_dict, play_start_time, calibrate, resample):
@@ -44,7 +44,6 @@ class _Play(object):
 
         for filename, raw_arm_df in raw_arm_df_dict.items():
             position = filename[0]
-            print(filename, raw_arm_df)
             self._play_dict[position] = self.__build_play_df(raw_arm_df, calibrate, resample)
 
     def __set_hw_time(self, song_id, play_start_time):
@@ -76,7 +75,7 @@ class _Play(object):
         if calibrate:
             modes_dict = {}
             copy_df = play_df.copy()
-            print(copy_df)
+
             for col in ZERO_ADJ_COL:
                 mode_ = mode(copy_df[col])[0]
                 modes_dict[col] = mode_
