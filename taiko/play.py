@@ -46,6 +46,28 @@ class _Play(object):
             position = filename[0]
             self._play_dict[position] = self.__build_play_df(raw_arm_df, calibrate, resample)
 
+    def crop_near_raw_data(self, who_name, song_id, p_order, delta_t, position, prefix_name):
+        for id_, _ in enumerate(self._events):
+            event_time = self._events[id_][0]
+            hit_type = self._events[id_][1]
+
+            if hit_type < 1 or hit_type > 2:
+                continue
+
+            local_start_time = event_time - delta_t
+            local_end_time = event_time + delta_t
+            note_type = 'don' if hit_type == 1 else 'ka'
+            filename = 'motif/%s/song%d/order%d/%s/%s/%s-%03d.csv' % \
+                       (who_name, song_id, p_order, note_type, position, prefix_name, id_)
+
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
+            
+            df = self._play_dict[position]
+            motif_df = df[(df['timestamp'] >= local_start_time) &
+                          (df['timestamp'] <= local_end_time)].copy()
+
+            motif_df.to_csv(filename, index=False)
+
     def __set_hw_time(self, song_id, play_start_time):
         play_time_length = _Play.SONG_LENGTH_DICT[song_id]
         intro_time_length = _Play.INTRO_LENGTH_DICT[song_id]
