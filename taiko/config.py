@@ -89,3 +89,18 @@ GYR_REGEX = '^\w*_G[XYZ]{0,2}_\w*$'
 NEAR_REGEX = '^[LR]\d+$'
 HIT_TYPE_REGEX = '^(hit_type|[A-Z]+\d)$'
 NO_SCALE_REGEX = '^(\w*_CORR|hit_type|[A-Z]+\d)$'
+
+SONG_LENGTH_DICT = {
+    1: 89,
+    2: 109,
+    3: 134,
+    4: 134,
+    99: 500,
+}
+
+INTRO_LENGTH_DICT = {
+    1: 2.18 - 1.8,
+    2: 2.00 - 1.8,
+    3: 1.82 - 1.8,
+    4: 1.94 - 1.8,
+}

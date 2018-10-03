@@ -13,20 +13,6 @@ __all__ = ['get_play']
 
 
 class _Play(object):
-    SONG_LENGTH_DICT = {
-        1: 89,
-        2: 109,
-        3: 134,
-        4: 134,
-        99: 500,
-    }
-
-    INTRO_LENGTH_DICT = {
-        1: 2.18 - 1.8,
-        2: 2.00 - 1.8,
-        3: 1.82 - 1.8,
-        4: 1.94 - 1.8,
-    }
 
     def __init__(self, song_id, raw_arm_df_dict, play_start_time, calibrate, resample):
         # { filename: file_csv, }
@@ -69,8 +55,8 @@ class _Play(object):
             motif_df.to_csv(filename, index=False)
 
     def __set_hw_time(self, song_id, play_start_time):
-        play_time_length = _Play.SONG_LENGTH_DICT[song_id]
-        intro_time_length = _Play.INTRO_LENGTH_DICT[song_id]
+        play_time_length = SONG_LENGTH_DICT[song_id]
+        intro_time_length = INTRO_LENGTH_DICT[song_id]
 
         self._start_time = play_start_time - DUMMY_TIME_LENGTH
         self._end_time = play_start_time + play_time_length + DUMMY_TIME_LENGTH
