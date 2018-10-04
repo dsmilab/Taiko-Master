@@ -5,6 +5,10 @@ RIGHT_HAND = 0
 LEFT_HAND = 1
 BASE_PATH = os.path.dirname(os.path.realpath(__file__)).replace('\\', '/')
 
+
+HOME_PATH = posixpath.join(BASE_PATH, '../data/alpha/')
+
+
 # io.arm
 LEFT_PATH = posixpath.join(BASE_PATH, '../data/bb_left_forearm_csv/')
 RIGHT_PATH = posixpath.join(BASE_PATH, '../data/bb_right_forearm_csv/')
@@ -32,9 +36,9 @@ LOCAL_SCREENSHOT_PATH = posixpath.join(BASE_PATH, '../tmp/bb_capture/')
 
 # image.scoreboard
 BB_CAPTURE_PATH = posixpath.join(BASE_PATH, '../bb_capture_output/')
-MNIST_MODEL_PATH = posixpath.join(BASE_PATH, 'image/mnist_model.h5')
+MNIST_MODEL_PATH = posixpath.join(BASE_PATH, 'external/mnist_model.h5')
 
-DRUM_IMG_MODEL_PATH = posixpath.join(BASE_PATH, 'image/drum_img_model.h5')
+DRUM_IMG_MODEL_PATH = posixpath.join(BASE_PATH, 'external/drum_img_model.h5')
 
 # connect.ssh
 SSH_CONFIG_PATH = posixpath.join(BASE_PATH, '../data/connect_host/')
@@ -65,7 +69,7 @@ STAT_COLS = [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFI
 
 KEYWORD_COLS = SUFFIX_COLS + ['SMA', 'AE', 'CORR']
 
-ZERO_ADJ_COL = ['imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz', 'msu_ax', 'msu_ay', 'msu_az']
+ZERO_ADJ_COL = ['imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz']
 
 ALL_COLUMNS = ['timestamp', 'wall_time', 'imu_temp',
                'imu_ax', 'imu_ay', 'imu_az',
@@ -85,3 +89,18 @@ GYR_REGEX = '^\w*_G[XYZ]{0,2}_\w*$'
 NEAR_REGEX = '^[LR]\d+$'
 HIT_TYPE_REGEX = '^(hit_type|[A-Z]+\d)$'
 NO_SCALE_REGEX = '^(\w*_CORR|hit_type|[A-Z]+\d)$'
+
+SONG_LENGTH_DICT = {
+    1: 89,
+    2: 109,
+    3: 134,
+    4: 134,
+    99: 500,
+}
+
+INTRO_LENGTH_DICT = {
+    1: 2.18 - 1.8,
+    2: 2.00 - 1.8,
+    3: 1.82 - 1.8,
+    4: 1.94 - 1.8,
+}
