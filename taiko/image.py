@@ -1,5 +1,6 @@
 from .config import *
 from .tools.score import *
+from .tools.singleton import *
 import seaborn as sns
 import pandas as pd
 import numpy as np
@@ -20,15 +21,6 @@ __all__ = ['read_result_board_info',
            'get_play_start_time']
 
 
-class _Singleton(type):
-    _instances = {}
-
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super(_Singleton, cls).__call__(*args, **kwargs)
-        return cls._instances[cls]
-
-
 class _Processor(object):
 
     def __init__(self):
@@ -39,7 +31,7 @@ class _Processor(object):
         raise NotImplementedError("Please Implement this method")
 
 
-class _ScoreProcessor(metaclass=_Singleton):
+class _ScoreProcessor(_Processor, metaclass=_Singleton):
     X_ANCHOR = 178
     Y_ANCHOR = 40
 
@@ -49,6 +41,7 @@ class _ScoreProcessor(metaclass=_Singleton):
     DIGIT_COUNT = 6
 
     def __init__(self):
+        super(_ScoreProcessor, self).__init__()
         self._model = load_model(MNIST_MODEL_PATH)
 
     def process(self, pic_path):
@@ -78,8 +71,6 @@ class _ScoreProcessor(metaclass=_Singleton):
 
 
 class _ResultProcessor(_Processor, metaclass=_Singleton):
-    COLUMNS = ['score', 'good', 'ok', 'bad', 'max_combo', 'drumroll']
-
     X_ANCHOR = [275, 258, 279, 300, 258, 279]
     Y_ANCHOR = [279, 438, 438, 438, 561, 561]
 
@@ -92,7 +83,7 @@ class _ResultProcessor(_Processor, metaclass=_Singleton):
     TARGET_IMG_COLS = 10
 
     def __init__(self):
-        _Processor.__init__(self)
+        super(_ResultProcessor, self).__init__()
         self._model = load_model(MNIST_MODEL_PATH)
 
     def process(self, pic_path):
@@ -131,7 +122,7 @@ class _ResultProcessor(_Processor, metaclass=_Singleton):
                 return None
 
             front += rp.DIGIT_COUNTS[pos]
-            result_dict[_ResultProcessor.COLUMNS[pos]] = score
+            result_dict[RESULT_BOARD_INFO_COLUMNS[pos]] = score
 
         return result_dict
 
@@ -144,7 +135,7 @@ class _DrumProcessor(_Processor, metaclass=_Singleton):
     IMG_COL = 65
 
     def __init__(self):
-        _Processor.__init__(self)
+        super(_DrumProcessor, self).__init__()
         self._model = load_model(DRUM_IMG_MODEL_PATH)
 
     def process(self, pic_path):

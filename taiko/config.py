@@ -104,3 +104,5 @@ INTRO_LENGTH_DICT = {
     3: 1.82 - 1.8,
     4: 1.94 - 1.8,
 }
+
+RESULT_BOARD_INFO_COLUMNS = ['score', 'good', 'ok', 'bad', 'max_combo', 'drumroll']

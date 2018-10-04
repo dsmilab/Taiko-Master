@@ -1,4 +1,4 @@
-from database import *
+from taiko.deprecated.database import *
 import sys
 
 

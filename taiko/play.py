@@ -9,7 +9,8 @@ from scipy.stats import mode
 DELTA_T_DIVIDED_COUNT = 8
 DUMMY_TIME_LENGTH = 15
 
-__all__ = ['get_play']
+__all__ = ['get_play',
+           'get_play_score_auc']
 
 
 class _Play(object):
@@ -152,3 +153,16 @@ def get_play(record_row, calibrate=True, resample=True):
     }
 
     return _Play(song_id, raw_arm_df_dict, play_start_time, calibrate, resample)
+
+
+def get_play_score_auc(capture_dir_path, song_id):
+    area = 0.0
+    timestamps, img_scores = read_score_board_info(capture_dir_path, song_id)
+    for i_ in range(len(timestamps)):
+        if i_ == 0:
+            continue
+        area += (timestamps[i_] - timestamps[i_ - 1]) * img_scores[i_ - 1]
+    area /= len(timestamps)
+
+    return area
+
