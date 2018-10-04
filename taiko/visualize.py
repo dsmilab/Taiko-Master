@@ -14,6 +14,6 @@ def plot_play_score(capture_dir_path, song_id):
         'timestamp': timestamps,
         'score': img_scores,
     })
-    plt.figure(figsize=(15, 5))
+    plt.figure(figsize=(20, 8))
     sns.lineplot(x='timestamp', y='score', data=score_df)
     plt.show()

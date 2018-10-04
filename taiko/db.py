@@ -3,16 +3,11 @@ from .image import *
 from .play import *
 from .config import *
 
-import seaborn as sns
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 from glob import glob
-import posixpath
-from skimage.io import imshow, imsave, imread
-import os
 
-__all__ = ['update_play_result']
+__all__ = ['update_play_result',
+           'update_play_score_auc']
 
 SONGS = 4
 
@@ -37,6 +32,7 @@ class Database(metaclass=_Singleton):
 
 def update_play_result(verbose=1):
     record_df = Database().record_df
+
     # only 4 songs we considered
     record_df = record_df[(record_df['song_id'] >= 1) & (record_df['song_id'] <= SONGS)]
 
@@ -52,9 +48,10 @@ def update_play_result(verbose=1):
             who_name = row['drummer_name']
             song_id = row['song_id']
             dirs = glob('../data/alpha/' + who_name + '/*/bb_capture/' + capture_dir)
-            print(who_name, capture_dir)
             capture_dir_path = dirs[0]
             result = read_result_board_info(capture_dir_path)
+
+            # increment p_order
             try:
                 aggregate_dict[(who_name, song_id)]
             except KeyError:
@@ -64,6 +61,7 @@ def update_play_result(verbose=1):
             aggregate_dict[(who_name, song_id)] = p_order
 
             if verbose > 0:
+                print(who_name, capture_dir)
                 print('who = %s, id = %d, p_order = %d' % (who_name, id_, p_order))
                 print(result)
 
@@ -81,42 +79,55 @@ def update_play_result(verbose=1):
     play_result_df.to_csv('../data/taiko_tables/taiko_play_result.csv', index=False)
 
 
-def update_score_auc(verbose=1):
+def update_play_score_auc(verbose=1):
     record_df = Database().record_df
 
     # only 4 songs we considered
     record_df = record_df[(record_df['song_id'] >= 1) & (record_df['song_id'] <= SONGS)]
 
-    auc_dict = {}
-    for i_ in range(SONGS):
-        auc_dict[i_ + 1] = []
+    columns = ['drummer_name', 'song_id', 'p_order', 'capture_datetime', 'auc']
+    data = {}
+    for col in columns:
+        data[col] = []
 
-    try:
-        for id_, row in record_df.iterrows():
-            if id_ > 5:
-                break
+    aggregate_dict = {}
+    for id_, row in record_df.iterrows():
+        try:
             capture_dir = row['capture_datetime']
             who_name = row['drummer_name']
             song_id = row['song_id']
             dirs = glob('../data/alpha/' + who_name + '/*/bb_capture/' + capture_dir)
             capture_dir_path = dirs[0]
-            result = read_result_board_info(capture_dir_path)
 
-            if verbose > 0:
-                print(who_name, capture_dir)
-                print(result)
+            # increment p_order
+            try:
+                aggregate_dict[(who_name, song_id)]
+            except KeyError:
+                aggregate_dict[(who_name, song_id)] = 0
 
-            if result['bad'] > 0:
-                continue
+            p_order = aggregate_dict[(who_name, song_id)] + 1
+            aggregate_dict[(who_name, song_id)] = p_order
 
             auc = get_play_score_auc(capture_dir_path, song_id)
-            auc_dict[song_id].append(auc)
 
-        fc_auc_df = pd.DataFrame()
-        fc_auc_df['song_id'] = [i + 1 for i in range(SONGS)]
-        fc_auc_df['auc'] = [np.mean(auc_dict[i_ + 1]) for i_ in range(SONGS)]
+            data['drummer_name'].append(who_name)
+            data['song_id'].append(song_id)
+            data['p_order'].append(p_order)
+            data['capture_datetime'].append(capture_dir)
+            data['auc'].append(auc)
 
-        fc_auc_df.to_csv('../data/taiko_tables/taiko_fc_auc.csv', index=False)
+            if verbose > 0:
+                print(who_name, capture_dir, auc)
 
-    except Exception as e:
-        print(e)
+        except Exception as e:
+            print(e)
+
+    play_score_auc_df = pd.DataFrame(data=data)
+    play_score_auc_df.to_csv('../data/taiko_tables/taiko_play_score_auc.csv', index=False, float_format='%.4f')
+
+
+def get_fc_score_mean_auc(song_id):
+    play_score_auc_df = pd.read_csv('../data/taiko_tables/taiko_play_score_auc.csv')
+    play_result_df = pd.read_csv('../data/taiko_tables/taiko_play_result.csv')
+
+    df = play_score_auc_df.join(play_result_df, on=['drummer_name', 'song_id', 'capture_datetime'], how='left')
