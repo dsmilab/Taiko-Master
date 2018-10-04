@@ -186,9 +186,9 @@ def read_result_board_info(capture_dir_path):
     raise RuntimeError('unknown result info detected')
 
 
-def read_score_board_info(capture_dir_path, song_id, timestamp_calibrate=True):
+def read_score_board_info(capture_dir_path, song_id, timestamp_calibrate=True, raise_exception=False):
     file_paths = glob(posixpath.join(capture_dir_path, '*'))
-    files = [re.search('(\d){4}-(\d)+.(\d)+.png', file_path).group(0) for file_path in file_paths]
+    files = sorted([re.search('(\d){4}-(\d)+.(\d)+.png', file_path).group(0) for file_path in file_paths])
 
     play_start_time = get_play_start_time(capture_dir_path)
     play_end_time = play_start_time + SONG_LENGTH_DICT[song_id]
@@ -196,7 +196,7 @@ def read_score_board_info(capture_dir_path, song_id, timestamp_calibrate=True):
     play_start_frame = -1
     play_end_frame = -1
 
-    for id_, filename in enumerate(sorted(files)):
+    for id_, filename in enumerate(files):
         frame_time = float(filename[5: -4])
         if frame_time <= play_start_time:
             play_start_frame = id_
@@ -213,8 +213,11 @@ def read_score_board_info(capture_dir_path, song_id, timestamp_calibrate=True):
         score = _ScoreProcessor().process(pic_path)
 
         if score is None or score < img_scores[-1]:
-            score = img_scores[-1]
-            # raise RuntimeError('unknown score info detected')
+            if raise_exception:
+                raise RuntimeError('unknown score info detected')
+            else:
+                score = img_scores[-1]
+                
         img_scores.append(score)
 
     del img_scores[0]
