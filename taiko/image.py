@@ -29,7 +29,7 @@ class _Singleton(type):
         return cls._instances[cls]
 
 
-class _Processor(metaclass=_Singleton):
+class _Processor(object):
 
     def __init__(self):
         pass
@@ -39,7 +39,7 @@ class _Processor(metaclass=_Singleton):
         raise NotImplementedError("Please Implement this method")
 
 
-class _ScoreProcessor(_Processor):
+class _ScoreProcessor(metaclass=_Singleton):
     X_ANCHOR = 178
     Y_ANCHOR = 40
 
@@ -49,7 +49,6 @@ class _ScoreProcessor(_Processor):
     DIGIT_COUNT = 6
 
     def __init__(self):
-        _Processor.__init__(self)
         self._model = load_model(MNIST_MODEL_PATH)
 
     def process(self, pic_path):
@@ -61,11 +60,9 @@ class _ScoreProcessor(_Processor):
         for digit in range(sp.DIGIT_COUNT):
             cropped = img[sp.X_ANCHOR: sp.X_ANCHOR + sp.IMG_ROW,
                           sp.Y_ANCHOR + sp.IMG_COL * digit: sp.Y_ANCHOR + sp.IMG_COL * (digit + 1)]
-            imshow(cropped)
-            plt.show()
             cropped = rgb2grey(cropped)
             digits.append(cropped)
-            all_digits.extend(digits)
+        all_digits.extend(digits)
 
         all_digits = np.asarray(all_digits)
         all_digits = all_digits.reshape(all_digits.shape[0], sp.IMG_ROW, sp.IMG_COL, 1)
@@ -80,7 +77,7 @@ class _ScoreProcessor(_Processor):
         return img_score
 
 
-class _ResultProcessor(_Processor):
+class _ResultProcessor(_Processor, metaclass=_Singleton):
     COLUMNS = ['score', 'good', 'ok', 'bad', 'max_combo', 'drumroll']
 
     X_ANCHOR = [275, 258, 279, 300, 258, 279]
@@ -139,7 +136,7 @@ class _ResultProcessor(_Processor):
         return result_dict
 
 
-class _DrumProcessor(_Processor):
+class _DrumProcessor(_Processor, metaclass=_Singleton):
     X_ANCHOR = 95
     Y_ANCHOR = 85
 
@@ -214,8 +211,10 @@ def read_score_board_info(capture_dir_path, song_id, timestamp_calibrate=True):
 
     for pic_path in sorted(file_paths)[play_start_frame: play_end_frame]:
         score = _ScoreProcessor().process(pic_path)
+
         if score is None or score < img_scores[-1]:
-            raise RuntimeError('unknown score info detected')
+            score = img_scores[-1]
+            # raise RuntimeError('unknown score info detected')
         img_scores.append(score)
 
     del img_scores[0]
