@@ -154,6 +154,7 @@ def get_best_score_board_info(song_id):
     df = play_score_auc_df[(play_score_auc_df['song_id'] == song_id)]
     max_idx = df['auc'].idxmax()
     row = df.loc[max_idx]
+    print(row)
 
     capture_dir = row['capture_datetime']
     who_name = row['drummer_name']

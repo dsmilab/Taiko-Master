@@ -203,7 +203,7 @@ def read_score_board_info(capture_dir_path, song_id, timestamp_calibrate=True, r
     for pic_path in sorted(file_paths)[play_start_frame: play_end_frame]:
         score = _ScoreProcessor().process(pic_path)
 
-        if score is None or score < img_scores[-1]:
+        if score is None or score < img_scores[-1] or score > img_scores[-1] + 15000:
             if raise_exception:
                 raise RuntimeError('unknown score info detected')
             else:
