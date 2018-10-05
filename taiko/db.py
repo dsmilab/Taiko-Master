@@ -4,10 +4,12 @@ from .play import *
 from .config import *
 
 import pandas as pd
+import numpy as np
 from glob import glob
 
 __all__ = ['update_play_result',
-           'update_play_score_auc']
+           'update_play_score_auc',
+           'get_score_auc_stat']
 
 SONGS = 4
 
@@ -126,8 +128,21 @@ def update_play_score_auc(verbose=1):
     play_score_auc_df.to_csv('../data/taiko_tables/taiko_play_score_auc.csv', index=False, float_format='%.4f')
 
 
-def get_fc_score_mean_auc(song_id):
+def get_score_auc_stat(song_id):
     play_score_auc_df = pd.read_csv('../data/taiko_tables/taiko_play_score_auc.csv')
     play_result_df = pd.read_csv('../data/taiko_tables/taiko_play_result.csv')
+    df = play_score_auc_df.merge(play_result_df,
+                                 on=['drummer_name', 'song_id', 'p_order', 'capture_datetime'],
+                                 how='left')
+    df = df[(df['song_id'] == song_id)]
+    full_combo_df = df[df['bad'] == 0]
+    fc_mean_auc = np.mean(full_combo_df['auc'])
 
-    df = play_score_auc_df.join(play_result_df, on=['drummer_name', 'song_id', 'capture_datetime'], how='left')
+    dif_auc = []
+    for id_, row in df.iterrows():
+        auc = row['auc']
+        dif_auc.append(auc - fc_mean_auc)
+    std_auc = np.std(dif_auc, ddof=1)
+
+    return {'fc_mean_auc': fc_mean_auc,
+            'std_auc': std_auc}
