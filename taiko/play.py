@@ -1,15 +1,19 @@
 from .config import *
 from .io import *
 from .image import *
+from .db import *
 
 import pandas as pd
 import numpy as np
 from scipy.stats import mode
+import math
 
 DELTA_T_DIVIDED_COUNT = 8
 DUMMY_TIME_LENGTH = 15
 
-__all__ = ['get_play']
+__all__ = ['get_play',
+           'get_play_score_auc',
+           'estimate_remained_play_times']
 
 
 class _Play(object):
@@ -152,3 +156,25 @@ def get_play(record_row, calibrate=True, resample=True):
     }
 
     return _Play(song_id, raw_arm_df_dict, play_start_time, calibrate, resample)
+
+
+def get_play_score_auc(capture_dir_path, song_id):
+    area = 0.0
+    timestamps, img_scores = read_score_board_info(capture_dir_path, song_id)
+    for i_ in range(len(timestamps)):
+        if i_ == 0:
+            continue
+        area += (timestamps[i_] - timestamps[i_ - 1]) * img_scores[i_ - 1]
+    area /= len(timestamps)
+
+    return area
+
+
+def estimate_remained_play_times(capture_dir_path, song_id):
+    auc = get_play_score_auc(capture_dir_path, song_id)
+    stat = get_score_auc_stat(song_id)
+    factor = (auc - stat['fc_mean_auc']) / stat['std_auc']
+    times = 0
+    if factor < 0:
+        times = int(np.ceil(-factor * 2))
+    return times
