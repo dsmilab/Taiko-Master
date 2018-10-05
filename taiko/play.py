@@ -6,7 +6,6 @@ from .db import *
 import pandas as pd
 import numpy as np
 from scipy.stats import mode
-import math
 
 DELTA_T_DIVIDED_COUNT = 8
 DUMMY_TIME_LENGTH = 15
