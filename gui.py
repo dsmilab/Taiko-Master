@@ -47,17 +47,21 @@ class _StartScreen(Frame):
         self._buttons = {}
         self._images = {}
         self._var = {}
+        self._labels = {}
+        self._entries = {}
 
         self._selected_difficulty = 'easy'
         self.__init_screen()
 
     def __init_screen(self):
-        self.__create_start_button()
+        self.__create_buttons()
+        self.__create_entry_tips()
+        self.__refresh_difficulty_buttons()
 
-    def __create_start_button(self):
+    def __create_buttons(self):
         self._buttons['start'] = Button(self, text='start')
-        self._buttons['start'].bind('<Button-1>', self.click_start_button)
-        self._buttons['start'].place(x=350, y=550, width=150, height=50)
+        self._buttons['start'].bind('<Button-1>', self.__click_start_button)
+        self._buttons['start'].place(x=300, y=520, width=250, height=70)
 
         self._var['difficulty'] = StringVar()
         for i_, difficulty in enumerate(['easy', 'normal', 'hard', 'extreme']):
@@ -65,16 +69,40 @@ class _StartScreen(Frame):
             self._buttons[difficulty] = Button(self,
                                                image=self._images[difficulty],
                                                text=difficulty)
-            self._buttons[difficulty].bind('<Button-1>', self.click_difficulty_button)
-            self._buttons[difficulty].place(x=100 + i_ * 140, y=200, width=120, height=120)
+            self._buttons[difficulty].bind('<Button-1>', self.__click_difficulty_button)
+            self._buttons[difficulty].place(x=130 + i_ * 140, y=300, width=120, height=120)
 
-    def click_difficulty_button(self, e):
+    def __create_entry_tips(self):
+        self._labels['drummer_name'] = Label(self, text='drummer\'s name:')
+        self._labels['drummer_name'].place(x=40, y=10, height=80)
+        self._labels['drummer_name'].config(font=("Helvetica", 30))
+
+        self._entries['drummer_name'] = Entry(self, bg='lightgray')
+        self._entries['drummer_name'].place(x=40, y=80, height=80, width=300)
+        self._entries['drummer_name'].config(font=("Helvetica", 30))
+
+        self._labels['song_id'] = Label(self, text='song ID:')
+        self._labels['song_id'].place(x=450, y=80)
+        self._labels['song_id'].config(font=("Helvetica", 25))
+
+        self._entries['song_id'] = Entry(self, bg='lightblue')
+        self._entries['song_id'].place(x=600, y=80, height=40, width=70)
+        self._entries['song_id'].config(font=("Helvetica", 20))
+
+        self._labels['difficulty'] = Label(self, text='difficulty')
+        self._labels['difficulty'].place(x=330, y=250)
+        self._labels['difficulty'].config(font=("Times", 20))
+
+    def __click_difficulty_button(self, e):
         self._selected_difficulty = e.widget['text']
-        e.widget.configure(bd=5, bg='red')
-        print(self._selected_difficulty)
+        self.__refresh_difficulty_buttons()
 
-    def click_start_button(self, event):
-        # print(self._var['difficulty'])
+    def __refresh_difficulty_buttons(self):
+        for i_, difficulty in enumerate(['easy', 'normal', 'hard', 'extreme']):
+            self._buttons[difficulty].configure(bd=5, bg='snow')
+        self._buttons[self._selected_difficulty].configure(bd=5, bg='red')
+
+    def __click_start_button(self, e):
         self._controller.switch_screen('_RunScreen')
 
 
@@ -93,7 +121,7 @@ class _RunScreen(Frame):
     def __create_stop_button(self):
         self._buttons['stop'] = Button(self, text='stop')
         self._buttons['stop'].bind('<Button-1>', self.click_stop_button)
-        self._buttons['stop'].place(x=350, y=550, width=150, height=50)
+        self._buttons['stop'].place(x=300, y=520, width=250, height=70)
 
     def click_stop_button(self, event):
         self._controller.switch_screen('_ResultScreen')
@@ -114,7 +142,7 @@ class _ResultScreen(Frame):
     def __create_back_button(self):
         self._buttons['back'] = Button(self, text='back')
         self._buttons['back'].bind('<Button-1>', self.click_back_button)
-        self._buttons['back'].place(x=620, y=550, width=150, height=50)
+        self._buttons['back'].place(x=520, y=520, width=250, height=70)
 
     def click_back_button(self, event):
         self._controller.switch_screen('_StartScreen')
