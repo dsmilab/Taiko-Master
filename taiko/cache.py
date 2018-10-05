@@ -1,4 +1,4 @@
-from .preprocessing.performance import *
+from taiko.deprecated.performance import *
 from .config import *
 
 import pandas as pd

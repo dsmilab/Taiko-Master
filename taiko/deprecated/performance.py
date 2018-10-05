@@ -1,6 +1,6 @@
-from ..config import *
+from taiko.config import *
 from taiko.play import *
-from .primitive import *
+from taiko.deprecated.primitive import *
 from collections import deque
 
 import re

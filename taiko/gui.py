@@ -1,5 +1,5 @@
 from tkinter import *
-from taiko.client import TaikoClient
+from .client import TaikoClient
 import platform
 
 if platform.system() == 'Windows':
@@ -147,7 +147,3 @@ class _ResultScreen(Frame):
     def click_back_button(self, event):
         self._controller.switch_screen('_StartScreen')
 
-
-if __name__ == "__main__":
-    window = GUI()
-    window.mainloop()

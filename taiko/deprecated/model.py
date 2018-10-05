@@ -1,5 +1,5 @@
-from ..cache import *
-from ..tools.score import *
+from taiko.cache import *
+from taiko.tools.score import *
 
 import numpy as np
 import pandas as pd
