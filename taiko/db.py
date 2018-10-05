@@ -9,7 +9,8 @@ from glob import glob
 
 __all__ = ['update_play_result',
            'update_play_score_auc',
-           'get_score_auc_stat']
+           'get_score_auc_stat',
+           'get_best_score_board_info']
 
 SONGS = 4
 
@@ -146,3 +147,18 @@ def get_score_auc_stat(song_id):
 
     return {'fc_mean_auc': fc_mean_auc,
             'std_auc': std_auc}
+
+
+def get_best_score_board_info(song_id):
+    play_score_auc_df = pd.read_csv('../data/taiko_tables/taiko_play_score_auc.csv')
+    df = play_score_auc_df[(play_score_auc_df['song_id'] == song_id)]
+    max_idx = df['auc'].idxmax()
+    row = df.loc[max_idx]
+
+    capture_dir = row['capture_datetime']
+    who_name = row['drummer_name']
+
+    dirs = glob('../data/alpha/' + who_name + '/*/bb_capture/' + capture_dir)
+    capture_dir_path = dirs[0]
+
+    return read_score_board_info(capture_dir_path, song_id)
