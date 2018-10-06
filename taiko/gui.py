@@ -1,15 +1,16 @@
-import matplotlib
-matplotlib.use("TkAgg")
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-import seaborn as sns
+
+from .client import TaikoClient
 
 from tkinter import *
-from .client import TaikoClient
+import pandas as pd
+import random
 import platform
-from skimage.io import imread
-from skimage.transform import resize
 from PIL import Image, ImageTk
+import sys
+
+
 if platform.system() == 'Windows':
     ACTIVE = 'normal'
 elif platform.system() == 'Linux':
@@ -20,7 +21,7 @@ class GUI(Tk):
 
     def __init__(self, master=None):
         Tk.__init__(self, master)
-        self.title('Taiko Master v0.3.2')
+        self.title('Taiko Master v0.3.3')
         self.geometry('800x600')
         self.resizable(width=False, height=False)
         self._client = TaikoClient()
@@ -70,7 +71,11 @@ class _StartScreen(Frame):
     def __create_buttons(self):
         self._buttons['start'] = Button(self, text='start')
         self._buttons['start'].bind('<Button-1>', self.__click_start_button)
-        self._buttons['start'].place(x=300, y=520, width=250, height=70)
+        self._buttons['start'].place(x=280, y=520, width=250, height=70)
+
+        self._buttons['reset'] = Button(self, text='reset')
+        self._buttons['reset'].bind('<Button-1>', self.__click_reset_button)
+        self._buttons['reset'].place(x=0, y=580, width=50, height=20)
 
         self._var['difficulty'] = StringVar()
         for i_, difficulty in enumerate(['easy', 'normal', 'hard', 'extreme']):
@@ -114,6 +119,10 @@ class _StartScreen(Frame):
     def __click_start_button(self, e):
         self._controller.switch_screen('_RunScreen')
 
+    def __click_reset_button(self, e):
+        sys.stdout.write('press \"reset\" button\n')
+        sys.stdout.flush()
+
 
 class _RunScreen(Frame):
 
@@ -122,17 +131,48 @@ class _RunScreen(Frame):
         self._controller = controller
 
         self._buttons = {}
+        self._labels = {}
+        self._images = {}
         self.__init_screen()
 
     def __init_screen(self):
         self.__create_stop_button()
+        self.__create_raw_canvas(0)
+        self.__create_raw_canvas(1)
 
     def __create_stop_button(self):
         self._buttons['stop'] = Button(self, text='stop')
         self._buttons['stop'].bind('<Button-1>', self.click_stop_button)
-        self._buttons['stop'].place(x=300, y=520, width=250, height=70)
+        self._buttons['stop'].place(x=280, y=520, width=250, height=70)
 
-    def click_stop_button(self, event):
+    def __create_raw_canvas(self, handedness):
+        data = {
+            'timestamp': [i_ for i_ in range(8)],
+            'imu_ax': random.sample(range(101), 8),
+            'imu_ay': random.sample(range(101), 8),
+            'imu_az': random.sample(range(101), 8),
+            'imu_gx': random.sample(range(101), 8),
+            'imu_gy': random.sample(range(101), 8),
+            'imu_gz': random.sample(range(101), 8),
+        }
+
+        df = pd.DataFrame(data=data)
+
+        f = Figure()
+        ax = f.subplots(nrows=6, ncols=1, sharex='all', sharey='all')
+
+        for i_, col in enumerate(df.columns[1:]):
+            ax[i_].plot(df['timestamp'], df[col])
+            ax[i_].set_ylabel(col)
+
+        handedness_label = 'Left' if handedness == 0 else 'Right'
+        ax[0].set_title(handedness_label + ' raw')
+        ax[-1].set_xlabel('timestamp')
+        canvas = FigureCanvasTkAgg(f, self)
+        canvas.draw()
+        canvas.get_tk_widget().place(x=400 * handedness, y=0, width=400, height=500)
+
+    def click_stop_button(self, e):
         self._controller.switch_screen('_ResultScreen')
 
 
