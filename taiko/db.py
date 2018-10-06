@@ -6,9 +6,9 @@ from .config import *
 import pandas as pd
 import numpy as np
 from glob import glob
+import sys
 
-__all__ = ['update_play_result',
-           'update_play_score_auc',
+__all__ = ['create_play_result',
            'get_score_auc_stat',
            'get_best_score_board_info']
 
@@ -33,14 +33,14 @@ class Database(metaclass=_Singleton):
         return self._record_df
 
 
-def update_play_result(verbose=1):
+def create_play_result(verbose=1):
     record_df = Database().record_df
 
     # only 4 songs we considered
     record_df = record_df[(record_df['song_id'] >= 1) & (record_df['song_id'] <= SONGS)]
 
     aggregate_dict = {}
-    columns = ['drummer_name', 'song_id', 'p_order', 'capture_datetime'] + RESULT_BOARD_INFO_COLUMNS
+    columns = ['drummer_name', 'song_id', 'p_order', 'capture_datetime', 'auc'] + RESULT_BOARD_INFO_COLUMNS
     data = {}
     for col in columns:
         data[col] = []
@@ -63,54 +63,6 @@ def update_play_result(verbose=1):
             p_order = aggregate_dict[(who_name, song_id)] + 1
             aggregate_dict[(who_name, song_id)] = p_order
 
-            if verbose > 0:
-                print(who_name, capture_dir)
-                print('who = %s, id = %d, p_order = %d' % (who_name, id_, p_order))
-                print(result)
-
-            data['drummer_name'].append(who_name)
-            data['song_id'].append(song_id)
-            data['p_order'].append(p_order)
-            data['capture_datetime'].append(capture_dir)
-            for col in result.keys():
-                data[col].append(result[col])
-
-        except Exception as e:
-            print(e)
-
-    play_result_df = pd.DataFrame(data=data)
-    play_result_df.to_csv('../data/taiko_tables/taiko_play_result.csv', index=False)
-
-
-def update_play_score_auc(verbose=1):
-    record_df = Database().record_df
-
-    # only 4 songs we considered
-    record_df = record_df[(record_df['song_id'] >= 1) & (record_df['song_id'] <= SONGS)]
-
-    columns = ['drummer_name', 'song_id', 'p_order', 'capture_datetime', 'auc']
-    data = {}
-    for col in columns:
-        data[col] = []
-
-    aggregate_dict = {}
-    for id_, row in record_df.iterrows():
-        try:
-            capture_dir = row['capture_datetime']
-            who_name = row['drummer_name']
-            song_id = row['song_id']
-            dirs = glob('../data/alpha/' + who_name + '/*/bb_capture/' + capture_dir)
-            capture_dir_path = dirs[0]
-
-            # increment p_order
-            try:
-                aggregate_dict[(who_name, song_id)]
-            except KeyError:
-                aggregate_dict[(who_name, song_id)] = 0
-
-            p_order = aggregate_dict[(who_name, song_id)] + 1
-            aggregate_dict[(who_name, song_id)] = p_order
-
             auc = get_play_score_auc(capture_dir_path, song_id)
 
             data['drummer_name'].append(who_name)
@@ -119,14 +71,21 @@ def update_play_score_auc(verbose=1):
             data['capture_datetime'].append(capture_dir)
             data['auc'].append(auc)
 
+            for col in result.keys():
+                data[col].append(result[col])
+
             if verbose > 0:
-                print(who_name, capture_dir, auc)
+                message = 'who_name = %s, song_id = %d, p_order = %d, %s, auc = %.4f\n' \
+                          'result = %s' % \
+                          (who_name, song_id, p_order, capture_dir, auc, str(result))
+                sys.stdout.write(message)
+                sys.stdout.flush()
 
         except Exception as e:
             print(e)
 
-    play_score_auc_df = pd.DataFrame(data=data)
-    play_score_auc_df.to_csv('../data/taiko_tables/taiko_play_score_auc.csv', index=False, float_format='%.4f')
+    play_result_df = pd.DataFrame(data=data)
+    play_result_df.to_csv('../data/taiko_tables/taiko_play_result.csv', index=False, float_format='%.4f')
 
 
 def get_score_auc_stat(song_id):

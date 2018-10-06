@@ -1,11 +1,11 @@
-from ..config import *
+from .config import *
+import pandas as pd
 import platform
 import paramiko
 import threading
 import subprocess
 import sys
 import os
-import pandas as pd
 
 __all__ = ['TaikoClient']
 

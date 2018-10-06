@@ -1,7 +1,7 @@
 from .config import *
 from .tools.score import *
 from .tools.singleton import *
-import seaborn as sns
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt

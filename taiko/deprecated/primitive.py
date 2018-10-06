@@ -1,4 +1,4 @@
-from ..config import *
+from taiko.config import *
 
 import pandas as pd
 import numpy as np

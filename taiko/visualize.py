@@ -5,12 +5,10 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from memory_profiler import profile
 
 __all__ = ['plot_play_score']
 
 
-@profile
 def plot_play_score(capture_dir_path, song_id, compare_veteran=False):
     timestamps, img_scores = read_score_board_info(capture_dir_path, song_id)
     whos = ['you'] * len(timestamps)
