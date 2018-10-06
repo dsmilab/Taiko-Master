@@ -1,7 +1,15 @@
+import matplotlib
+matplotlib.use("TkAgg")
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib.figure import Figure
+import seaborn as sns
+
 from tkinter import *
 from .client import TaikoClient
 import platform
-
+from skimage.io import imread
+from skimage.transform import resize
+from PIL import Image, ImageTk
 if platform.system() == 'Windows':
     ACTIVE = 'normal'
 elif platform.system() == 'Linux':
@@ -14,6 +22,7 @@ class GUI(Tk):
         Tk.__init__(self, master)
         self.title('Taiko Master v0.3.2')
         self.geometry('800x600')
+        self.resizable(width=False, height=False)
         self._client = TaikoClient()
         self._stage = 0
 
@@ -75,19 +84,19 @@ class _StartScreen(Frame):
     def __create_entry_tips(self):
         self._labels['drummer_name'] = Label(self, text='drummer\'s name:')
         self._labels['drummer_name'].place(x=40, y=10, height=80)
-        self._labels['drummer_name'].config(font=("Helvetica", 30))
+        self._labels['drummer_name'].config(font=("Times", 30))
 
         self._entries['drummer_name'] = Entry(self, bg='lightgray')
         self._entries['drummer_name'].place(x=40, y=80, height=80, width=300)
-        self._entries['drummer_name'].config(font=("Helvetica", 30))
+        self._entries['drummer_name'].config(font=("Times", 30))
 
         self._labels['song_id'] = Label(self, text='song ID:')
         self._labels['song_id'].place(x=450, y=80)
-        self._labels['song_id'].config(font=("Helvetica", 25))
+        self._labels['song_id'].config(font=("Times", 25))
 
         self._entries['song_id'] = Entry(self, bg='lightblue')
         self._entries['song_id'].place(x=600, y=80, height=40, width=70)
-        self._entries['song_id'].config(font=("Helvetica", 20))
+        self._entries['song_id'].config(font=("Times", 20))
 
         self._labels['difficulty'] = Label(self, text='difficulty')
         self._labels['difficulty'].place(x=330, y=250)
@@ -133,17 +142,41 @@ class _ResultScreen(Frame):
         self._controller = controller
 
         self._buttons = {}
-
+        self._labels = {}
+        self._images = {}
         self.__init_screen()
 
     def __init_screen(self):
         self.__create_back_button()
+        self.__create_score_canvas()
+        self.__create_radar_canvas()
+        self.__create_label_tips()
 
     def __create_back_button(self):
         self._buttons['back'] = Button(self, text='back')
         self._buttons['back'].bind('<Button-1>', self.click_back_button)
         self._buttons['back'].place(x=520, y=520, width=250, height=70)
 
-    def click_back_button(self, event):
+    def __create_score_canvas(self):
+        img = Image.open('data/pic/curve.png')
+        img = img.resize((800, 300), Image.ANTIALIAS)
+        self._images['score_curve'] = ImageTk.PhotoImage(img)
+        self._labels['score_curve'] = Label(self, image=self._images['score_curve'])
+        self._labels['score_curve'].place(x=0, y=0, width=800, height=300)
+
+    def __create_radar_canvas(self):
+        img = Image.open('data/pic/radar.png')
+        img = img.resize((250, 250), Image.ANTIALIAS)
+        self._images['radar'] = ImageTk.PhotoImage(img)
+        self._labels['radar'] = Label(self, image=self._images['radar'])
+        self._labels['radar'].place(x=25, y=325, width=250, height=250)
+
+    def __create_label_tips(self):
+        times = 5
+        self._labels['remained_times'] = Label(self, text='Need to play %d times more' % times)
+        self._labels['remained_times'].config(font=("Times", 20))
+        self._labels['remained_times'].place(x=300, y=400, width=500, height=50)
+
+    def click_back_button(self, e):
         self._controller.switch_screen('_StartScreen')
 
