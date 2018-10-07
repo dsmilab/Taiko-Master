@@ -182,8 +182,8 @@ class _RunScreen(Frame):
 
     def __click_stop_button(self, e):
         # Interface().record_sensor(True)
-        self._controller.client.record_sensor(True)
-        self._controller.client.record_screenshot(True)
+        self._controller.client.record_sensor(False)
+        self._controller.client.record_screenshot(False)
         self._controller.client.download_sensor()
 
         self._controller.switch_screen(_ResultScreen)

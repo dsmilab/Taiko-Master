@@ -122,10 +122,10 @@ class TaikoClient(_Client):
         self._capture_thread = None
 
     def clear(self):
-        self.record_sensor(True)
-        self.record_screenshot(True)
+        self.record_sensor(False)
+        self.record_screenshot(False)
 
-    def record_sensor(self, is_kill=False):
+    def record_sensor(self, is_record=True):
         sensor_settings = glob(posixpath.join(SSH_CONFIG_PATH, '*.bb'))
 
         threads = []
@@ -138,8 +138,8 @@ class TaikoClient(_Client):
                 with open(file_path, 'r') as f:
                     username = f.readline()[:-1]
                     pwd = f.readline()[:-1]
-                    command = LINUX_KILL_COMMAND if is_kill else LINUX_BB_COMMAND
-                    tips = 'kill %s ok' % host_ip if is_kill else 'connect %s ok' % host_ip
+                    command = LINUX_BB_COMMAND if is_record else LINUX_KILL_COMMAND
+                    tips = 'connect %s ok' % host_ip if is_record else 'kill %s ok' % host_ip
                     thread = threading.Thread(target=self._record_sensor, args=(host_ip, username, pwd, command, tips))
                     thread.start()
                     threads.append(thread)
@@ -176,9 +176,13 @@ class TaikoClient(_Client):
         for thread in threads:
             thread.join()
 
-    def record_screenshot(self, is_kill=False):
+    def record_screenshot(self, is_record=True):
         try:
-            if is_kill:
+            if is_record:
+                self._capture_thread = threading.Thread(target=self._record_screenshot)
+                self._capture_thread.start()
+
+            else:
                 self._capture_alive = False
                 if self._capture_thread is not None:
                     self._capture_thread.join()
@@ -186,10 +190,6 @@ class TaikoClient(_Client):
                     screenshot_dirs = next(os.walk(LOCAL_SCREENSHOT_PATH))[1]
                     img_dir = max(screenshot_dirs)
                     self._local_filename['capture'] = img_dir
-
-            else:
-                self._capture_thread = threading.Thread(target=self._record_screenshot)
-                self._capture_thread.start()
 
         except Exception as e:
             sys.stderr.write('error: %s\n' % str(e))
