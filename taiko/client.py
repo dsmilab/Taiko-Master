@@ -23,12 +23,7 @@ LINUX_KILL_COMMAND = "pkill -f python;"
 class _Client(object):
 
     def __init__(self):
-        self.__create_ssh()
-        # self.__create_socket()
-
-    def __create_ssh(self):
-        self._ssh = paramiko.SSHClient()
-        self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self._local_filename = {}
 
     def __create_socket(self):
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -41,12 +36,42 @@ class _Client(object):
 
         self._socket.bind((self._ip_addr, self._port))
 
-    def _record_sensor(self, host_ip_, username_, pwd_, command_, tips_=''):
+    @staticmethod
+    def _record_sensor(host_ip_, username_, pwd_, command_, tips_=''):
         try:
-            self._ssh.connect(host_ip_, username=username_, password=pwd_)
-            self._ssh.exec_command(command_)
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            ssh.connect(host_ip_, username=username_, password=pwd_)
+            ssh.exec_command(command_)
 
             sys.stdout.write('%s\n' % tips_)
+            sys.stdout.flush()
+
+        except Exception as ee:
+            sys.stderr.write("SSH connection error: {0}\n".format(ee))
+            sys.stderr.flush()
+
+    def _download_sensor(self, host_ip_, username_, pwd_, prefix_):
+        try:
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            ssh.connect(host_ip_, username=username_, password=pwd_)
+            sftp = ssh.open_sftp()
+
+            remote_items = sftp.listdir(REMOTE_BASE_PATH)
+            csv_items = list(filter(lambda name: name[-4:] == '.csv', remote_items))
+            remote_filename = max(csv_items)
+
+            remote_file = posixpath.join(REMOTE_BASE_PATH, remote_filename)
+            local_file = posixpath.join(LOCAL_SENSOR_PATH, prefix_ + '_' + remote_filename)
+
+            sys.stdout.write('Reading from %s ...\n' % host_ip_)
+            sys.stdout.flush()
+
+            sftp.get(remote_file, local_file)
+            self._local_filename[prefix_] = prefix_ + '_' + remote_filename
+
+            sys.stdout.write('Reading done.\n' % host_ip_)
             sys.stdout.flush()
 
         except Exception as ee:
@@ -60,16 +85,15 @@ class TaikoClient(_Client):
         super(TaikoClient, self).__init__()
 
     def record_sensor(self, is_kill=False):
-
         sensor_settings = glob(posixpath.join(SSH_CONFIG_PATH, '*.bb'))
 
-        for file_path in sensor_settings[:1]:
+        threads = []
+        for file_path in sensor_settings:
             res = re.search('(\d){,3}.(\d){,3}.(\d){,3}.(\d){,3}.bb', file_path)
             filename = res.group(0)
 
             host_ip = filename[:-3]
             try:
-                threads = []
                 with open(file_path, 'r') as f:
                     username = f.readline()[:-1]
                     pwd = f.readline()[:-1]
@@ -79,9 +103,35 @@ class TaikoClient(_Client):
                     thread.start()
                     threads.append(thread)
 
-                for thread in threads:
-                    thread.join()
+            except Exception as e:
+                sys.stderr.write("error: {0}\n".format(e))
+                sys.stderr.flush()
+
+        for thread in threads:
+            thread.join()
+
+    def download_sensor(self):
+        settings = next(os.walk(SSH_CONFIG_PATH))[2]
+        sensor_settings = list(filter(lambda name: name[-3:] == '.bb', settings))
+
+        threads = []
+        for filename in sensor_settings:
+            host_ip = filename[:-3]
+            try:
+                threads = []
+                with open(posixpath.join(SSH_CONFIG_PATH, filename), 'r') as f:
+                    username = f.readline()[:-1]
+                    pwd = f.readline()[:-1]
+                    _prefix = f.readline()[:-1]
+
+                    thread = threading.Thread(target=self._download_sensor, args=(host_ip, username, pwd, _prefix,))
+                    thread.daemon = True
+                    thread.start()
+                    threads.append(thread)
 
             except Exception as e:
                 sys.stderr.write("error: {0}\n".format(e))
                 sys.stderr.flush()
+
+        for thread in threads:
+            thread.join()

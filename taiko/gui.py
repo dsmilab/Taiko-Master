@@ -172,11 +172,11 @@ class _RunScreen(Frame):
         pass
 
     def __capture_sensor(self):
-        Interface().record_sensor()
+        # Interface().record_sensor()
         self._client.record_sensor()
 
     def __click_stop_button(self, e):
-        Interface().record_sensor(True)
+        # Interface().record_sensor(True)
         self._client.record_sensor(True)
 
         self._controller.switch_screen(_ResultScreen)
