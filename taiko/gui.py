@@ -1,7 +1,7 @@
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
-from .client import TaikoClient
+from .interface import *
 
 from tkinter import *
 import pandas as pd
@@ -24,27 +24,20 @@ class GUI(Tk):
         self.title('Taiko Master v0.3.3')
         self.geometry('800x600')
         self.resizable(width=False, height=False)
-        self._client = TaikoClient()
         self._stage = 0
 
         self.__init_window()
-        self.switch_screen('_StartScreen')
 
     def __init_window(self):
-        container = Frame(self)
-        container.pack(side='top', fill='both', expand=True)
-        container.grid_rowconfigure(0, weight=1)
-        container.grid_columnconfigure(0, weight=1)
+        self._container = Frame(self)
+        self._container.pack(side='top', fill='both', expand=True)
+        self._container.grid_rowconfigure(0, weight=1)
+        self._container.grid_columnconfigure(0, weight=1)
+        self.switch_screen(_StartScreen)
 
-        self._screens = {}
-        for scr in [_StartScreen, _RunScreen, _ResultScreen]:
-            scr_name = scr.__name__
-            screen = scr(parent=container, controller=self)
-            screen.grid(row=0, column=0, sticky="nsew")
-            self._screens[scr_name] = screen
-
-    def switch_screen(self, scr_name):
-        screen = self._screens[scr_name]
+    def switch_screen(self, scr):
+        screen = scr(parent=self._container, controller=self)
+        screen.grid(row=0, column=0, sticky="nsew")
         screen.tkraise()
 
 
@@ -117,7 +110,7 @@ class _StartScreen(Frame):
         self._buttons[self._selected_difficulty].configure(bd=5, bg='red')
 
     def __click_start_button(self, e):
-        self._controller.switch_screen('_RunScreen')
+        self._controller.switch_screen(_RunScreen)
 
     def __click_reset_button(self, e):
         sys.stdout.write('press \"reset\" button\n')
@@ -134,6 +127,7 @@ class _RunScreen(Frame):
         self._labels = {}
         self._images = {}
         self.__init_screen()
+        self.__capture_sensor()
 
     def __init_screen(self):
         self.__create_stop_button()
@@ -142,7 +136,7 @@ class _RunScreen(Frame):
 
     def __create_stop_button(self):
         self._buttons['stop'] = Button(self, text='stop')
-        self._buttons['stop'].bind('<Button-1>', self.click_stop_button)
+        self._buttons['stop'].bind('<Button-1>', self.__click_stop_button)
         self._buttons['stop'].place(x=280, y=520, width=250, height=70)
 
     def __create_raw_canvas(self, handedness):
@@ -172,8 +166,15 @@ class _RunScreen(Frame):
         canvas.draw()
         canvas.get_tk_widget().place(x=400 * handedness, y=0, width=400, height=500)
 
-    def click_stop_button(self, e):
-        self._controller.switch_screen('_ResultScreen')
+    def __capture_screenshot(self):
+        pass
+
+    def __capture_sensor(self):
+        Interface().record_sensor()
+
+    def __click_stop_button(self, e):
+        Interface().record_sensor(True)
+        self._controller.switch_screen(_ResultScreen)
 
 
 class _ResultScreen(Frame):
@@ -194,7 +195,7 @@ class _ResultScreen(Frame):
 
     def __create_back_button(self):
         self._buttons['back'] = Button(self, text='back')
-        self._buttons['back'].bind('<Button-1>', self.click_back_button)
+        self._buttons['back'].bind('<Button-1>', self.__click_back_button)
         self._buttons['back'].place(x=520, y=520, width=250, height=70)
 
     def __create_score_canvas(self):
@@ -217,6 +218,6 @@ class _ResultScreen(Frame):
         self._labels['remained_times'].config(font=("Times", 20))
         self._labels['remained_times'].place(x=300, y=400, width=500, height=50)
 
-    def click_back_button(self, e):
-        self._controller.switch_screen('_StartScreen')
+    def __click_back_button(self, e):
+        self._controller.switch_screen(_StartScreen)
 

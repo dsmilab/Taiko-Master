@@ -1,4 +1,4 @@
-from taiko.cache import *
+from taiko.deprecated.cache import *
 from taiko.tools.score import *
 
 import numpy as np
