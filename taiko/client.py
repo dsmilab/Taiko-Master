@@ -1,6 +1,6 @@
 from .config import *
 from .tools.timestamp import *
-from .tools.singleton import *
+from .tools.converter import *
 
 import platform
 import paramiko
@@ -27,7 +27,8 @@ LINUX_KILL_COMMAND = "pkill -f python;"
 class _Client(object):
 
     def __init__(self):
-        self._local_filename = {}
+        self._local_sensor_filename = {}
+        self._local_capture_dirname = None
         self._capture_alive = False
 
     def __create_socket(self):
@@ -74,7 +75,7 @@ class _Client(object):
             sys.stdout.flush()
 
             sftp.get(remote_file, local_file)
-            self._local_filename[prefix_] = prefix_ + '_' + remote_filename
+            self._local_sensor_filename[prefix_] = prefix_ + '_' + remote_filename
 
             sys.stdout.write('Reading %s done.\n' % host_ip_)
             sys.stdout.flush()
@@ -92,6 +93,7 @@ class _Client(object):
             os.makedirs(local_dir, exist_ok=True)
 
             self._capture_alive = True
+            self._local_capture_dirname = st
             sys.stdout.write('[%s] Start capturing screenshot...\n' % st)
             sys.stdout.flush()
 
@@ -113,6 +115,31 @@ class _Client(object):
             st = get_datetime(ts).strftime('%Y_%m_%d_%H_%M_%S')
             sys.stdout.write('[%s] Stop capturing.\n' % st)
             sys.stdout.flush()
+
+    def _upload_screenshot(self, host_ip_, username_, pwd_, tasks_, remote_dir_):
+        try:
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            ssh.connect(host_ip_, username=username_, password=pwd_)
+            sftp = ssh.open_sftp()
+
+            try:
+                sftp.mkdir(remote_dir_)
+            except IOError:
+                pass
+
+            sys.stdout.write('Uploading screenshot to %s ...\n' % host_ip_)
+            sys.stdout.flush()
+
+            for local_file_, remote_file_ in tasks_:
+                sftp.put(local_file_, remote_file_)
+
+            sys.stdout.write('Upload screenshot done.\n')
+            sys.stdout.flush()
+
+        except Exception as e:
+            sys.stderr.write('SSH connection error: %s\n' % str(e))
+            sys.stderr.flush()
 
 
 class TaikoClient(_Client):
@@ -152,15 +179,17 @@ class TaikoClient(_Client):
             thread.join()
 
     def download_sensor(self):
-        settings = next(os.walk(SSH_CONFIG_PATH))[2]
-        sensor_settings = list(filter(lambda name: name[-3:] == '.bb', settings))
+        sensor_settings = glob(posixpath.join(SSH_CONFIG_PATH, '*.bb'))
 
         threads = []
-        for filename in sensor_settings:
+        for file_path in sensor_settings:
+            res = re.search('(\d){,3}.(\d){,3}.(\d){,3}.(\d){,3}.bb', file_path)
+            filename = res.group(0)
+
             host_ip = filename[:-3]
             try:
                 threads = []
-                with open(posixpath.join(SSH_CONFIG_PATH, filename), 'r') as f:
+                with open(file_path, 'r') as f:
                     username = f.readline()[:-1]
                     pwd = f.readline()[:-1]
                     _prefix = f.readline()[:-1]
@@ -187,10 +216,52 @@ class TaikoClient(_Client):
                 if self._capture_thread is not None:
                     self._capture_thread.join()
 
-                    screenshot_dirs = next(os.walk(LOCAL_SCREENSHOT_PATH))[1]
-                    img_dir = max(screenshot_dirs)
-                    self._local_filename['capture'] = img_dir
-
         except Exception as e:
             sys.stderr.write('error: %s\n' % str(e))
             sys.stderr.flush()
+
+    def upload_screenshot(self):
+        server_settings = glob(posixpath.join(SSH_CONFIG_PATH, '*.gpu'))
+
+        threads = []
+        for file_path in server_settings:
+            res = re.search('(\d){,3}.(\d){,3}.(\d){,3}.(\d){,3}.gpu', file_path)
+            filename = res.group(0)
+
+            host_ip = filename[:-4]
+            try:
+                with open(file_path, 'r') as f:
+                    username = f.readline()[:-1]
+                    pwd = f.readline()[:-1]
+
+                    replaced = 'capture_2018_09_27_16_39_45'
+                    screenshot_dir_path = glob(posixpath.join(LOCAL_SCREENSHOT_PATH, replaced))[0]
+                    print(screenshot_dir_path)
+                    output_dir = posixpath.join(LOCAL_SCREENSHOT_PATH, 'output_folder')
+                    convert_images_to_video(screenshot_dir_path, output_dir)
+
+                    capture_exe_path = posixpath.join(BASE_PATH, 'server_exe.py')
+                    proc = subprocess.Popen(['python', capture_exe_path], stdout=subprocess.PIPE)
+                    # local_dir = posixpath.join(LOCAL_SCREENSHOT_PATH, self._local_capture_dirname)
+                    # remote_dir = posixpath.join(SERVER_SCREENSHOT_PATH, self._local_capture_dirname)
+                    #
+                    # files = next(os.walk(local_dir))[2]
+                    #
+                    # tasks = []
+                    #
+                    # for filename_ in files:
+                    #     local_file = posixpath.join(local_dir, filename_)
+                    #     remote_file = posixpath.join(remote_dir, filename_)
+                    #     tasks.append((local_file, remote_file))
+
+                    # thread = threading.Thread(target=__upload_screenshot,
+                    #                           args=(host_ip, username, pwd, tasks, remote_dir))
+                    # thread.start()
+                    # threads.append(thread)
+
+                for thread in threads:
+                    thread.join()
+
+            except Exception as e:
+                sys.stderr.write('error: %s\n' % str(e))
+                sys.stderr.flush()

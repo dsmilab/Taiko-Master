@@ -1,7 +1,3 @@
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
-
-from .interface import *
 from .client import *
 
 from tkinter import *
@@ -10,7 +6,8 @@ import random
 import platform
 from PIL import Image, ImageTk
 import sys
-
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
 
 if platform.system() == 'Windows':
     ACTIVE = 'normal'
@@ -133,7 +130,7 @@ class _RunScreen(Frame):
         self._labels = {}
         self._images = {}
         self.__init_screen()
-        self.__capture_sensor()
+        # self.__capture_sensor()
         self.__capture_screenshot()
 
     def __init_screen(self):
@@ -177,14 +174,13 @@ class _RunScreen(Frame):
         self._controller.client.record_screenshot()
 
     def __capture_sensor(self):
-        # Interface().record_sensor()
         self._controller.client.record_sensor()
 
     def __click_stop_button(self, e):
-        # Interface().record_sensor(True)
-        self._controller.client.record_sensor(False)
+        # self._controller.client.record_sensor(False)
         self._controller.client.record_screenshot(False)
-        self._controller.client.download_sensor()
+        # self._controller.client.download_sensor()
+        self._controller.client.upload_screenshot()
 
         self._controller.switch_screen(_ResultScreen)
 

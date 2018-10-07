@@ -1,5 +1,4 @@
 from taiko.gui import *
-from taiko.interface import *
 
 
 class Demo(object):

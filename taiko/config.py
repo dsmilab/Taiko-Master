@@ -28,7 +28,7 @@ LOCAL_RECORD_TABLE_PATH = posixpath.join(BASE_PATH, '../tmp/record_table.csv')
 SERVER_PROJECT_PATH = 'PyCharmPojects/Taiko-Master'
 SERVER_LEFT_PATH = posixpath.join(SERVER_PROJECT_PATH, 'data/bb_left_forearm_csv')
 SERVER_RIGHT_PATH = posixpath.join(SERVER_PROJECT_PATH, 'data/bb_right_forearm_csv')
-SERVER_SCREENSHOT_PATH = posixpath.join(SERVER_PROJECT_PATH, 'bb_capture_output')
+SERVER_SCREENSHOT_PATH = posixpath.join(SERVER_PROJECT_PATH, 'data/beta_capture')
 
 # capture.py
 LOCAL_SCREENSHOT_PATH = posixpath.join(BASE_PATH, '../tmp/bb_capture/')

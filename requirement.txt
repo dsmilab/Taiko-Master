@@ -10,3 +10,4 @@ Keras==2.0.8
 imbalanced-learn>=0.3.3
 lightgbm==2.0.10
 paramiko==2.4.1
+ffmpeg-python>=0.1.16
