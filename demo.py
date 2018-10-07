@@ -13,6 +13,5 @@ class Demo(object):
         self._window.destroy()
 
 
-
 if __name__ == "__main__":
     Demo()

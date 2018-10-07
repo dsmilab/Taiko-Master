@@ -2,6 +2,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
 from .interface import *
+from .client import *
 
 from tkinter import *
 import pandas as pd
@@ -126,6 +127,7 @@ class _RunScreen(Frame):
         self._buttons = {}
         self._labels = {}
         self._images = {}
+        self._client = TaikoClient()
         self.__init_screen()
         self.__capture_sensor()
 
@@ -171,9 +173,12 @@ class _RunScreen(Frame):
 
     def __capture_sensor(self):
         Interface().record_sensor()
+        self._client.record_sensor()
 
     def __click_stop_button(self, e):
         Interface().record_sensor(True)
+        self._client.record_sensor(True)
+
         self._controller.switch_screen(_ResultScreen)
 
 
