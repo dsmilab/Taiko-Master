@@ -26,6 +26,7 @@ class GUI(Tk):
         self.geometry('800x600')
         self.resizable(width=False, height=False)
         self._stage = 0
+        self._client = TaikoClient()
 
         self.__init_window()
 
@@ -40,6 +41,10 @@ class GUI(Tk):
         screen = scr(parent=self._container, controller=self)
         screen.grid(row=0, column=0, sticky="nsew")
         screen.tkraise()
+
+    @property
+    def client(self):
+        return self._client
 
 
 class _StartScreen(Frame):
@@ -127,9 +132,9 @@ class _RunScreen(Frame):
         self._buttons = {}
         self._labels = {}
         self._images = {}
-        self._client = TaikoClient()
         self.__init_screen()
         self.__capture_sensor()
+        self.__capture_screenshot()
 
     def __init_screen(self):
         self.__create_stop_button()
@@ -169,15 +174,17 @@ class _RunScreen(Frame):
         canvas.get_tk_widget().place(x=400 * handedness, y=0, width=400, height=500)
 
     def __capture_screenshot(self):
-        pass
+        self._controller.client.record_screenshot()
 
     def __capture_sensor(self):
         # Interface().record_sensor()
-        self._client.record_sensor()
+        self._controller.client.record_sensor()
 
     def __click_stop_button(self, e):
         # Interface().record_sensor(True)
-        self._client.record_sensor(True)
+        self._controller.client.record_sensor(True)
+        self._controller.client.record_screenshot(True)
+        self._controller.client.download_sensor()
 
         self._controller.switch_screen(_ResultScreen)
 

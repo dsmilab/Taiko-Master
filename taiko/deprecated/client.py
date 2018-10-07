@@ -164,7 +164,7 @@ class TaikoClient(object):
                     thread.join()
 
             except Exception as e:
-                sys.stderr.write("error: {0}\n".format(e))
+                sys.stderr.write('error: %s\n' % str(e))
                 sys.stderr.flush()
 
     def upload_sensor(self):
@@ -221,7 +221,7 @@ class TaikoClient(object):
                     thread.join()
 
             except Exception as e:
-                sys.stderr.write("error: {0}\n".format(e))
+                sys.stderr.write('error: %s\n' % str(e))
                 sys.stderr.flush()
 
     def upload_screenshot(self):
@@ -284,7 +284,7 @@ class TaikoClient(object):
                     thread.join()
 
             except Exception as e:
-                sys.stderr.write("error: {0}\n".format(e))
+                sys.stderr.write('error: %s\n' % str(e))
                 sys.stderr.flush()
 
     def update_database(self, player_name, gender, song_id, difficulty):
@@ -327,7 +327,7 @@ class TaikoClient(object):
                     thread.join()
 
             except Exception as e:
-                sys.stderr.write("error: {0}\n".format(e))
+                sys.stderr.write('error: %s\n' % str(e))
                 sys.stderr.flush()
 
     def update_local_record_table(self, player_name, song_id):
@@ -347,6 +347,6 @@ class TaikoClient(object):
             sys.stdout.flush()
 
         except Exception as e:
-                sys.stderr.write("error: {0}\n".format(e))
+                sys.stderr.write('error: %s\n' % str(e))
                 sys.stderr.flush()
 

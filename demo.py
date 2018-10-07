@@ -1,6 +1,7 @@
 from taiko.gui import *
 from taiko.interface import *
 
+
 class Demo(object):
 
     def __init__(self):
@@ -9,7 +10,7 @@ class Demo(object):
         self._window.mainloop()
 
     def _on_closing(self):
-        Interface().record_sensor(True)
+        self._window.client.clear()
         self._window.destroy()
 
 
