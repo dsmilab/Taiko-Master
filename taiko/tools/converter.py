@@ -35,6 +35,7 @@ def convert_images_to_video(input_dir_path, output_dir_path):
     df.to_csv(csv_path, index=False)
 
     os.makedirs(output_dir_path, exist_ok=True)
+
     (
         ffmpeg
         .input(input_file_pattern, pattern_type='glob', framerate=20)

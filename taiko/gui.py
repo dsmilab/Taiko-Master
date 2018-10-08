@@ -208,7 +208,7 @@ class _ResultScreen(Frame):
         self._buttons['back'].place(x=520, y=520, width=250, height=70)
 
     def __create_score_canvas(self):
-        img = Image.open('data/pic/curve.png')
+        img = Image.open(self._controller.client.score_curve_pic_path)
         img = img.resize((800, 300), Image.ANTIALIAS)
         self._images['score_curve'] = ImageTk.PhotoImage(img)
         self._labels['score_curve'] = Label(self, image=self._images['score_curve'])
@@ -222,7 +222,7 @@ class _ResultScreen(Frame):
         self._labels['radar'].place(x=25, y=325, width=250, height=250)
 
     def __create_label_tips(self):
-        times = 5
+        times = self._controller.client.remained_play_times
         self._labels['remained_times'] = Label(self, text='Need to play %d times more' % times)
         self._labels['remained_times'].config(font=("Times", 20))
         self._labels['remained_times'].place(x=300, y=400, width=500, height=50)

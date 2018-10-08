@@ -16,7 +16,6 @@ def main(argv):
         input_file_path = argv[1]
         output_dir = argv[2]
         song_id = int(argv[3])
-        print(input_file_path, output_dir, song_id)
         unzip(input_file_path, output_dir)
         taiko.visualize.plot_play_score(output_dir, song_id, True, True)
 

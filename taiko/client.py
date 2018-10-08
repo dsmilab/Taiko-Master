@@ -41,6 +41,8 @@ class _Client(object):
         self._local_sensor_filename = {}
         self._local_capture_dirname = None
         self._capture_alive = False
+        self._remained_play_times = None
+        self._score_curve_pic_path = None
 
     def __create_socket(self):
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -63,6 +65,8 @@ class _Client(object):
 
             sys.stdout.write('%s\n' % tips_)
             sys.stdout.flush()
+
+            ssh.close()
 
         except Exception as e:
             sys.stderr.write('SSH connection error: %s\n' % str(e))
@@ -90,6 +94,9 @@ class _Client(object):
 
             sys.stdout.write('Reading %s done.\n' % host_ip_)
             sys.stdout.flush()
+
+            sftp.close()
+            ssh.close()
 
         except Exception as e:
             sys.stderr.write('SSH connection error: %s\n' % str(e))
@@ -127,7 +134,7 @@ class _Client(object):
             sys.stdout.write('[%s] Stop capturing.\n' % st)
             sys.stdout.flush()
 
-    def _upload_screenshot(self, host_ip_, username_, pwd_, command_, tasks_, remote_dir_):
+    def _upload_screenshot(self, host_ip_, username_, pwd_, command_, upload_tasks_, remote_dir_):
         try:
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -142,24 +149,50 @@ class _Client(object):
             sys.stdout.write('Uploading screenshot to %s ...\n' % host_ip_)
             sys.stdout.flush()
 
-            for local_file_, remote_file_ in tasks_:
+            for local_file_, remote_file_ in upload_tasks_:
                 print(local_file_, remote_file_)
                 sftp.put(local_file_, remote_file_)
 
             sys.stdout.write('Upload screenshot done.\n')
             sys.stdout.flush()
 
-            sftp.close()
-
-            _, stdout, stderr = ssh.exec_command(GPU_LOGIN_COMMAND + command_, get_pty=True)
-            sys.stdout.write(str(stdout.readlines()) + '\n')
+            sys.stdout.write('Processing screenshot on GPU....\n')
             sys.stdout.flush()
-            sys.stderr.write(str(stderr.readlines()) + '\n')
-            sys.stderr.flush()
+
+            _, stdout_, _ = ssh.exec_command(GPU_LOGIN_COMMAND + command_, get_pty=True)
+            for line in stdout_.readlines():
+                sys.stdout.write(str(line))
+                sys.stdout.flush()
+
+            remote_files = sftp.listdir(SERVER_TMP_DIR_PATH)
+            pic_filename = [filename for filename in remote_files if re.match('^curve_(\d)+.png$', filename)][0]
+
+            remote_pic_file = posixpath.join(SERVER_TMP_DIR_PATH, pic_filename)
+            local_pic_file = posixpath.join(PIC_DIR_PATH, pic_filename)
+
+            self._remained_play_times = int(re.search('\d+', pic_filename).group(0))
+            self._score_curve_pic_path = local_pic_file
+
+            sftp.get(remote_pic_file, local_pic_file)
+            sftp.remove(remote_pic_file)
+
+            sys.stdout.write('Download result from GPU, ok!\n')
+            sys.stdout.flush()
+
+            sftp.close()
+            ssh.close()
 
         except Exception as e:
             sys.stderr.write('SSH connection error: %s\n' % str(e))
             sys.stderr.flush()
+
+    @property
+    def remained_play_times(self):
+        return self._remained_play_times
+
+    @property
+    def score_curve_pic_path(self):
+        return self._score_curve_pic_path
 
 
 class TaikoClient(_Client):
@@ -254,10 +287,10 @@ class TaikoClient(_Client):
                     username = f.readline()[:-1]
                     pwd = f.readline()[:-1]
 
-                    replaced = 'capture_2018_09_27_16_39_45'
+                    replaced = 'capture_2018_09_27_16_36_34'
                     self._local_capture_dirname = replaced
 
-                    local_dir_path = glob(posixpath.join(LOCAL_SCREENSHOT_PATH, self._local_capture_dirname))[0]
+                    local_dir_path = posixpath.join(LOCAL_SCREENSHOT_PATH, self._local_capture_dirname)
                     convert_images_to_video(local_dir_path, local_dir_path)
 
                     remote_dir_path = SERVER_SCREENSHOT_PATH
@@ -266,16 +299,18 @@ class TaikoClient(_Client):
                     csv_filename = self._local_capture_dirname + '.csv'
 
                     files = [flv_filename, csv_filename]
-                    tasks = []
+                    upload_tasks = []
                     for filename_ in files:
                         local_file = posixpath.join(local_dir_path, filename_)
                         remote_file = posixpath.join(remote_dir_path, filename_)
-                        tasks.append((local_file, remote_file))
+                        upload_tasks.append((local_file, remote_file))
 
-                    command = LINUX_SERVER_EXE_COMMAND + " %s %s %d" % (tasks[0][1], remote_dir_path, self._song_id)
-                    print(command)
+                    command = LINUX_SERVER_EXE_COMMAND + " %s %s %d" % (upload_tasks[0][1],
+                                                                        remote_dir_path,
+                                                                        self._song_id)
+
                     thread = threading.Thread(target=self._upload_screenshot,
-                                              args=(host_ip, username, pwd, command, tasks, remote_dir_path))
+                                              args=(host_ip, username, pwd, command, upload_tasks, remote_dir_path))
                     thread.start()
                     thread.join()
 
