@@ -27,6 +27,7 @@ SERVER_PROJECT_PATH = 'PyCharmPojects/Taiko-Master'
 SERVER_LEFT_PATH = posixpath.join(SERVER_PROJECT_PATH, 'data/bb_left_forearm_csv')
 SERVER_RIGHT_PATH = posixpath.join(SERVER_PROJECT_PATH, 'data/bb_right_forearm_csv')
 SERVER_SCREENSHOT_PATH = posixpath.join(SERVER_PROJECT_PATH, 'data/uploaded_bb_capture')
+SERVER_EXE_PATH = posixpath.join(SERVER_PROJECT_PATH, 'server_exe.py')
 
 # capture.py
 LOCAL_SCREENSHOT_PATH = posixpath.join(BASE_PATH, '../tmp/bb_capture/')

@@ -178,7 +178,7 @@ def read_result_board_info(capture_dir_path):
 
 
 def read_score_board_info(capture_dir_path, song_id, timestamp_calibrate=True, raise_exception=False):
-    file_paths = glob(posixpath.join(capture_dir_path, '*'))
+    file_paths = glob(posixpath.join(capture_dir_path, '*.png'))
     files = sorted([re.search('(\d){4}-(\d)+.(\d)+.png', file_path).group(0) for file_path in file_paths])
 
     play_start_time = get_play_start_time(capture_dir_path)

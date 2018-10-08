@@ -113,6 +113,7 @@ class _StartScreen(Frame):
         self._buttons[self._selected_difficulty].configure(bd=5, bg='red')
 
     def __click_start_button(self, e):
+        self._controller.client.set_song_id(self._entries['song_id'].get())
         self._controller.switch_screen(_RunScreen)
 
     def __click_reset_button(self, e):

@@ -20,6 +20,17 @@ __all__ = ['TaikoClient']
 # linux
 LINUX_BB_COMMAND = "cd %s; python read10axis.py -6;" % REMOTE_BASE_PATH
 
+GPU_LOGIN_COMMAND = "PATH='/usr/bin/anaconda3/bin:" \
+                    "/usr/local/sbin:" \
+                    "/usr/local/bin:" \
+                    "/usr/sbin:" \
+                    "/usr/bin:" \
+                    "/sbin:" \
+                    "/bin';" \
+                    "export PATH;"
+
+LINUX_SERVER_EXE_COMMAND = "python %s -d" % SERVER_EXE_PATH
+
 # linux
 LINUX_KILL_COMMAND = "pkill -f python;"
 
@@ -116,7 +127,7 @@ class _Client(object):
             sys.stdout.write('[%s] Stop capturing.\n' % st)
             sys.stdout.flush()
 
-    def _upload_screenshot(self, host_ip_, username_, pwd_, tasks_, remote_dir_):
+    def _upload_screenshot(self, host_ip_, username_, pwd_, command_, tasks_, remote_dir_):
         try:
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -132,14 +143,19 @@ class _Client(object):
             sys.stdout.flush()
 
             for local_file_, remote_file_ in tasks_:
+                print(local_file_, remote_file_)
                 sftp.put(local_file_, remote_file_)
 
             sys.stdout.write('Upload screenshot done.\n')
             sys.stdout.flush()
 
-            ssh.exec_command(command_)
+            sftp.close()
 
-
+            _, stdout, stderr = ssh.exec_command(GPU_LOGIN_COMMAND + command_, get_pty=True)
+            sys.stdout.write(str(stdout.readlines()) + '\n')
+            sys.stdout.flush()
+            sys.stderr.write(str(stderr.readlines()) + '\n')
+            sys.stderr.flush()
 
         except Exception as e:
             sys.stderr.write('SSH connection error: %s\n' % str(e))
@@ -151,6 +167,7 @@ class TaikoClient(_Client):
     def __init__(self):
         super(TaikoClient, self).__init__()
         self._capture_thread = None
+        self._song_id = None
 
     def clear(self):
         self.record_sensor(False)
@@ -227,7 +244,6 @@ class TaikoClient(_Client):
     def upload_screenshot(self):
         server_settings = glob(posixpath.join(SSH_CONFIG_PATH, '*.gpu'))
 
-        threads = []
         for file_path in server_settings:
             res = re.search('(\d){,3}.(\d){,3}.(\d){,3}.(\d){,3}.gpu', file_path)
             filename = res.group(0)
@@ -244,7 +260,7 @@ class TaikoClient(_Client):
                     local_dir_path = glob(posixpath.join(LOCAL_SCREENSHOT_PATH, self._local_capture_dirname))[0]
                     convert_images_to_video(local_dir_path, local_dir_path)
 
-                    remote_dir = SERVER_SCREENSHOT_PATH
+                    remote_dir_path = SERVER_SCREENSHOT_PATH
 
                     flv_filename = self._local_capture_dirname + '.flv'
                     csv_filename = self._local_capture_dirname + '.csv'
@@ -253,27 +269,23 @@ class TaikoClient(_Client):
                     tasks = []
                     for filename_ in files:
                         local_file = posixpath.join(local_dir_path, filename_)
-                        remote_file = posixpath.join(SERVER_SCREENSHOT_PATH, filename_)
+                        remote_file = posixpath.join(remote_dir_path, filename_)
                         tasks.append((local_file, remote_file))
 
+                    command = LINUX_SERVER_EXE_COMMAND + " %s %s %d" % (tasks[0][1], remote_dir_path, self._song_id)
+                    print(command)
                     thread = threading.Thread(target=self._upload_screenshot,
-                                              args=(host_ip, username, pwd, tasks, remote_dir))
+                                              args=(host_ip, username, pwd, command, tasks, remote_dir_path))
                     thread.start()
                     thread.join()
-
-
-                    threads.append(thread)
-
-                    # capture_exe_path = posixpath.join(BASE_PATH, 'server_exe.py')
-                    #
-                    # proc = subprocess.Popen(['python', capture_exe_path, '-d', input_file_path, output_dir],
-                    #                         stdout=subprocess.PIPE)
-                    # local_dir = posixpath.join(LOCAL_SCREENSHOT_PATH, self._local_capture_dirname)
-                    # remote_dir = posixpath.join(SERVER_SCREENSHOT_PATH, self._local_capture_dirname)
 
             except Exception as e:
                 sys.stderr.write('error: %s\n' % str(e))
                 sys.stderr.flush()
 
-        for thread in threads:
-            thread.join()
+    def set_song_id(self, song_id):
+        self._song_id = int(song_id)
+
+    @property
+    def song_id(self):
+        return self._song_id
