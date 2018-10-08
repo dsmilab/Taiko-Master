@@ -15,7 +15,7 @@ def convert_images_to_video(input_dir_path, output_dir_path):
     res = re.search('capture_(\d){4}_(\d){2}_(\d){2}_(\d){2}_(\d){2}_(\d){2}', input_dir_path)
 
     input_dir_name = res.group(0)
-    input_file_pattern = posixpath.join(input_dir_path + '/*.png')
+    input_file_pattern = posixpath.join(input_dir_path, '*.png')
 
     output_video_name = posixpath.join(output_dir_path, input_dir_name)
     output_filename = output_video_name + '.flv'
