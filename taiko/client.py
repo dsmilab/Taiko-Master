@@ -14,6 +14,7 @@ import mss.tools
 import socket
 import time
 import pickle
+import queue
 
 __all__ = ['TaikoClient']
 
@@ -42,7 +43,11 @@ class _Client(object):
         self._local_capture_dirname = None
         self._capture_alive = False
         self._remained_play_times = None
-        self._score_curve_pic_path = None
+        self._ssh_queue = queue.Queue()
+
+        self._pic_path = {
+            'error': posixpath.join(PIC_DIR_PATH, 'curve_not_found.jpg'),
+        }
 
     def __create_socket(self):
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -55,8 +60,7 @@ class _Client(object):
 
         self._socket.bind((self._ip_addr, self._port))
 
-    @staticmethod
-    def _record_sensor(host_ip_, username_, pwd_, command_, tips_=''):
+    def _record_sensor(self, host_ip_, username_, pwd_, command_, tips_=''):
         try:
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -66,7 +70,7 @@ class _Client(object):
             sys.stdout.write('%s\n' % tips_)
             sys.stdout.flush()
 
-            ssh.close()
+            self._ssh_queue.put(ssh)
 
         except Exception as e:
             sys.stderr.write('SSH connection error: %s\n' % str(e))
@@ -141,10 +145,17 @@ class _Client(object):
             ssh.connect(host_ip_, username=username_, password=pwd_)
             sftp = ssh.open_sftp()
 
+            # try to create tmp dir if it does not exit
             try:
                 sftp.mkdir(remote_dir_)
-            except IOError:
-                pass
+            except IOError as ee:
+                sys.stderr.write(str(ee) + '\n')
+                sys.stderr.flush()
+
+            # first delete remote files in tmp dir.
+            remote_files = sftp.listdir(remote_dir_)
+            for remote_file in remote_files:
+                sftp.remove(posixpath.join(remote_dir_, remote_file))
 
             sys.stdout.write('Uploading screenshot to %s ...\n' % host_ip_)
             sys.stdout.flush()
@@ -171,7 +182,7 @@ class _Client(object):
             local_pic_file = posixpath.join(PIC_DIR_PATH, pic_filename)
 
             self._remained_play_times = int(re.search('\d+', pic_filename).group(0))
-            self._score_curve_pic_path = local_pic_file
+            self._pic_path['score_curve'] = local_pic_file
 
             sftp.get(remote_pic_file, local_pic_file)
             sftp.remove(remote_pic_file)
@@ -191,8 +202,8 @@ class _Client(object):
         return self._remained_play_times
 
     @property
-    def score_curve_pic_path(self):
-        return self._score_curve_pic_path
+    def pic_path(self):
+        return self._pic_path
 
 
 class TaikoClient(_Client):
@@ -231,6 +242,11 @@ class TaikoClient(_Client):
 
         for thread in threads:
             thread.join()
+
+        if not is_record:
+            while not self._ssh_queue.empty():
+                ssh = self._ssh_queue.get()
+                ssh.close()
 
     def download_sensor(self):
         sensor_settings = glob(posixpath.join(SSH_CONFIG_PATH, '*.bb'))
@@ -286,9 +302,6 @@ class TaikoClient(_Client):
                 with open(file_path, 'r') as f:
                     username = f.readline()[:-1]
                     pwd = f.readline()[:-1]
-
-                    replaced = 'capture_2018_09_27_16_36_34'
-                    self._local_capture_dirname = replaced
 
                     local_dir_path = posixpath.join(LOCAL_SCREENSHOT_PATH, self._local_capture_dirname)
                     convert_images_to_video(local_dir_path, local_dir_path)

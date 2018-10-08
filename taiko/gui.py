@@ -5,7 +5,6 @@ import pandas as pd
 import random
 import platform
 from PIL import Image, ImageTk
-import sys
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
@@ -38,6 +37,19 @@ class GUI(Tk):
         screen = scr(parent=self._container, controller=self)
         screen.grid(row=0, column=0, sticky="nsew")
         screen.tkraise()
+
+    def goto_next_screen(self, now_scr):
+        if now_scr == _StartScreen:
+            self.switch_screen(_RunScreen)
+        elif now_scr == _RunScreen:
+            try:
+                self.switch_screen(_ResultScreen)
+            except (KeyError, TypeError):
+                self.switch_screen(_ErrorScreen)
+        elif now_scr == _ResultScreen:
+            self.switch_screen(_StartScreen)
+        elif now_scr == _ErrorScreen:
+            self.switch_screen(_StartScreen)
 
     @property
     def client(self):
@@ -114,11 +126,10 @@ class _StartScreen(Frame):
 
     def __click_start_button(self, e):
         self._controller.client.set_song_id(self._entries['song_id'].get())
-        self._controller.switch_screen(_RunScreen)
+        self._controller.goto_next_screen(self.__class__)
 
     def __click_reset_button(self, e):
-        sys.stdout.write('press \"reset\" button\n')
-        sys.stdout.flush()
+        self._controller.client.clear()
 
 
 class _RunScreen(Frame):
@@ -131,7 +142,7 @@ class _RunScreen(Frame):
         self._labels = {}
         self._images = {}
         self.__init_screen()
-        # self.__capture_sensor()
+        self.__capture_sensor()
         self.__capture_screenshot()
 
     def __init_screen(self):
@@ -178,12 +189,12 @@ class _RunScreen(Frame):
         self._controller.client.record_sensor()
 
     def __click_stop_button(self, e):
-        # self._controller.client.record_sensor(False)
+        self._controller.client.record_sensor(False)
         self._controller.client.record_screenshot(False)
-        # self._controller.client.download_sensor()
+        self._controller.client.download_sensor()
         self._controller.client.upload_screenshot()
 
-        self._controller.switch_screen(_ResultScreen)
+        self._controller.goto_next_screen(self.__class__)
 
 
 class _ResultScreen(Frame):
@@ -208,7 +219,7 @@ class _ResultScreen(Frame):
         self._buttons['back'].place(x=520, y=520, width=250, height=70)
 
     def __create_score_canvas(self):
-        img = Image.open(self._controller.client.score_curve_pic_path)
+        img = Image.open(self._controller.client.pic_path['score_curve'])
         img = img.resize((800, 300), Image.ANTIALIAS)
         self._images['score_curve'] = ImageTk.PhotoImage(img)
         self._labels['score_curve'] = Label(self, image=self._images['score_curve'])
@@ -228,5 +239,35 @@ class _ResultScreen(Frame):
         self._labels['remained_times'].place(x=300, y=400, width=500, height=50)
 
     def __click_back_button(self, e):
-        self._controller.switch_screen(_StartScreen)
+        self._controller.goto_next_screen(self.__class__)
 
+
+class _ErrorScreen(Frame):
+
+    def __init__(self, parent, controller):
+        Frame.__init__(self, parent)
+        self._controller = controller
+
+        self._buttons = {}
+        self._labels = {}
+        self._images = {}
+        self.__init_screen()
+
+    def __init_screen(self):
+        self.__create_back_button()
+        self.__create_error_canvas()
+
+    def __create_error_canvas(self):
+        img = Image.open(self._controller.client.pic_path['error'])
+        img = img.resize((800, 500), Image.ANTIALIAS)
+        self._images['error'] = ImageTk.PhotoImage(img)
+        self._labels['error'] = Label(self, image=self._images['error'])
+        self._labels['error'].place(x=0, y=0, width=800, height=500)
+
+    def __create_back_button(self):
+        self._buttons['back'] = Button(self, text='back')
+        self._buttons['back'].bind('<Button-1>', self.__click_back_button)
+        self._buttons['back'].place(x=520, y=520, width=250, height=70)
+
+    def __click_back_button(self, e):
+        self._controller.goto_next_screen(self.__class__)

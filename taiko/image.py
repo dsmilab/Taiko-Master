@@ -167,7 +167,7 @@ def get_play_start_time(capture_dir_path):
 
 
 def read_result_board_info(capture_dir_path):
-    files = glob(posixpath.join(capture_dir_path, '*'))
+    files = glob(posixpath.join(capture_dir_path, '*.png'))
 
     for pic_path in reversed(sorted(files)):
         result = _ResultProcessor().process(pic_path)
