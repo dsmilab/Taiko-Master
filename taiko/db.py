@@ -1,6 +1,5 @@
 from .tools.singleton import *
 from .image import *
-from .play import *
 from .config import *
 
 import pandas as pd
@@ -10,7 +9,9 @@ import sys
 
 __all__ = ['create_play_result',
            'get_score_auc_stat',
-           'get_best_score_board_info']
+           'get_best_score_board_info',
+           'get_play_score_auc',
+           'estimate_remained_play_times']
 
 SONGS = 4
 
@@ -85,16 +86,12 @@ def create_play_result(verbose=1):
             print(e)
 
     play_result_df = pd.DataFrame(data=data)
-    play_result_df.to_csv('../data/taiko_tables/taiko_play_result.csv', index=False, float_format='%.4f')
+    play_result_df.to_csv(PLAY_RESULT_PATH, index=False, float_format='%.4f')
 
 
 def get_score_auc_stat(song_id):
-    play_score_auc_df = pd.read_csv('../data/taiko_tables/taiko_play_score_auc.csv')
-    play_result_df = pd.read_csv('../data/taiko_tables/taiko_play_result.csv')
-    df = play_score_auc_df.merge(play_result_df,
-                                 on=['drummer_name', 'song_id', 'p_order', 'capture_datetime'],
-                                 how='left')
-    df = df[(df['song_id'] == song_id)]
+    play_result_df = pd.read_csv(PLAY_RESULT_PATH)
+    df = play_result_df[(play_result_df['song_id'] == song_id)]
     full_combo_df = df[df['bad'] == 0]
     fc_mean_auc = np.mean(full_combo_df['auc'])
 
@@ -109,8 +106,8 @@ def get_score_auc_stat(song_id):
 
 
 def get_best_score_board_info(song_id):
-    play_score_auc_df = pd.read_csv('../data/taiko_tables/taiko_play_score_auc.csv')
-    df = play_score_auc_df[(play_score_auc_df['song_id'] == song_id)]
+    play_result_df = pd.read_csv(PLAY_RESULT_PATH)
+    df = play_result_df[(play_result_df['song_id'] == song_id)]
     max_idx = df['auc'].idxmax()
     row = df.loc[max_idx]
     print(row)
@@ -118,7 +115,37 @@ def get_best_score_board_info(song_id):
     capture_dir = row['capture_datetime']
     who_name = row['drummer_name']
 
-    dirs = glob('../data/alpha/' + who_name + '/*/bb_capture/' + capture_dir)
+    dirs = glob(posixpath.join(HOME_PATH, who_name + '/*/bb_capture/' + capture_dir))
     capture_dir_path = dirs[0]
 
     return read_score_board_info(capture_dir_path, song_id)
+
+
+def get_play_score_auc(capture_dir_path=None, song_id=None, timestamps=None, img_scores=None):
+    if timestamps is None and img_scores is None:
+        if capture_dir_path is None or song_id is None:
+            raise ValueError('Pass parameter \"capture_dir_path\" and \"song_id\".')
+        timestamps, img_scores = read_score_board_info(capture_dir_path, song_id)
+
+    area = 0.0
+    for i_ in range(len(timestamps)):
+        if i_ == 0:
+            continue
+        area += (timestamps[i_] - timestamps[i_ - 1]) * img_scores[i_ - 1]
+    area /= len(timestamps)
+
+    return area
+
+
+def estimate_remained_play_times(song_id, capture_dir_path=None, auc=None):
+    if auc is None:
+        if capture_dir_path is None:
+            raise ValueError('Pass parameter \"capture_dir_path\".')
+        auc = get_play_score_auc(capture_dir_path, song_id)
+
+    stat = get_score_auc_stat(song_id)
+    factor = (auc - stat['fc_mean_auc']) / stat['std_auc']
+    times = 0
+    if factor < 0:
+        times = int(np.ceil(-factor * 2))
+    return times

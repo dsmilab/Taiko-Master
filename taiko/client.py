@@ -137,6 +137,10 @@ class _Client(object):
             sys.stdout.write('Upload screenshot done.\n')
             sys.stdout.flush()
 
+            ssh.exec_command(command_)
+
+
+
         except Exception as e:
             sys.stderr.write('SSH connection error: %s\n' % str(e))
             sys.stderr.flush()
@@ -235,33 +239,41 @@ class TaikoClient(_Client):
                     pwd = f.readline()[:-1]
 
                     replaced = 'capture_2018_09_27_16_39_45'
-                    screenshot_dir_path = glob(posixpath.join(LOCAL_SCREENSHOT_PATH, replaced))[0]
-                    print(screenshot_dir_path)
-                    output_dir = posixpath.join(LOCAL_SCREENSHOT_PATH, 'output_folder')
-                    convert_images_to_video(screenshot_dir_path, output_dir)
+                    self._local_capture_dirname = replaced
 
-                    capture_exe_path = posixpath.join(BASE_PATH, 'server_exe.py')
-                    proc = subprocess.Popen(['python', capture_exe_path], stdout=subprocess.PIPE)
+                    local_dir_path = glob(posixpath.join(LOCAL_SCREENSHOT_PATH, self._local_capture_dirname))[0]
+                    convert_images_to_video(local_dir_path, local_dir_path)
+
+                    remote_dir = SERVER_SCREENSHOT_PATH
+
+                    flv_filename = self._local_capture_dirname + '.flv'
+                    csv_filename = self._local_capture_dirname + '.csv'
+
+                    files = [flv_filename, csv_filename]
+                    tasks = []
+                    for filename_ in files:
+                        local_file = posixpath.join(local_dir_path, filename_)
+                        remote_file = posixpath.join(SERVER_SCREENSHOT_PATH, filename_)
+                        tasks.append((local_file, remote_file))
+
+                    thread = threading.Thread(target=self._upload_screenshot,
+                                              args=(host_ip, username, pwd, tasks, remote_dir))
+                    thread.start()
+                    thread.join()
+
+
+                    threads.append(thread)
+
+                    # capture_exe_path = posixpath.join(BASE_PATH, 'server_exe.py')
+                    #
+                    # proc = subprocess.Popen(['python', capture_exe_path, '-d', input_file_path, output_dir],
+                    #                         stdout=subprocess.PIPE)
                     # local_dir = posixpath.join(LOCAL_SCREENSHOT_PATH, self._local_capture_dirname)
                     # remote_dir = posixpath.join(SERVER_SCREENSHOT_PATH, self._local_capture_dirname)
-                    #
-                    # files = next(os.walk(local_dir))[2]
-                    #
-                    # tasks = []
-                    #
-                    # for filename_ in files:
-                    #     local_file = posixpath.join(local_dir, filename_)
-                    #     remote_file = posixpath.join(remote_dir, filename_)
-                    #     tasks.append((local_file, remote_file))
-
-                    # thread = threading.Thread(target=__upload_screenshot,
-                    #                           args=(host_ip, username, pwd, tasks, remote_dir))
-                    # thread.start()
-                    # threads.append(thread)
-
-                for thread in threads:
-                    thread.join()
 
             except Exception as e:
                 sys.stderr.write('error: %s\n' % str(e))
                 sys.stderr.flush()
+
+        for thread in threads:
+            thread.join()
