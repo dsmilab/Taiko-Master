@@ -7,11 +7,10 @@ BASE_PATH = os.path.dirname(os.path.realpath(__file__)).replace('\\', '/')
 
 
 HOME_PATH = posixpath.join(BASE_PATH, '../data/alpha/')
+PIC_DIR_PATH = posixpath.join(BASE_PATH, '../data/pic/')
 
+TMP_DIR_PATH = posixpath.join(BASE_PATH, '../tmp/')
 
-# io.arm
-LEFT_PATH = posixpath.join(BASE_PATH, '../data/bb_left_forearm_csv/')
-RIGHT_PATH = posixpath.join(BASE_PATH, '../data/bb_right_forearm_csv/')
 
 # io.record
 TABLE_PATH = posixpath.join(BASE_PATH, '../data/taiko_tables/')
@@ -20,19 +19,25 @@ SONG_TABLE_PATH = posixpath.join(TABLE_PATH, 'taiko_song.csv')
 DRUMMER_TABLE_PATH = posixpath.join(TABLE_PATH, 'taiko_drummer.csv')
 RESULT_TABLE_PATH = posixpath.join(TABLE_PATH, 'taiko_result.csv')
 
+PLAY_RESULT_PATH = posixpath.join(TABLE_PATH, 'taiko_play_result.csv')
+
 # network.client
-REMOTE_BASE_PATH = 'Projects/beagle'
+REMOTE_BASE_PATH = 'Projects/beagle/'
 LOCAL_SENSOR_PATH = posixpath.join(BASE_PATH, '../tmp/sensor_data/')
 LOCAL_RECORD_TABLE_PATH = posixpath.join(BASE_PATH, '../tmp/record_table.csv')
 
-SERVER_PROJECT_PATH = 'PyCharmPojects/Taiko-Master'
+SERVER_PROJECT_PATH = 'PyCharmPojects/Taiko-Master/'
+
 SERVER_LEFT_PATH = posixpath.join(SERVER_PROJECT_PATH, 'data/bb_left_forearm_csv')
 SERVER_RIGHT_PATH = posixpath.join(SERVER_PROJECT_PATH, 'data/bb_right_forearm_csv')
-SERVER_SCREENSHOT_PATH = posixpath.join(SERVER_PROJECT_PATH, 'bb_capture_output')
+SERVER_EXE_PATH = posixpath.join(SERVER_PROJECT_PATH, 'server_exe.py')
+
+SERVER_TMP_DIR_PATH = posixpath.join(SERVER_PROJECT_PATH, 'tmp/')
+SERVER_SCREENSHOT_PATH = posixpath.join(SERVER_TMP_DIR_PATH, 'uploaded_bb_capture/')
+
 
 # capture.py
 LOCAL_SCREENSHOT_PATH = posixpath.join(BASE_PATH, '../tmp/bb_capture/')
-
 
 # image.scoreboard
 BB_CAPTURE_PATH = posixpath.join(BASE_PATH, '../bb_capture_output/')
@@ -49,26 +54,6 @@ ENTRY_SUCCESS = '@0@'
 # preprocessing.primitive
 RMS_COLS = ['a_rms', 'g_rms', 'imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz']
 
-PREFIX_COLS = ['A', 'G', 'AX', 'AY', 'AZ', 'GX', 'GY', 'GZ']
-SUFFIX_COLS = ['AI', 'VI', 'MMI', 'SDI', 'IQR', 'FR', 'FFT_COEF', 'MDCR', 'MCR', 'ZCR', 'DTW']
-
-STAT_COLS = [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFIX_COLS[0]] * 8)] +\
-            [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFIX_COLS[1]] * 8)] +\
-            [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFIX_COLS[2]] * 8)] +\
-            ['A_SMA', 'G_SMA', 'A_AE', 'G_AE'] +\
-            [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFIX_COLS[3]] * 8)] +\
-            [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFIX_COLS[4]] * 8)] +\
-            [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFIX_COLS[5]] * 8)] +\
-            [prefix + '_' + suffix + '_' + str(i + 1)
-             for prefix, suffix in zip(PREFIX_COLS, [SUFFIX_COLS[6]] * 8)
-             for i in range(3)] +\
-            [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFIX_COLS[7]] * 8)] +\
-            [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFIX_COLS[8]] * 8)] +\
-            [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS[2:], [SUFFIX_COLS[9]] * 6)] +\
-            ['AXY_CORR', 'AYZ_CORR', 'AZX_CORR', 'GXY_CORR', 'GYZ_CORR', 'GZX_CORR']
-
-KEYWORD_COLS = SUFFIX_COLS + ['SMA', 'AE', 'CORR']
-
 ZERO_ADJ_COL = ['imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz']
 
 ALL_COLUMNS = ['timestamp', 'wall_time', 'imu_temp',
@@ -77,8 +62,6 @@ ALL_COLUMNS = ['timestamp', 'wall_time', 'imu_temp',
                'msu_ax', 'msu_ay', 'msu_az',
                'baro_temp', 'baro']
 
-SENSOR_COLUMNS = [ALL_COLUMNS[0]] + ALL_COLUMNS[2:]
-SCALE_COLUMNS = STAT_COLS[:-6]
 
 # plot
 COLORS = ['black', 'red', 'blue', 'yellow', 'green', 'cyan', 'purple', 'magenta']

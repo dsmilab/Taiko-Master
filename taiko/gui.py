@@ -1,15 +1,12 @@
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
-
-from .client import TaikoClient
+from .client import *
 
 from tkinter import *
 import pandas as pd
 import random
 import platform
 from PIL import Image, ImageTk
-import sys
-
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
 
 if platform.system() == 'Windows':
     ACTIVE = 'normal'
@@ -24,28 +21,39 @@ class GUI(Tk):
         self.title('Taiko Master v0.3.3')
         self.geometry('800x600')
         self.resizable(width=False, height=False)
-        self._client = TaikoClient()
         self._stage = 0
+        self._client = TaikoClient()
 
         self.__init_window()
-        self.switch_screen('_StartScreen')
 
     def __init_window(self):
-        container = Frame(self)
-        container.pack(side='top', fill='both', expand=True)
-        container.grid_rowconfigure(0, weight=1)
-        container.grid_columnconfigure(0, weight=1)
+        self._container = Frame(self)
+        self._container.pack(side='top', fill='both', expand=True)
+        self._container.grid_rowconfigure(0, weight=1)
+        self._container.grid_columnconfigure(0, weight=1)
+        self.switch_screen(_StartScreen)
 
-        self._screens = {}
-        for scr in [_StartScreen, _RunScreen, _ResultScreen]:
-            scr_name = scr.__name__
-            screen = scr(parent=container, controller=self)
-            screen.grid(row=0, column=0, sticky="nsew")
-            self._screens[scr_name] = screen
-
-    def switch_screen(self, scr_name):
-        screen = self._screens[scr_name]
+    def switch_screen(self, scr):
+        screen = scr(parent=self._container, controller=self)
+        screen.grid(row=0, column=0, sticky="nsew")
         screen.tkraise()
+
+    def goto_next_screen(self, now_scr):
+        if now_scr == _StartScreen:
+            self.switch_screen(_RunScreen)
+        elif now_scr == _RunScreen:
+            try:
+                self.switch_screen(_ResultScreen)
+            except (KeyError, TypeError):
+                self.switch_screen(_ErrorScreen)
+        elif now_scr == _ResultScreen:
+            self.switch_screen(_StartScreen)
+        elif now_scr == _ErrorScreen:
+            self.switch_screen(_StartScreen)
+
+    @property
+    def client(self):
+        return self._client
 
 
 class _StartScreen(Frame):
@@ -117,11 +125,11 @@ class _StartScreen(Frame):
         self._buttons[self._selected_difficulty].configure(bd=5, bg='red')
 
     def __click_start_button(self, e):
-        self._controller.switch_screen('_RunScreen')
+        self._controller.client.set_song_id(self._entries['song_id'].get())
+        self._controller.goto_next_screen(self.__class__)
 
     def __click_reset_button(self, e):
-        sys.stdout.write('press \"reset\" button\n')
-        sys.stdout.flush()
+        self._controller.client.clear()
 
 
 class _RunScreen(Frame):
@@ -134,6 +142,8 @@ class _RunScreen(Frame):
         self._labels = {}
         self._images = {}
         self.__init_screen()
+        self.__capture_sensor()
+        self.__capture_screenshot()
 
     def __init_screen(self):
         self.__create_stop_button()
@@ -142,7 +152,7 @@ class _RunScreen(Frame):
 
     def __create_stop_button(self):
         self._buttons['stop'] = Button(self, text='stop')
-        self._buttons['stop'].bind('<Button-1>', self.click_stop_button)
+        self._buttons['stop'].bind('<Button-1>', self.__click_stop_button)
         self._buttons['stop'].place(x=280, y=520, width=250, height=70)
 
     def __create_raw_canvas(self, handedness):
@@ -172,8 +182,19 @@ class _RunScreen(Frame):
         canvas.draw()
         canvas.get_tk_widget().place(x=400 * handedness, y=0, width=400, height=500)
 
-    def click_stop_button(self, e):
-        self._controller.switch_screen('_ResultScreen')
+    def __capture_screenshot(self):
+        self._controller.client.record_screenshot()
+
+    def __capture_sensor(self):
+        self._controller.client.record_sensor()
+
+    def __click_stop_button(self, e):
+        self._controller.client.record_sensor(False)
+        self._controller.client.record_screenshot(False)
+        self._controller.client.download_sensor()
+        self._controller.client.upload_screenshot()
+
+        self._controller.goto_next_screen(self.__class__)
 
 
 class _ResultScreen(Frame):
@@ -194,11 +215,11 @@ class _ResultScreen(Frame):
 
     def __create_back_button(self):
         self._buttons['back'] = Button(self, text='back')
-        self._buttons['back'].bind('<Button-1>', self.click_back_button)
+        self._buttons['back'].bind('<Button-1>', self.__click_back_button)
         self._buttons['back'].place(x=520, y=520, width=250, height=70)
 
     def __create_score_canvas(self):
-        img = Image.open('data/pic/curve.png')
+        img = Image.open(self._controller.client.pic_path['score_curve'])
         img = img.resize((800, 300), Image.ANTIALIAS)
         self._images['score_curve'] = ImageTk.PhotoImage(img)
         self._labels['score_curve'] = Label(self, image=self._images['score_curve'])
@@ -212,11 +233,41 @@ class _ResultScreen(Frame):
         self._labels['radar'].place(x=25, y=325, width=250, height=250)
 
     def __create_label_tips(self):
-        times = 5
+        times = self._controller.client.remained_play_times
         self._labels['remained_times'] = Label(self, text='Need to play %d times more' % times)
         self._labels['remained_times'].config(font=("Times", 20))
         self._labels['remained_times'].place(x=300, y=400, width=500, height=50)
 
-    def click_back_button(self, e):
-        self._controller.switch_screen('_StartScreen')
+    def __click_back_button(self, e):
+        self._controller.goto_next_screen(self.__class__)
 
+
+class _ErrorScreen(Frame):
+
+    def __init__(self, parent, controller):
+        Frame.__init__(self, parent)
+        self._controller = controller
+
+        self._buttons = {}
+        self._labels = {}
+        self._images = {}
+        self.__init_screen()
+
+    def __init_screen(self):
+        self.__create_back_button()
+        self.__create_error_canvas()
+
+    def __create_error_canvas(self):
+        img = Image.open(self._controller.client.pic_path['error'])
+        img = img.resize((800, 500), Image.ANTIALIAS)
+        self._images['error'] = ImageTk.PhotoImage(img)
+        self._labels['error'] = Label(self, image=self._images['error'])
+        self._labels['error'].place(x=0, y=0, width=800, height=500)
+
+    def __create_back_button(self):
+        self._buttons['back'] = Button(self, text='back')
+        self._buttons['back'].bind('<Button-1>', self.__click_back_button)
+        self._buttons['back'].place(x=520, y=520, width=250, height=70)
+
+    def __click_back_button(self, e):
+        self._controller.goto_next_screen(self.__class__)

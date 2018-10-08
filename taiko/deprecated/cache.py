@@ -1,5 +1,5 @@
 from taiko.deprecated.performance import *
-from .config import *
+from taiko.config import *
 
 import pandas as pd
 import re
