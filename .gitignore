@@ -1,44 +1,16 @@
 
 \.idea/
 
-wearable-motion-sensors/
-
 data/
 
-ipynb/\.ipynb_checkpoints/
+!data/pic/**
 
-ipynb/__pycache__/
+**/\.ipynb_checkpoints/
 
-util/taiko/__pycache__/
+**/__pycache__/
 
-util/taiko/image/__pycache__/
+util/
 
-util/taiko/io/__pycache__/
-
-util/taiko/tools/__pycache__/
-
-util/taiko/preprocessing/__pycache__/
-
-util/\.ipynb_checkpoints/
-
-util/CSV/
-
-gui/bb_capture/
-
-taiko/__pycache__/
-
-taiko/io/__pycache__/
-
-taiko/model/__pycache__/
-
-taiko/image/__pycache__/
-
-taiko/tools/__pycache__/
-
-taiko/preprocessing/__pycache__/
-
-gui/sensor_data/
+!util/*ipynb
 
 tmp/
-
-taiko/network/__pycache__/
