@@ -1,6 +1,7 @@
 from .config import *
 from .tools.timestamp import *
 from .tools.converter import *
+from .tools.realtime import *
 
 import platform
 import paramiko
@@ -38,16 +39,68 @@ LINUX_KILL_COMMAND = "pkill -f python;"
 
 class _SSHTaiko(object):
 
-    def __init__(self, ssh, ip_addr):
+    def __init__(self, ssh, socket_, ip_addr):
         self._ssh = ssh
+        self._socket = socket_
         self._ip_addr = ip_addr
+        self._thread = None
+        self._window = AnalogData(5)
+
+    def start(self):
+        print('wait for connect')
+        while True:
+            connection, address = self._socket.accept()
+            ip, port = address[0], address[1]
+            print('connect by: ', address)
+
+            try:
+                self._thread = threading.Thread(target=self.run, args=(connection, ip, port))
+                self._thread.start()
+
+            except Exception as e:
+                sys.stderr.write(str(e) + '\n')
+                sys.stderr.flush()
+                break
+
+    def run(self, connection, ip, port):
+        is_active = True
+        print('%s:%s connected!' % (ip, port))
+        count = 0
+        while is_active:
+            try:
+                buf = connection.recv(1024)
+
+                try:
+                    data = pickle.loads(buf)
+                except Exception as e:
+                    continue
+
+                if data[-1] == 'Q':
+                    print("client request to quit")
+                    is_active = False
+                    connection.close()
+                elif data[-1] == 'L\r':
+                    count += 1
+                    # print(count)
+                    if count % 100 == 0:
+                        self._window.add(data[:-2])
+                        print(self._window.window)
+            except KeyboardInterrupt:
+                break
 
     def close(self):
         self._ssh.close()
+        self._socket.close()
+        if self._thread.isAlive():
+            self._thread.join()
 
     @property
     def ssh(self):
         return self._ssh
+
+    @property
+    def socket(self):
+        return self._socket
 
     @property
     def ip_addr(self):
@@ -62,7 +115,10 @@ class _Client(object):
         self._local_capture_dirname = None
         self._capture_alive = False
         self._remained_play_times = None
-        self._taiko_ssh_queue = queue.Queue()
+        self._taiko_ssh = {}
+        self._ip_addr = '127.0.0.1'
+        self._port = {}
+        self.__load_socket_config()
 
         self._progress = {
             'maximum': 100,
@@ -85,19 +141,19 @@ class _Client(object):
         for difficulty in _Client.DIFFICULTIES:
             self._pic_path[difficulty] = posixpath.join(PIC_DIR_PATH, difficulty + '.png')
 
-    def __create_socket(self):
-        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
+    def __load_socket_config(self):
         config = glob(posixpath.join(SSH_CONFIG_PATH, 'config.sock'))[0]
         with open(config, 'r') as f:
             self._ip_addr = f.readline()[:-1]
-            self._port = int(f.readline()[:-1])
+            self._port['L'] = int(f.readline()[:-1])
+            self._port['R'] = int(f.readline()[:-1])
 
-        self._socket.bind((self._ip_addr, self._port))
-
-    def _record_sensor(self, host_ip_, username_, pwd_, command_):
+    def _record_sensor(self, host_ip_, username_, pwd_, command_, label_):
         try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.bind((self._ip_addr, self._port[label_]))
+            sock.listen(2)
+
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             ssh.connect(host_ip_, username=username_, password=pwd_)
@@ -106,21 +162,30 @@ class _Client(object):
             sys.stdout.write('connect %s ok\n' % host_ip_)
             sys.stdout.flush()
 
-            taiko_ssh = _SSHTaiko(ssh, host_ip_)
-            self._taiko_ssh_queue.put(taiko_ssh)
+            taiko_ssh = _SSHTaiko(ssh, sock, host_ip_)
+            taiko_ssh.start()
+            self._taiko_ssh[label_] = taiko_ssh
 
         except Exception as e:
             sys.stderr.write('SSH connection error: %s\n' % str(e))
             sys.stderr.flush()
 
-    def _stop_sensor(self):
+    def _stop_sensor(self, host_ip_, username_, pwd_, command_, label_):
         try:
-            while not self._taiko_ssh_queue.empty():
-                taiko_ssh = self._taiko_ssh_queue.get()
-                taiko_ssh.close()
-
+            taiko_ssh = self._taiko_ssh.pop(label_, None)
+            if taiko_ssh is not None:
                 sys.stdout.write('stop %s ok\n' % taiko_ssh.ip_addr)
                 sys.stdout.flush()
+
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            ssh.connect(host_ip_, username=username_, password=pwd_)
+            ssh.exec_command(command_)
+
+            sys.stdout.write('kill %s ok\n' % host_ip_)
+            sys.stdout.flush()
+
+            ssh.close()
 
         except Exception as e:
             sys.stderr.write('SSH connection error: %s\n' % str(e))
@@ -301,9 +366,10 @@ class TaikoClient(_Client):
                 with open(file_path, 'r') as f:
                     username = f.readline()[:-1]
                     pwd = f.readline()[:-1]
+                    label = f.readline()[:-1]
                     command = LINUX_BB_COMMAND
                     thread = threading.Thread(target=self._record_sensor,
-                                              args=(host_ip, username, pwd, command))
+                                              args=(host_ip, username, pwd, command, label))
                     thread.start()
                     threads.append(thread)
 
@@ -315,9 +381,31 @@ class TaikoClient(_Client):
             thread.join()
 
     def stop_sensor(self):
-        thread = threading.Thread(target=self._stop_sensor)
-        thread.start()
-        thread.join()
+        sensor_settings = glob(posixpath.join(SSH_CONFIG_PATH, '*.bb'))
+
+        threads = []
+        for file_path in sensor_settings:
+            res = re.search('(\d){,3}.(\d){,3}.(\d){,3}.(\d){,3}.bb', file_path)
+            filename = res.group(0)
+
+            host_ip = filename[:-3]
+            try:
+                with open(file_path, 'r') as f:
+                    username = f.readline()[:-1]
+                    pwd = f.readline()[:-1]
+                    label = f.readline()[:-1]
+                    command = LINUX_KILL_COMMAND
+                    thread = threading.Thread(target=self._stop_sensor,
+                                              args=(host_ip, username, pwd, command, label))
+                    thread.start()
+                    threads.append(thread)
+
+            except Exception as e:
+                sys.stderr.write('error: %s\n' % str(e))
+                sys.stderr.flush()
+
+        for thread in threads:
+            thread.join()
 
     def download_sensor(self):
         sensor_settings = glob(posixpath.join(SSH_CONFIG_PATH, '*.bb'))

@@ -29,10 +29,10 @@ class AnalogData(object):
         :return:
         """
         if len(buf) < self.__max_len:
-            buf.appendleft(val)
+            buf.append(val)
         else:
-            buf.pop()
-            buf.appendleft(val)
+            buf.popleft()
+            buf.append(val)
 
     @property
     def window(self):
