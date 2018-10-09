@@ -34,8 +34,8 @@ class GUI(Tk):
         self._container.pack(side='top', fill='both', expand=True)
         self._container.grid_rowconfigure(0, weight=1)
         self._container.grid_columnconfigure(0, weight=1)
-        # self.switch_screen(_StartScreen)
-        self.switch_screen(_LoadingScreen)
+        self.switch_screen(_StartScreen)
+        # self.switch_screen(_LoadingScreen)
 
     def switch_screen(self, scr):
         screen = scr(parent=self._container, controller=self)
@@ -47,9 +47,11 @@ class GUI(Tk):
             self.switch_screen(_RunScreen)
         elif now_scr == _RunScreen:
             try:
-                self.switch_screen(_ResultScreen)
+                self.switch_screen(_LoadingScreen)
             except (KeyError, TypeError):
                 self.switch_screen(_ErrorScreen)
+        elif now_scr == _LoadingScreen:
+            self.switch_screen(_ResultScreen)
         elif now_scr == _ResultScreen:
             self.switch_screen(_StartScreen)
         elif now_scr == _ErrorScreen:
@@ -193,12 +195,55 @@ class _RunScreen(Frame):
         self._controller.client.record_sensor()
 
     def __click_stop_button(self, e):
-        self._controller.client.record_sensor(False)
-        self._controller.client.record_screenshot(False)
+        self._controller.client.stop_sensor()
+        self._controller.client.stop_screenshot()
+        self._controller.goto_next_screen(self.__class__)
+
+
+class _LoadingScreen(Frame):
+
+    def __init__(self, parent, controller):
+        Frame.__init__(self, parent)
+        self._controller = controller
+
+        self._buttons = {}
+        self._labels = {}
+        self._images = {}
+        print('init_screen start')
+        self.__init_screen()
+        print('init_screen done')
+
+        self._process_thread = threading.Thread(target=self.__process)
+        self._process_thread.start()
+        print('__process start')
+
+    def __init_screen(self):
+        self.__create_progress_bar()
+        self.__create_tips()
+
+    def __create_progress_bar(self):
+        self._progress = ttk.Progressbar(self, orient="horizontal", mode="determinate")
+        self._progress['maximum'] = self._controller.client.progress['maximum']
+        self._progress.place(x=100, y=300, width=600, height=50)
+        self.after(200, self._process_queue)
+
+    def __create_tips(self):
+        self._labels['tips'] = Label(self, text='drummer\'s name:')
+        self._labels['tips'].place(x=100, y=350, width=600, height=80)
+        self._labels['tips'].config(font=("Times", 12))
+
+    def __process(self):
         self._controller.client.download_sensor()
         self._controller.client.upload_screenshot()
 
-        self._controller.goto_next_screen(self.__class__)
+    def _process_queue(self):
+        self._progress['value'] = self._controller.client.progress['value']
+        if self._progress['value'] < self._progress['maximum']:
+            self.after(200, self._process_queue)
+        else:
+            self._process_thread.join()
+            print('__process done')
+            self._controller.goto_next_screen(self.__class__)
 
 
 class _ResultScreen(Frame):
@@ -244,40 +289,6 @@ class _ResultScreen(Frame):
 
     def __click_back_button(self, e):
         self._controller.goto_next_screen(self.__class__)
-
-
-class _LoadingScreen(Frame):
-
-    def __init__(self, parent, controller):
-        Frame.__init__(self, parent)
-        self._controller = controller
-
-        self._buttons = {}
-        self._labels = {}
-        self._images = {}
-        self.__init_screen()
-
-    def __init_screen(self):
-        self.__create_progress_bar()
-        self.__create_tips()
-
-    def __create_progress_bar(self):
-        self._progress = ttk.Progressbar(self, orient="horizontal", mode="determinate")
-        self._progress['maximum'] = 300
-        self._progress.place(x=100, y=300, width=600, height=50)
-        # self._progress.start()
-
-        self.after(300, self._process_queue)
-
-    def __create_tips(self):
-        self._labels['tips'] = Label(self, text='drummer\'s name:')
-        self._labels['tips'].place(x=100, y=350, width=600, height=80)
-        self._labels['tips'].config(font=("Times", 12))
-
-    def _process_queue(self):
-        if self._progress['value'] < self._progress['maximum']:
-            self._progress['value'] += 10
-            self.after(300, self._process_queue)
 
 
 class _ErrorScreen(Frame):
