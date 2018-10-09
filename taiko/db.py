@@ -86,11 +86,11 @@ def create_play_result(verbose=1):
             print(e)
 
     play_result_df = pd.DataFrame(data=data)
-    play_result_df.to_csv(PLAY_RESULT_PATH, index=False, float_format='%.4f')
+    play_result_df.to_csv(PLAY_RESULT_TABLE_PATH, index=False, float_format='%.4f')
 
 
 def get_score_auc_stat(song_id):
-    play_result_df = pd.read_csv(PLAY_RESULT_PATH)
+    play_result_df = pd.read_csv(PLAY_RESULT_TABLE_PATH)
     df = play_result_df[(play_result_df['song_id'] == song_id)]
     full_combo_df = df[df['bad'] == 0]
     fc_mean_auc = np.mean(full_combo_df['auc'])
@@ -106,7 +106,7 @@ def get_score_auc_stat(song_id):
 
 
 def get_best_score_board_info(song_id):
-    play_result_df = pd.read_csv(PLAY_RESULT_PATH)
+    play_result_df = pd.read_csv(PLAY_RESULT_TABLE_PATH)
     df = play_result_df[(play_result_df['song_id'] == song_id)]
     max_idx = df['auc'].idxmax()
     row = df.loc[max_idx]
