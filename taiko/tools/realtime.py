@@ -5,6 +5,7 @@ __all__ = ['AnalogData']
 
 class AnalogData(object):
     def __init__(self, max_len):
+        self.__timestamp = deque([0.0] * max_len)
         self.__ax = deque([0.0] * max_len)
         self.__ay = deque([0.0] * max_len)
         self.__az = deque([0.0] * max_len)
@@ -14,12 +15,13 @@ class AnalogData(object):
         self.__max_len = max_len
 
     def add(self, data):
-        self.__add_to_buf(self.__ax, data[0])
-        self.__add_to_buf(self.__ay, data[1])
-        self.__add_to_buf(self.__az, data[2])
-        self.__add_to_buf(self.__gx, data[3])
-        self.__add_to_buf(self.__gy, data[4])
-        self.__add_to_buf(self.__gz, data[5])
+        self.__add_to_buf(self.__timestamp, data[0])
+        self.__add_to_buf(self.__ax, data[1])
+        self.__add_to_buf(self.__ay, data[2])
+        self.__add_to_buf(self.__az, data[3])
+        self.__add_to_buf(self.__gx, data[4])
+        self.__add_to_buf(self.__gy, data[5])
+        self.__add_to_buf(self.__gz, data[6])
 
     def __add_to_buf(self, buf, val):
         """
@@ -36,5 +38,6 @@ class AnalogData(object):
 
     @property
     def window(self):
-        return [list(self.__ax), list(self.__ay), list(self.__az),
+        return [list(self.__timestamp),
+                list(self.__ax), list(self.__ay), list(self.__az),
                 list(self.__gx), list(self.__gy), list(self.__gz)]

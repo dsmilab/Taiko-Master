@@ -133,6 +133,7 @@ class _StartScreen(Frame):
 
 
 class _RunScreen(Frame):
+    LABEL = ['L', 'R']
 
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
@@ -159,7 +160,7 @@ class _RunScreen(Frame):
 
     def __create_raw_canvas(self):
         f = Figure()
-        self._ax = f.subplots(nrows=6, ncols=2, sharex='all', sharey='all')
+        self._ax = f.subplots(nrows=6, ncols=2, sharex='all')
         self._canvas = FigureCanvasTkAgg(f, self)
         self._canvas.get_tk_widget().place(x=0, y=0, width=800, height=500)
 
@@ -170,24 +171,27 @@ class _RunScreen(Frame):
         self.after(50, self.__update_raw_canvas)
 
     def __draw_raw_canvas(self, handedness):
+        label = _RunScreen.LABEL[handedness]
+        taiko_ssh = self._controller.client.taiko_ssh[label]
+
         data = {
-            'timestamp': [i_ for i_ in range(50)],
-            'ax': random.sample(range(101), 50),
-            'ay': random.sample(range(101), 50),
-            'az': random.sample(range(101), 50),
-            'gx': random.sample(range(101), 50),
-            'gy': random.sample(range(101), 50),
-            'gz': random.sample(range(101), 50),
+            'timestamp': [tm for tm in range(1000)],
+            'ax': taiko_ssh.window[1],
+            'ay': taiko_ssh.window[2],
+            'az': taiko_ssh.window[3],
+            'gx': taiko_ssh.window[4],
+            'gy': taiko_ssh.window[5],
+            'gz': taiko_ssh.window[6],
         }
 
         df = pd.DataFrame(data=data)
 
         for i_, col in enumerate(df.columns[1:]):
             self._ax[i_, handedness].clear()
-            # if i_ < 3:
-            #     self._ax[i_, handedness].set_ylim(-21, 21)
-            # else:
-            #     self._ax[i_, handedness].set_ylim(-51, 51)
+            if i_ < 3:
+                self._ax[i_, handedness].set_ylim(-20, 20)
+            else:
+                self._ax[i_, handedness].set_ylim(-200, 200)
 
             self._ax[i_, handedness].plot(df['timestamp'], df[col])
             self._ax[i_, handedness].set_ylabel(col)

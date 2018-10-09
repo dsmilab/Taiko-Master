@@ -39,12 +39,14 @@ LINUX_KILL_COMMAND = "pkill -f python;"
 
 class _SSHTaiko(object):
 
-    def __init__(self, ssh, socket_, ip_addr):
+    def __init__(self, ssh, socket_, ip_addr, label):
         self._ssh = ssh
         self._socket = socket_
         self._ip_addr = ip_addr
+        self._label = label
         self._thread = None
-        self._window = AnalogData(5)
+        self._window = AnalogData(1000)
+        self._is_active = True
 
     def start(self):
         print('wait for connect')
@@ -63,10 +65,11 @@ class _SSHTaiko(object):
                 break
 
     def run(self, connection, ip, port):
-        is_active = True
-        print('%s:%s connected!' % (ip, port))
-        count = 0
-        while is_active:
+        sys.stdout.write('%s:%s connected!\n' % (ip, port))
+        sys.stdout.flush()
+
+        self._is_active = True
+        while self._is_active:
             try:
                 buf = connection.recv(1024)
 
@@ -77,18 +80,20 @@ class _SSHTaiko(object):
 
                 if data[-1] == 'Q':
                     print("client request to quit")
-                    is_active = False
+                    self._is_active = False
                     connection.close()
-                elif data[-1] == 'L\r':
-                    count += 1
-                    # print(count)
-                    if count % 100 == 0:
-                        self._window.add(data[:-2])
-                        print(self._window.window)
+                    break
+
+                elif data[-1] == self._label + '\r':
+                    self._window.add(data[:-2])
+
             except KeyboardInterrupt:
                 break
+        print(self._label + ' close')
+        connection.close()
 
     def close(self):
+        self._is_active = False
         self._ssh.close()
         self._socket.close()
         if self._thread.isAlive():
@@ -105,6 +110,10 @@ class _SSHTaiko(object):
     @property
     def ip_addr(self):
         return self._ip_addr
+
+    @property
+    def window(self):
+        return self._window.window
 
 
 class _Client(object):
@@ -162,8 +171,7 @@ class _Client(object):
             sys.stdout.write('connect %s ok\n' % host_ip_)
             sys.stdout.flush()
 
-            taiko_ssh = _SSHTaiko(ssh, sock, host_ip_)
-            taiko_ssh.start()
+            taiko_ssh = _SSHTaiko(ssh, sock, host_ip_, label_)
             self._taiko_ssh[label_] = taiko_ssh
 
         except Exception as e:
@@ -336,12 +344,17 @@ class _Client(object):
     def progress_tips(self):
         return self._progress_tips
 
+    @property
+    def taiko_ssh(self):
+        return self._taiko_ssh
+
 
 class TaikoClient(_Client):
 
     def __init__(self):
         super(TaikoClient, self).__init__()
         self._capture_thread = None
+        self._taiko_ssh_thread = []
         self._song_id = None
 
     def clear(self):
@@ -379,6 +392,11 @@ class TaikoClient(_Client):
 
         for thread in threads:
             thread.join()
+
+        for _, taiko_ssh in self._taiko_ssh.items():
+            thread = threading.Thread(target=taiko_ssh.start)
+            thread.start()
+            self._taiko_ssh_thread.append(thread)
 
     def stop_sensor(self):
         sensor_settings = glob(posixpath.join(SSH_CONFIG_PATH, '*.bb'))
@@ -471,7 +489,9 @@ class TaikoClient(_Client):
                     local_dir_path = posixpath.join(LOCAL_SCREENSHOT_PATH, self._local_capture_dirname)
 
                     self._progress_tips = 'Compressing screenshots ...'
+
                     convert_images_to_video(local_dir_path, local_dir_path)
+
                     self._progress['value'] += self._prog_max['compress_screenshot']
 
                     remote_dir_path = SERVER_SCREENSHOT_PATH
