@@ -1,9 +1,12 @@
 from .client import *
 
 from tkinter import *
+from tkinter import ttk
+
 import pandas as pd
 import random
 import platform
+import threading
 from PIL import Image, ImageTk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
@@ -31,7 +34,8 @@ class GUI(Tk):
         self._container.pack(side='top', fill='both', expand=True)
         self._container.grid_rowconfigure(0, weight=1)
         self._container.grid_columnconfigure(0, weight=1)
-        self.switch_screen(_StartScreen)
+        # self.switch_screen(_StartScreen)
+        self.switch_screen(_LoadingScreen)
 
     def switch_screen(self, scr):
         screen = scr(parent=self._container, controller=self)
@@ -240,6 +244,40 @@ class _ResultScreen(Frame):
 
     def __click_back_button(self, e):
         self._controller.goto_next_screen(self.__class__)
+
+
+class _LoadingScreen(Frame):
+
+    def __init__(self, parent, controller):
+        Frame.__init__(self, parent)
+        self._controller = controller
+
+        self._buttons = {}
+        self._labels = {}
+        self._images = {}
+        self.__init_screen()
+
+    def __init_screen(self):
+        self.__create_progress_bar()
+        self.__create_tips()
+
+    def __create_progress_bar(self):
+        self._progress = ttk.Progressbar(self, orient="horizontal", mode="determinate")
+        self._progress['maximum'] = 300
+        self._progress.place(x=100, y=300, width=600, height=50)
+        # self._progress.start()
+
+        self.after(300, self._process_queue)
+
+    def __create_tips(self):
+        self._labels['tips'] = Label(self, text='drummer\'s name:')
+        self._labels['tips'].place(x=100, y=350, width=600, height=80)
+        self._labels['tips'].config(font=("Times", 12))
+
+    def _process_queue(self):
+        if self._progress['value'] < self._progress['maximum']:
+            self._progress['value'] += 10
+            self.after(300, self._process_queue)
 
 
 class _ErrorScreen(Frame):
