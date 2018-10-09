@@ -145,42 +145,56 @@ class _RunScreen(Frame):
         self.__capture_sensor()
         self.__capture_screenshot()
 
+        self._draw_thread = threading.Thread(target=self.__update_raw_canvas)
+        self._draw_thread.start()
+
     def __init_screen(self):
         self.__create_stop_button()
-        self.__create_raw_canvas(0)
-        self.__create_raw_canvas(1)
+        self.__create_raw_canvas()
 
     def __create_stop_button(self):
         self._buttons['stop'] = Button(self, text='stop')
         self._buttons['stop'].bind('<Button-1>', self.__click_stop_button)
         self._buttons['stop'].place(x=280, y=520, width=250, height=70)
 
-    def __create_raw_canvas(self, handedness):
+    def __create_raw_canvas(self):
+        f = Figure()
+        self._ax = f.subplots(nrows=6, ncols=2, sharex='all', sharey='all')
+        self._canvas = FigureCanvasTkAgg(f, self)
+        self._canvas.get_tk_widget().place(x=0, y=0, width=800, height=500)
+
+    def __update_raw_canvas(self):
+        self.__draw_raw_canvas(0)
+        self.__draw_raw_canvas(1)
+        self._canvas.draw()
+        self.after(50, self.__update_raw_canvas)
+
+    def __draw_raw_canvas(self, handedness):
         data = {
-            'timestamp': [i_ for i_ in range(8)],
-            'imu_ax': random.sample(range(101), 8),
-            'imu_ay': random.sample(range(101), 8),
-            'imu_az': random.sample(range(101), 8),
-            'imu_gx': random.sample(range(101), 8),
-            'imu_gy': random.sample(range(101), 8),
-            'imu_gz': random.sample(range(101), 8),
+            'timestamp': [i_ for i_ in range(50)],
+            'ax': random.sample(range(101), 50),
+            'ay': random.sample(range(101), 50),
+            'az': random.sample(range(101), 50),
+            'gx': random.sample(range(101), 50),
+            'gy': random.sample(range(101), 50),
+            'gz': random.sample(range(101), 50),
         }
 
         df = pd.DataFrame(data=data)
 
-        f = Figure()
-        ax = f.subplots(nrows=6, ncols=1, sharex='all', sharey='all')
-
         for i_, col in enumerate(df.columns[1:]):
-            ax[i_].plot(df['timestamp'], df[col])
-            ax[i_].set_ylabel(col)
+            self._ax[i_, handedness].clear()
+            # if i_ < 3:
+            #     self._ax[i_, handedness].set_ylim(-21, 21)
+            # else:
+            #     self._ax[i_, handedness].set_ylim(-51, 51)
+
+            self._ax[i_, handedness].plot(df['timestamp'], df[col])
+            self._ax[i_, handedness].set_ylabel(col)
 
         handedness_label = 'Left' if handedness == 0 else 'Right'
-        ax[0].set_title(handedness_label + ' raw')
-        ax[-1].set_xlabel('timestamp')
-        canvas = FigureCanvasTkAgg(f, self)
-        canvas.draw()
-        canvas.get_tk_widget().place(x=400 * handedness, y=0, width=400, height=500)
+        self._ax[0, handedness].set_title(handedness_label + ' raw')
+        self._ax[-1, handedness].set_xlabel('timestamp')
 
     def __capture_screenshot(self):
         self._controller.client.record_screenshot()
@@ -191,6 +205,7 @@ class _RunScreen(Frame):
     def __click_stop_button(self, e):
         self._controller.client.stop_sensor()
         self._controller.client.stop_screenshot()
+        self._draw_thread.join()
         self._controller.goto_next_screen(self.__class__)
 
 
