@@ -3,14 +3,13 @@
 
 data/
 
-!data/pic/**
-
 **/\.ipynb_checkpoints/
 
 **/__pycache__/
 
 util/
 
-!util/*ipynb
+!util/*.ipynb
+!util/*.py
 
 tmp/

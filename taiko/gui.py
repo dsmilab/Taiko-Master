@@ -1,9 +1,12 @@
 from .client import *
 
 from tkinter import *
+from tkinter import ttk
+
 import pandas as pd
 import random
 import platform
+import threading
 from PIL import Image, ImageTk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
@@ -32,6 +35,7 @@ class GUI(Tk):
         self._container.grid_rowconfigure(0, weight=1)
         self._container.grid_columnconfigure(0, weight=1)
         self.switch_screen(_StartScreen)
+        # self.switch_screen(_LoadingScreen)
 
     def switch_screen(self, scr):
         screen = scr(parent=self._container, controller=self)
@@ -43,9 +47,11 @@ class GUI(Tk):
             self.switch_screen(_RunScreen)
         elif now_scr == _RunScreen:
             try:
-                self.switch_screen(_ResultScreen)
+                self.switch_screen(_LoadingScreen)
             except (KeyError, TypeError):
                 self.switch_screen(_ErrorScreen)
+        elif now_scr == _LoadingScreen:
+            self.switch_screen(_ResultScreen)
         elif now_scr == _ResultScreen:
             self.switch_screen(_StartScreen)
         elif now_scr == _ErrorScreen:
@@ -75,19 +81,16 @@ class _StartScreen(Frame):
         self.__create_buttons()
         self.__create_entry_tips()
         self.__refresh_difficulty_buttons()
+        self._controller.client.clear()
 
     def __create_buttons(self):
         self._buttons['start'] = Button(self, text='start')
         self._buttons['start'].bind('<Button-1>', self.__click_start_button)
         self._buttons['start'].place(x=280, y=520, width=250, height=70)
 
-        self._buttons['reset'] = Button(self, text='reset')
-        self._buttons['reset'].bind('<Button-1>', self.__click_reset_button)
-        self._buttons['reset'].place(x=0, y=580, width=50, height=20)
-
         self._var['difficulty'] = StringVar()
-        for i_, difficulty in enumerate(['easy', 'normal', 'hard', 'extreme']):
-            self._images[difficulty] = PhotoImage(file='data/pic/' + difficulty + '.png')
+        for i_, difficulty in enumerate(self._controller.client.DIFFICULTIES):
+            self._images[difficulty] = PhotoImage(file=self._controller.client.pic_path[difficulty])
             self._buttons[difficulty] = Button(self,
                                                image=self._images[difficulty],
                                                text=difficulty)
@@ -127,9 +130,6 @@ class _StartScreen(Frame):
     def __click_start_button(self, e):
         self._controller.client.set_song_id(self._entries['song_id'].get())
         self._controller.goto_next_screen(self.__class__)
-
-    def __click_reset_button(self, e):
-        self._controller.client.clear()
 
 
 class _RunScreen(Frame):
@@ -189,12 +189,52 @@ class _RunScreen(Frame):
         self._controller.client.record_sensor()
 
     def __click_stop_button(self, e):
-        self._controller.client.record_sensor(False)
-        self._controller.client.record_screenshot(False)
+        self._controller.client.stop_sensor()
+        self._controller.client.stop_screenshot()
+        self._controller.goto_next_screen(self.__class__)
+
+
+class _LoadingScreen(Frame):
+
+    def __init__(self, parent, controller):
+        Frame.__init__(self, parent)
+        self._controller = controller
+
+        self._buttons = {}
+        self._labels = {}
+        self._images = {}
+
+        self.__init_screen()
+        self._process_thread = threading.Thread(target=self.__process)
+        self._process_thread.start()
+
+    def __init_screen(self):
+        self.__create_progress_bar()
+        self.__create_tips()
+
+    def __create_progress_bar(self):
+        self._prog_bar = ttk.Progressbar(self, orient="horizontal", mode="determinate")
+        self._prog_bar['maximum'] = self._controller.client.progress['maximum']
+        self._prog_bar.place(x=100, y=300, width=600, height=50)
+
+    def __create_tips(self):
+        self._labels['tips'] = Label(self, text=self._controller.client.progress_tips)
+        self._labels['tips'].place(x=100, y=350, width=600, height=80)
+        self._labels['tips'].config(font=("Times", 12))
+
+    def __process(self):
+        self.after(200, self._process_queue)       
         self._controller.client.download_sensor()
         self._controller.client.upload_screenshot()
 
-        self._controller.goto_next_screen(self.__class__)
+    def _process_queue(self):
+        self._prog_bar['value'] = self._controller.client.progress['value']
+        self._labels['tips'].configure(text=self._controller.client.progress_tips)
+        if self._prog_bar['value'] < self._prog_bar['maximum']:
+            self.after(200, self._process_queue)
+        else:
+            self._process_thread.join()
+            self._controller.goto_next_screen(self.__class__)
 
 
 class _ResultScreen(Frame):
@@ -226,7 +266,7 @@ class _ResultScreen(Frame):
         self._labels['score_curve'].place(x=0, y=0, width=800, height=300)
 
     def __create_radar_canvas(self):
-        img = Image.open('data/pic/radar.png')
+        img = Image.open(self._controller.client.pic_path['radar'])
         img = img.resize((250, 250), Image.ANTIALIAS)
         self._images['radar'] = ImageTk.PhotoImage(img)
         self._labels['radar'] = Label(self, image=self._images['radar'])

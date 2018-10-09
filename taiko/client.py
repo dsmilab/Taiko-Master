@@ -36,18 +36,54 @@ LINUX_SERVER_EXE_COMMAND = "python %s -d" % SERVER_EXE_PATH
 LINUX_KILL_COMMAND = "pkill -f python;"
 
 
+class _SSHTaiko(object):
+
+    def __init__(self, ssh, ip_addr):
+        self._ssh = ssh
+        self._ip_addr = ip_addr
+
+    def close(self):
+        self._ssh.close()
+
+    @property
+    def ssh(self):
+        return self._ssh
+
+    @property
+    def ip_addr(self):
+        return self._ip_addr
+
+
 class _Client(object):
+    DIFFICULTIES = ['easy', 'normal', 'hard', 'extreme']
 
     def __init__(self):
         self._local_sensor_filename = {}
         self._local_capture_dirname = None
         self._capture_alive = False
         self._remained_play_times = None
-        self._ssh_queue = queue.Queue()
+        self._taiko_ssh_queue = queue.Queue()
+
+        self._progress = {
+            'maximum': 100,
+            'value': 0,
+        }
+        self._progress_tips = ''
+
+        self._prog_max = {
+            'download_sensor': 10,
+            'compress_screenshot': 25,
+            'upload_to_server': 5,
+            'server_process': 50,
+            'download_from_server': 10,
+        }
 
         self._pic_path = {
             'error': posixpath.join(PIC_DIR_PATH, 'curve_not_found.jpg'),
+            'radar': posixpath.join(PIC_DIR_PATH, 'radar.png'),
         }
+        for difficulty in _Client.DIFFICULTIES:
+            self._pic_path[difficulty] = posixpath.join(PIC_DIR_PATH, difficulty + '.png')
 
     def __create_socket(self):
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -60,17 +96,31 @@ class _Client(object):
 
         self._socket.bind((self._ip_addr, self._port))
 
-    def _record_sensor(self, host_ip_, username_, pwd_, command_, tips_=''):
+    def _record_sensor(self, host_ip_, username_, pwd_, command_):
         try:
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             ssh.connect(host_ip_, username=username_, password=pwd_)
             ssh.exec_command(command_)
 
-            sys.stdout.write('%s\n' % tips_)
+            sys.stdout.write('connect %s ok\n' % host_ip_)
             sys.stdout.flush()
 
-            self._ssh_queue.put(ssh)
+            taiko_ssh = _SSHTaiko(ssh, host_ip_)
+            self._taiko_ssh_queue.put(taiko_ssh)
+
+        except Exception as e:
+            sys.stderr.write('SSH connection error: %s\n' % str(e))
+            sys.stderr.flush()
+
+    def _stop_sensor(self):
+        try:
+            while not self._taiko_ssh_queue.empty():
+                taiko_ssh = self._taiko_ssh_queue.get()
+                taiko_ssh.close()
+
+                sys.stdout.write('stop %s ok\n' % taiko_ssh.ip_addr)
+                sys.stdout.flush()
 
         except Exception as e:
             sys.stderr.write('SSH connection error: %s\n' % str(e))
@@ -94,6 +144,7 @@ class _Client(object):
             sys.stdout.flush()
 
             sftp.get(remote_file, local_file)
+            self._progress['value'] += 10
             self._local_sensor_filename[prefix_] = prefix_ + '_' + remote_filename
 
             sys.stdout.write('Reading %s done.\n' % host_ip_)
@@ -148,10 +199,10 @@ class _Client(object):
             # try to create tmp dir if it does not exit
             try:
                 sftp.mkdir(remote_dir_)
-            except IOError as ee:
-                sys.stderr.write(str(ee) + '\n')
-                sys.stderr.flush()
+            except IOError:
+                pass
 
+            self._progress_tips = 'Uploading screenshots to server ...'
             # first delete remote files in tmp dir.
             remote_files = sftp.listdir(remote_dir_)
             for remote_file in remote_files:
@@ -164,22 +215,28 @@ class _Client(object):
                 print(local_file_, remote_file_)
                 sftp.put(local_file_, remote_file_)
 
+            self._progress['value'] += self._prog_max['upload_to_server']
+
             sys.stdout.write('Upload screenshot done.\n')
             sys.stdout.flush()
 
             sys.stdout.write('Processing screenshot on GPU....\n')
             sys.stdout.flush()
 
+            self._progress_tips = 'Server is busying in processing data ...'
             _, stdout_, _ = ssh.exec_command(GPU_LOGIN_COMMAND + command_, get_pty=True)
             for line in stdout_.readlines():
                 sys.stdout.write(str(line))
                 sys.stdout.flush()
 
+            self._progress['value'] += self._prog_max['server_process']
+
+            self._progress_tips = 'Downloading result from server ...'
             remote_files = sftp.listdir(SERVER_TMP_DIR_PATH)
             pic_filename = [filename for filename in remote_files if re.match('^curve_(\d)+.png$', filename)][0]
 
             remote_pic_file = posixpath.join(SERVER_TMP_DIR_PATH, pic_filename)
-            local_pic_file = posixpath.join(PIC_DIR_PATH, pic_filename)
+            local_pic_file = posixpath.join(TMP_DIR_PATH, pic_filename)
 
             self._remained_play_times = int(re.search('\d+', pic_filename).group(0))
             self._pic_path['score_curve'] = local_pic_file
@@ -187,6 +244,7 @@ class _Client(object):
             sftp.get(remote_pic_file, local_pic_file)
             sftp.remove(remote_pic_file)
 
+            self._progress['value'] += self._prog_max['download_from_server']
             sys.stdout.write('Download result from GPU, ok!\n')
             sys.stdout.flush()
 
@@ -205,6 +263,14 @@ class _Client(object):
     def pic_path(self):
         return self._pic_path
 
+    @property
+    def progress(self):
+        return self._progress
+
+    @property
+    def progress_tips(self):
+        return self._progress_tips
+
 
 class TaikoClient(_Client):
 
@@ -214,10 +280,15 @@ class TaikoClient(_Client):
         self._song_id = None
 
     def clear(self):
-        self.record_sensor(False)
-        self.record_screenshot(False)
+        self.stop_sensor()
+        self.stop_screenshot()
+        self._progress = {
+            'maximum': 100,
+            'value': 0,
+        }
+        self._progress_tips = ''
 
-    def record_sensor(self, is_record=True):
+    def record_sensor(self):
         sensor_settings = glob(posixpath.join(SSH_CONFIG_PATH, '*.bb'))
 
         threads = []
@@ -230,9 +301,9 @@ class TaikoClient(_Client):
                 with open(file_path, 'r') as f:
                     username = f.readline()[:-1]
                     pwd = f.readline()[:-1]
-                    command = LINUX_BB_COMMAND if is_record else LINUX_KILL_COMMAND
-                    tips = 'connect %s ok' % host_ip if is_record else 'kill %s ok' % host_ip
-                    thread = threading.Thread(target=self._record_sensor, args=(host_ip, username, pwd, command, tips))
+                    command = LINUX_BB_COMMAND
+                    thread = threading.Thread(target=self._record_sensor,
+                                              args=(host_ip, username, pwd, command))
                     thread.start()
                     threads.append(thread)
 
@@ -243,14 +314,15 @@ class TaikoClient(_Client):
         for thread in threads:
             thread.join()
 
-        if not is_record:
-            while not self._ssh_queue.empty():
-                ssh = self._ssh_queue.get()
-                ssh.close()
+    def stop_sensor(self):
+        thread = threading.Thread(target=self._stop_sensor)
+        thread.start()
+        thread.join()
 
     def download_sensor(self):
         sensor_settings = glob(posixpath.join(SSH_CONFIG_PATH, '*.bb'))
 
+        self._progress_tips = 'Downloading raw data from sensors ...'
         threads = []
         for file_path in sensor_settings:
             res = re.search('(\d){,3}.(\d){,3}.(\d){,3}.(\d){,3}.bb', file_path)
@@ -275,20 +347,21 @@ class TaikoClient(_Client):
         for thread in threads:
             thread.join()
 
-    def record_screenshot(self, is_record=True):
-        try:
-            if is_record:
-                self._capture_thread = threading.Thread(target=self._record_screenshot)
-                self._capture_thread.start()
+            this_prog = float(self._prog_max['download_sensor'] / len(threads))
+            if not this_prog.is_integer():
+                raise ValueError('number of threads must be divided by %d' % self._prog_max['download_sensor'])
 
-            else:
-                self._capture_alive = False
-                if self._capture_thread is not None:
-                    self._capture_thread.join()
+            self._progress['value'] += int(this_prog)
 
-        except Exception as e:
-            sys.stderr.write('error: %s\n' % str(e))
-            sys.stderr.flush()
+    def record_screenshot(self):
+        self._capture_thread = threading.Thread(target=self._record_screenshot)
+        self._capture_thread.start()
+        self._capture_alive = True
+
+    def stop_screenshot(self):
+        self._capture_alive = False
+        if self._capture_thread is not None:
+            self._capture_thread.join()
 
     def upload_screenshot(self):
         server_settings = glob(posixpath.join(SSH_CONFIG_PATH, '*.gpu'))
@@ -303,8 +376,15 @@ class TaikoClient(_Client):
                     username = f.readline()[:-1]
                     pwd = f.readline()[:-1]
 
+                    # @debug
+                    self._local_capture_dirname = 'capture_2018_09_27_16_36_34'
+                    # @debug
+
                     local_dir_path = posixpath.join(LOCAL_SCREENSHOT_PATH, self._local_capture_dirname)
+
+                    self._progress_tips = 'Compressing screenshots ...'
                     convert_images_to_video(local_dir_path, local_dir_path)
+                    self._progress['value'] += self._prog_max['compress_screenshot']
 
                     remote_dir_path = SERVER_SCREENSHOT_PATH
 
