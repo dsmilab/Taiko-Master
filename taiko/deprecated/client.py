@@ -130,7 +130,7 @@ class TaikoClient(object):
                 remote_filename = max(csv_items)
 
                 remote_file = posixpath.join(REMOTE_BASE_PATH, remote_filename)
-                local_file = posixpath.join(LOCAL_SENSOR_PATH, prefix_ + '_' + remote_filename)
+                local_file = posixpath.join(LOCAL_SENSOR_DIR_PATH, prefix_ + '_' + remote_filename)
 
                 sys.stdout.write('Reading from %s ...\n' % host_ip)
                 sys.stdout.flush()
@@ -197,7 +197,7 @@ class TaikoClient(object):
                     username = f.readline()[:-1]
                     pwd = f.readline()[:-1]
 
-                    files = next(os.walk(LOCAL_SENSOR_PATH))[2]
+                    files = next(os.walk(LOCAL_SENSOR_DIR_PATH))[2]
                     left_items = list(filter(lambda name: name[:2] == 'L_', files))
                     right_items = list(filter(lambda name: name[:2] == 'R_', files))
 
@@ -205,11 +205,11 @@ class TaikoClient(object):
                     right_filename = max(right_items)
 
                     tasks = []
-                    local_file = posixpath.join(LOCAL_SENSOR_PATH, left_filename)
+                    local_file = posixpath.join(LOCAL_SENSOR_DIR_PATH, left_filename)
                     remote_file = posixpath.join(SERVER_LEFT_PATH, left_filename)
                     tasks.append((local_file, remote_file))
 
-                    local_file = posixpath.join(LOCAL_SENSOR_PATH, right_filename)
+                    local_file = posixpath.join(LOCAL_SENSOR_DIR_PATH, right_filename)
                     remote_file = posixpath.join(SERVER_RIGHT_PATH, right_filename)
                     tasks.append((local_file, remote_file))
 
