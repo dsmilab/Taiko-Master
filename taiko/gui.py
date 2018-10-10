@@ -1,20 +1,19 @@
 from .client import *
+from .tools.validate import *
 
 from tkinter import *
 from tkinter import ttk
 
-import pandas as pd
-import random
 import platform
 import threading
 from PIL import Image, ImageTk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
-if platform.system() == 'Windows':
-    ACTIVE = 'normal'
-elif platform.system() == 'Linux':
-    ACTIVE = 'active'
+# if platform.system() == 'Windows':
+#     ACTIVE = 'normal'
+# elif platform.system() == 'Linux':
+#     ACTIVE = 'normal'
 
 
 class GUI(Tk):
@@ -106,7 +105,8 @@ class _StartScreen(Frame):
         self._labels['drummer_name'].place(x=40, y=10, height=80)
         self._labels['drummer_name'].config(font=("Times", 30))
 
-        self._entries['drummer_name'] = Entry(self, bg='lightgray')
+        vcmd = (self.register(validate_alpha_digit), '%P', '%S')
+        self._entries['drummer_name'] = Entry(self, bg='lightgray', validate='key', validatecommand=vcmd)
         self._entries['drummer_name'].place(x=40, y=80, height=80, width=300)
         self._entries['drummer_name'].config(font=("Times", 30))
 
@@ -114,7 +114,8 @@ class _StartScreen(Frame):
         self._labels['song_id'].place(x=450, y=80)
         self._labels['song_id'].config(font=("Times", 25))
 
-        self._entries['song_id'] = Entry(self, bg='lightblue')
+        vcmd = (self.register(validate_integer), '%P', '%S')
+        self._entries['song_id'] = Entry(self, bg='lightblue', validate='key', validatecommand=vcmd)
         self._entries['song_id'].place(x=600, y=80, height=40, width=70)
         self._entries['song_id'].config(font=("Times", 20))
 
@@ -127,11 +128,12 @@ class _StartScreen(Frame):
         self.__refresh_difficulty_buttons()
 
     def __refresh_difficulty_buttons(self):
-        for i_, difficulty in enumerate(['easy', 'normal', 'hard', 'extreme']):
+        for i_, difficulty in enumerate(self._controller.client.DIFFICULTIES):
             self._buttons[difficulty].configure(bd=5, bg='snow')
         self._buttons[self._selected_difficulty].configure(bd=5, bg='red')
 
     def __click_start_button(self, e):
+        self._controller.client.set_drummer_name(self._entries['drummer_name'].get())
         self._controller.client.set_song_id(self._entries['song_id'].get())
         self._controller.goto_next_screen(self.__class__)
 
@@ -203,6 +205,8 @@ class _RunScreen(Frame):
     def __click_stop_button(self, e):
         self._controller.client.stop_sensor()
         self._controller.client.stop_screenshot()
+        self._controller.client.download_sensor()
+        self._controller.client.update_local_record_table()
         self._controller.goto_next_screen(self.__class__)
 
 
@@ -235,8 +239,7 @@ class _LoadingScreen(Frame):
         self._labels['tips'].config(font=("Times", 12))
 
     def __process(self):
-        self.after(200, self._process_queue)       
-        self._controller.client.download_sensor()
+        self.after(200, self._process_queue)
         self._controller.client.upload_screenshot()
 
     def _process_queue(self):

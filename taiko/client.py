@@ -144,9 +144,8 @@ class _Client(object):
         self._progress_tips = ''
 
         self._prog_max = {
-            'download_sensor': 10,
-            'compress_screenshot': 25,
-            'upload_to_server': 5,
+            'compress_screenshot': 30,
+            'upload_to_server': 10,
             'server_process': 50,
             'download_from_server': 10,
         }
@@ -223,7 +222,7 @@ class _Client(object):
             remote_filename = max(csv_items)
 
             remote_file = posixpath.join(REMOTE_BASE_PATH, remote_filename)
-            local_file = posixpath.join(LOCAL_SENSOR_PATH, prefix_ + '_' + remote_filename)
+            local_file = posixpath.join(LOCAL_SENSOR_DIR_PATH, prefix_ + '_' + remote_filename)
 
             sys.stdout.write('Reading from %s ...\n' % host_ip_)
             sys.stdout.flush()
@@ -370,6 +369,7 @@ class TaikoClient(_Client):
         self._capture_thread = None
         self._taiko_ssh_thread = []
         self._song_id = None
+        self._drummer_name = None
 
     def clear(self):
         self.stop_sensor()
@@ -485,11 +485,11 @@ class TaikoClient(_Client):
             logging.debug('TaikoClient join() download_sensor() => %s' % thread)
             thread.join()
 
-            this_prog = float(self._prog_max['download_sensor'] / len(threads))
-            if not this_prog.is_integer():
-                raise ValueError('number of threads must be divided by %d' % self._prog_max['download_sensor'])
-
-            self._progress['value'] += int(this_prog)
+            # this_prog = float(self._prog_max['download_sensor'] / len(threads))
+            # if not this_prog.is_integer():
+            #     raise ValueError('number of threads must be divided by %d' % self._prog_max['download_sensor'])
+            #
+            # self._progress['value'] += int(this_prog)
 
     def record_screenshot(self):
         logging.debug('TaikoClient record_screenshot() => %s' % threading.current_thread())
@@ -556,9 +556,44 @@ class TaikoClient(_Client):
                 sys.stderr.write('error: %s\n' % str(e))
                 sys.stderr.flush()
 
+    def update_local_record_table(self):
+        left_sensor_datetime = self._local_sensor_filename['L']
+        right_sensor_datetime = self._local_sensor_filename['R']
+        capture_datetime = self._local_capture_dirname
+
+        try:
+            record_df = pd.read_csv(LOCAL_RECORD_TABLE_PATH)
+            index_ = 0
+            if len(record_df) > 0:
+                index_ = record_df.index[-1] + 1
+            record_df.loc[index_] = [self.drummer_name,
+                                     self.song_id,
+                                     left_sensor_datetime,
+                                     right_sensor_datetime,
+                                     capture_datetime]
+            record_df.to_csv(LOCAL_RECORD_TABLE_PATH, index=False)
+
+            sys.stdout.write('Update local table ok\n')
+            sys.stdout.flush()
+
+        except Exception as e:
+            sys.stderr.write("error: {0}\n".format(e))
+            sys.stderr.flush()
+
     def set_song_id(self, song_id):
         self._song_id = int(song_id)
 
+    def set_drummer_name(self, drummer_name):
+        self._drummer_name = drummer_name
+
+    @property
+    def drummer_name(self):
+        if self._drummer_name is None:
+            return 'anonymous user'
+        return self._drummer_name
+
     @property
     def song_id(self):
+        if self._song_id is None:
+            return -1
         return self._song_id
