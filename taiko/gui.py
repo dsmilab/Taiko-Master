@@ -26,6 +26,7 @@ class GUI(Tk):
         self.resizable(width=False, height=False)
         self._stage = 0
         self._client = TaikoClient()
+        self._screen = None
 
         self.__init_window()
 
@@ -34,28 +35,31 @@ class GUI(Tk):
         self._container.pack(side='top', fill='both', expand=True)
         self._container.grid_rowconfigure(0, weight=1)
         self._container.grid_columnconfigure(0, weight=1)
-        self.switch_screen(_StartScreen)
-        # self.switch_screen(_LoadingScreen)
-
-    def switch_screen(self, scr):
-        screen = scr(parent=self._container, controller=self)
-        screen.grid(row=0, column=0, sticky="nsew")
-        screen.tkraise()
+        self._switch_screen(_StartScreen)
 
     def goto_next_screen(self, now_scr):
         if now_scr == _StartScreen:
-            self.switch_screen(_RunScreen)
+            self._switch_screen(_RunScreen)
         elif now_scr == _RunScreen:
             try:
-                self.switch_screen(_LoadingScreen)
+                self._switch_screen(_LoadingScreen)
             except (KeyError, TypeError):
-                self.switch_screen(_ErrorScreen)
+                self._switch_screen(_ErrorScreen)
         elif now_scr == _LoadingScreen:
-            self.switch_screen(_ResultScreen)
+            self._switch_screen(_ResultScreen)
         elif now_scr == _ResultScreen:
-            self.switch_screen(_StartScreen)
+            self._switch_screen(_StartScreen)
         elif now_scr == _ErrorScreen:
-            self.switch_screen(_StartScreen)
+            self._switch_screen(_StartScreen)
+
+    def _switch_screen(self, scr):
+        if self._screen:
+            self._screen.grid_forget()
+            self._screen.destroy()
+
+        self._screen = scr(parent=self._container, controller=self)
+        self._screen.grid(row=0, column=0, sticky="nsew")
+        self._screen.tkraise()
 
     @property
     def client(self):
@@ -133,6 +137,7 @@ class _StartScreen(Frame):
 
 
 class _RunScreen(Frame):
+    LABEL = ['L', 'R']
 
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
@@ -144,43 +149,50 @@ class _RunScreen(Frame):
         self.__init_screen()
         self.__capture_sensor()
         self.__capture_screenshot()
+        self.__update_raw_canvas()
+        # self._draw_thread = threading.Thread(target=self.__update_raw_canvas)
+        # self._draw_thread.start()
 
     def __init_screen(self):
         self.__create_stop_button()
-        self.__create_raw_canvas(0)
-        self.__create_raw_canvas(1)
+        self.__create_raw_canvas()
 
     def __create_stop_button(self):
         self._buttons['stop'] = Button(self, text='stop')
         self._buttons['stop'].bind('<Button-1>', self.__click_stop_button)
         self._buttons['stop'].place(x=280, y=520, width=250, height=70)
 
-    def __create_raw_canvas(self, handedness):
-        data = {
-            'timestamp': [i_ for i_ in range(8)],
-            'imu_ax': random.sample(range(101), 8),
-            'imu_ay': random.sample(range(101), 8),
-            'imu_az': random.sample(range(101), 8),
-            'imu_gx': random.sample(range(101), 8),
-            'imu_gy': random.sample(range(101), 8),
-            'imu_gz': random.sample(range(101), 8),
-        }
-
-        df = pd.DataFrame(data=data)
-
+    def __create_raw_canvas(self):
         f = Figure()
-        ax = f.subplots(nrows=6, ncols=1, sharex='all', sharey='all')
+        self._ax = f.subplots(nrows=6, ncols=2, sharex='all')
+        self._canvas = FigureCanvasTkAgg(f, self)
+        self._canvas.get_tk_widget().place(x=0, y=0, width=800, height=500)
+
+    def __update_raw_canvas(self):
+        self.__draw_raw_canvas(0)
+        self.__draw_raw_canvas(1)
+        self._canvas.draw()
+        self.after(50, self.__update_raw_canvas)
+
+    def __draw_raw_canvas(self, handedness):
+        label = _RunScreen.LABEL[handedness]
+        df = self._controller.client.query_sensor(label)
+        if df is None:
+            return
 
         for i_, col in enumerate(df.columns[1:]):
-            ax[i_].plot(df['timestamp'], df[col])
-            ax[i_].set_ylabel(col)
+            self._ax[i_, handedness].clear()
+            if i_ < 3:
+                self._ax[i_, handedness].set_ylim(-20, 20)
+            else:
+                self._ax[i_, handedness].set_ylim(-200, 200)
+
+            self._ax[i_, handedness].plot(df['timestamp'], df[col])
+            self._ax[i_, handedness].set_ylabel(col)
 
         handedness_label = 'Left' if handedness == 0 else 'Right'
-        ax[0].set_title(handedness_label + ' raw')
-        ax[-1].set_xlabel('timestamp')
-        canvas = FigureCanvasTkAgg(f, self)
-        canvas.draw()
-        canvas.get_tk_widget().place(x=400 * handedness, y=0, width=400, height=500)
+        self._ax[0, handedness].set_title(handedness_label + ' raw')
+        self._ax[-1, handedness].set_xlabel('timestamp')
 
     def __capture_screenshot(self):
         self._controller.client.record_screenshot()

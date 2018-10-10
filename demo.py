@@ -1,7 +1,8 @@
 from taiko.gui import *
+from taiko.tools.singleton import *
 
 
-class Demo(object):
+class Demo(metaclass=_Singleton):
 
     def __init__(self):
         self._window = GUI()
