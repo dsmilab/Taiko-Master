@@ -26,6 +26,7 @@ class GUI(Tk):
         self.resizable(width=False, height=False)
         self._stage = 0
         self._client = TaikoClient()
+        self._screen = None
 
         self.__init_window()
 
@@ -34,28 +35,31 @@ class GUI(Tk):
         self._container.pack(side='top', fill='both', expand=True)
         self._container.grid_rowconfigure(0, weight=1)
         self._container.grid_columnconfigure(0, weight=1)
-        self.switch_screen(_StartScreen)
-        # self.switch_screen(_LoadingScreen)
-
-    def switch_screen(self, scr):
-        screen = scr(parent=self._container, controller=self)
-        screen.grid(row=0, column=0, sticky="nsew")
-        screen.tkraise()
+        self._switch_screen(_StartScreen)
 
     def goto_next_screen(self, now_scr):
         if now_scr == _StartScreen:
-            self.switch_screen(_RunScreen)
+            self._switch_screen(_RunScreen)
         elif now_scr == _RunScreen:
             try:
-                self.switch_screen(_LoadingScreen)
+                self._switch_screen(_LoadingScreen)
             except (KeyError, TypeError):
-                self.switch_screen(_ErrorScreen)
+                self._switch_screen(_ErrorScreen)
         elif now_scr == _LoadingScreen:
-            self.switch_screen(_ResultScreen)
+            self._switch_screen(_ResultScreen)
         elif now_scr == _ResultScreen:
-            self.switch_screen(_StartScreen)
+            self._switch_screen(_StartScreen)
         elif now_scr == _ErrorScreen:
-            self.switch_screen(_StartScreen)
+            self._switch_screen(_StartScreen)
+
+    def _switch_screen(self, scr):
+        if self._screen:
+            self._screen.grid_forget()
+            self._screen.destroy()
+
+        self._screen = scr(parent=self._container, controller=self)
+        self._screen.grid(row=0, column=0, sticky="nsew")
+        self._screen.tkraise()
 
     @property
     def client(self):
@@ -145,9 +149,9 @@ class _RunScreen(Frame):
         self.__init_screen()
         self.__capture_sensor()
         self.__capture_screenshot()
-
-        self._draw_thread = threading.Thread(target=self.__update_raw_canvas)
-        self._draw_thread.start()
+        self.__update_raw_canvas()
+        # self._draw_thread = threading.Thread(target=self.__update_raw_canvas)
+        # self._draw_thread.start()
 
     def __init_screen(self):
         self.__create_stop_button()
@@ -172,19 +176,9 @@ class _RunScreen(Frame):
 
     def __draw_raw_canvas(self, handedness):
         label = _RunScreen.LABEL[handedness]
-        taiko_ssh = self._controller.client.taiko_ssh[label]
-
-        data = {
-            'timestamp': [tm for tm in range(1000)],
-            'ax': taiko_ssh.window[1],
-            'ay': taiko_ssh.window[2],
-            'az': taiko_ssh.window[3],
-            'gx': taiko_ssh.window[4],
-            'gy': taiko_ssh.window[5],
-            'gz': taiko_ssh.window[6],
-        }
-
-        df = pd.DataFrame(data=data)
+        df = self._controller.client.query_sensor(label)
+        if df is None:
+            return
 
         for i_, col in enumerate(df.columns[1:]):
             self._ax[i_, handedness].clear()
@@ -209,7 +203,6 @@ class _RunScreen(Frame):
     def __click_stop_button(self, e):
         self._controller.client.stop_sensor()
         self._controller.client.stop_screenshot()
-        self._draw_thread.join()
         self._controller.goto_next_screen(self.__class__)
 
 

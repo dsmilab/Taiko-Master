@@ -3,21 +3,24 @@ from .tools.timestamp import *
 from .tools.converter import *
 from .tools.realtime import *
 
-import platform
+from glob import glob
+import pandas as pd
 import paramiko
 import threading
-import subprocess
 import sys
 import os
-from glob import glob
 import re
 import mss.tools
 import socket
 import time
 import pickle
-import queue
+import logging
 
 __all__ = ['TaikoClient']
+
+# logging.basicConfig(level=logging.DEBUG,
+#                     format='[%(levelname)s] (%(threadName)-10s) %(funcName)10s() %(message)s',
+#                     )
 
 # linux
 LINUX_BB_COMMAND = "cd %s; python read10axis.py -6;" % REMOTE_BASE_PATH
@@ -38,40 +41,38 @@ LINUX_KILL_COMMAND = "pkill -f python;"
 
 
 class _SSHTaiko(object):
+    WINDOW_SIZE = 1000
 
     def __init__(self, ssh, socket_, ip_addr, label):
         self._ssh = ssh
         self._socket = socket_
         self._ip_addr = ip_addr
         self._label = label
-        self._thread = None
-        self._window = AnalogData(1000)
-        self._is_active = True
+        self._analog = AnalogData(_SSHTaiko.WINDOW_SIZE)
+        self._connection = None
 
     def start(self):
-        print('wait for connect')
+        logging.debug('_SSHTaiko start() => %s' % threading.current_thread())
+        logging.info('wait for connect')
         while True:
-            connection, address = self._socket.accept()
-            ip, port = address[0], address[1]
-            print('connect by: ', address)
+            self._connection, address = self._socket.accept()
 
             try:
-                self._thread = threading.Thread(target=self.run, args=(connection, ip, port))
-                self._thread.start()
+                sys.stdout.write('%s:%s connected!\n' % (address[0], address[1]))
+                sys.stdout.flush()
+                self.run()
 
             except Exception as e:
                 sys.stderr.write(str(e) + '\n')
                 sys.stderr.flush()
                 break
 
-    def run(self, connection, ip, port):
-        sys.stdout.write('%s:%s connected!\n' % (ip, port))
-        sys.stdout.flush()
+    def run(self):
+        logging.debug('_SSHTaiko run() => %s' % threading.current_thread())
 
-        self._is_active = True
-        while self._is_active:
+        while self._connection:
             try:
-                buf = connection.recv(1024)
+                buf = self._connection.recv(1024)
 
                 try:
                     data = pickle.loads(buf)
@@ -79,25 +80,36 @@ class _SSHTaiko(object):
                     continue
 
                 if data[-1] == 'Q':
-                    print("client request to quit")
-                    self._is_active = False
-                    connection.close()
+                    logging.info("client request to quit")
                     break
 
                 elif data[-1] == self._label + '\r':
-                    self._window.add(data[:-2])
+                    self._analog.add(data[:-2])
 
             except KeyboardInterrupt:
                 break
-        print(self._label + ' close')
-        connection.close()
+
+        self._connection.close()
 
     def close(self):
-        self._is_active = False
+        logging.debug('_SSHTaiko close() => %s' % threading.current_thread())
         self._ssh.close()
+        self._connection.close()
         self._socket.close()
-        if self._thread.isAlive():
-            self._thread.join()
+
+    def get_window_df(self):
+        data = {
+            'timestamp': [tm for tm in range(_SSHTaiko.WINDOW_SIZE)],
+            'ax': self._analog.window[1],
+            'ay': self._analog.window[2],
+            'az': self._analog.window[3],
+            'gx': self._analog.window[4],
+            'gy': self._analog.window[5],
+            'gz': self._analog.window[6],
+        }
+
+        df = pd.DataFrame(data=data)
+        return df
 
     @property
     def ssh(self):
@@ -110,10 +122,6 @@ class _SSHTaiko(object):
     @property
     def ip_addr(self):
         return self._ip_addr
-
-    @property
-    def window(self):
-        return self._window.window
 
 
 class _Client(object):
@@ -156,8 +164,10 @@ class _Client(object):
             self._ip_addr = f.readline()[:-1]
             self._port['L'] = int(f.readline()[:-1])
             self._port['R'] = int(f.readline()[:-1])
+            f.close()
 
     def _record_sensor(self, host_ip_, username_, pwd_, command_, label_):
+        print('_Client _record_sensor() =>', threading.current_thread())
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.bind((self._ip_addr, self._port[label_]))
@@ -179,9 +189,11 @@ class _Client(object):
             sys.stderr.flush()
 
     def _stop_sensor(self, host_ip_, username_, pwd_, command_, label_):
+        logging.debug('_Client _stop_sensor() => %s' % threading.current_thread())
         try:
             taiko_ssh = self._taiko_ssh.pop(label_, None)
             if taiko_ssh is not None:
+                taiko_ssh.close()
                 sys.stdout.write('stop %s ok\n' % taiko_ssh.ip_addr)
                 sys.stdout.flush()
 
@@ -189,17 +201,17 @@ class _Client(object):
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             ssh.connect(host_ip_, username=username_, password=pwd_)
             ssh.exec_command(command_)
+            ssh.close()
 
             sys.stdout.write('kill %s ok\n' % host_ip_)
             sys.stdout.flush()
-
-            ssh.close()
 
         except Exception as e:
             sys.stderr.write('SSH connection error: %s\n' % str(e))
             sys.stderr.flush()
 
     def _download_sensor(self, host_ip_, username_, pwd_, prefix_):
+        logging.debug('_Client _download_sensor() => %s' % threading.current_thread())
         try:
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -231,6 +243,7 @@ class _Client(object):
             sys.stderr.flush()
 
     def _record_screenshot(self):
+        logging.debug('_Client _record_screenshot() => %s' % threading.current_thread())
         with mss.mss() as sct:
             ts = time.time()
             st = 'capture_' + get_datetime(ts).strftime('%Y_%m_%d_%H_%M_%S')
@@ -238,12 +251,12 @@ class _Client(object):
             local_dir = posixpath.join(LOCAL_SCREENSHOT_PATH, st)
             os.makedirs(local_dir, exist_ok=True)
 
-            self._capture_alive = True
             self._local_capture_dirname = st
             sys.stdout.write('[%s] Start capturing screenshot...\n' % st)
             sys.stdout.flush()
 
             count = 0
+            self._capture_alive = True
             while self._capture_alive:
                 try:
                     monitor = {'top': 40, 'left': 0, 'width': 640, 'height': 360}
@@ -263,6 +276,7 @@ class _Client(object):
             sys.stdout.flush()
 
     def _upload_screenshot(self, host_ip_, username_, pwd_, command_, upload_tasks_, remote_dir_):
+        logging.debug('_Client _upload_screenshot() => %s' % threading.current_thread())
         try:
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -367,6 +381,7 @@ class TaikoClient(_Client):
         self._progress_tips = ''
 
     def record_sensor(self):
+        logging.debug('TaikoClient record_sensor() => %s' % threading.current_thread())
         sensor_settings = glob(posixpath.join(SSH_CONFIG_PATH, '*.bb'))
 
         threads = []
@@ -386,6 +401,8 @@ class TaikoClient(_Client):
                     thread.start()
                     threads.append(thread)
 
+                    f.close()
+
             except Exception as e:
                 sys.stderr.write('error: %s\n' % str(e))
                 sys.stderr.flush()
@@ -398,7 +415,17 @@ class TaikoClient(_Client):
             thread.start()
             self._taiko_ssh_thread.append(thread)
 
+    def query_sensor(self, label):
+        try:
+            taiko_ssh = self._taiko_ssh[label]
+            window_df = taiko_ssh.get_window_df()
+            return window_df
+
+        except KeyError:
+            return None
+
     def stop_sensor(self):
+        logging.debug('TaikoClient stop_sensor() => %s' % threading.current_thread())
         sensor_settings = glob(posixpath.join(SSH_CONFIG_PATH, '*.bb'))
 
         threads = []
@@ -417,6 +444,7 @@ class TaikoClient(_Client):
                                               args=(host_ip, username, pwd, command, label))
                     thread.start()
                     threads.append(thread)
+                    f.close()
 
             except Exception as e:
                 sys.stderr.write('error: %s\n' % str(e))
@@ -424,8 +452,10 @@ class TaikoClient(_Client):
 
         for thread in threads:
             thread.join()
+            logging.debug('TaikoClient join() stop_sensor() => %s' % thread)
 
     def download_sensor(self):
+        logging.debug('TaikoClient download_sensor() => %s' % threading.current_thread())
         sensor_settings = glob(posixpath.join(SSH_CONFIG_PATH, '*.bb'))
 
         self._progress_tips = 'Downloading raw data from sensors ...'
@@ -445,12 +475,14 @@ class TaikoClient(_Client):
                     thread = threading.Thread(target=self._download_sensor, args=(host_ip, username, pwd, _prefix,))
                     thread.start()
                     threads.append(thread)
+                    f.close()
 
             except Exception as e:
                 sys.stderr.write('error: %s\n' % str(e))
                 sys.stderr.flush()
 
         for thread in threads:
+            logging.debug('TaikoClient join() download_sensor() => %s' % thread)
             thread.join()
 
             this_prog = float(self._prog_max['download_sensor'] / len(threads))
@@ -460,16 +492,19 @@ class TaikoClient(_Client):
             self._progress['value'] += int(this_prog)
 
     def record_screenshot(self):
+        logging.debug('TaikoClient record_screenshot() => %s' % threading.current_thread())
         self._capture_thread = threading.Thread(target=self._record_screenshot)
         self._capture_thread.start()
-        self._capture_alive = True
 
     def stop_screenshot(self):
-        self._capture_alive = False
-        if self._capture_thread is not None:
+        logging.debug('TaikoClient stop_screenshot() => %s' % threading.current_thread())
+        if self._capture_thread is not None and self._capture_thread.is_alive():
+            self._capture_alive = False
             self._capture_thread.join()
+            print('TaikoClient join() stop_screenshot() =>', self._capture_thread)
 
     def upload_screenshot(self):
+        logging.debug('TaikoClient upload_screenshot() => %s' % threading.current_thread())
         server_settings = glob(posixpath.join(SSH_CONFIG_PATH, '*.gpu'))
 
         for file_path in server_settings:
@@ -514,6 +549,8 @@ class TaikoClient(_Client):
                                               args=(host_ip, username, pwd, command, upload_tasks, remote_dir_path))
                     thread.start()
                     thread.join()
+                    f.close()
+                    logging.debug('TaikoClient join() upload_screenshot() => %s' % self._capture_thread)
 
             except Exception as e:
                 sys.stderr.write('error: %s\n' % str(e))
