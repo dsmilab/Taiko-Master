@@ -5,14 +5,16 @@ RIGHT_HAND = 0
 LEFT_HAND = 1
 BASE_PATH = os.path.dirname(os.path.realpath(__file__)).replace('\\', '/')
 
-
-HOME_PATH = posixpath.join(BASE_PATH, '../data/alpha/')
-
 PIC_DIR_PATH = posixpath.join(BASE_PATH, '../assets/')
-TMP_DIR_PATH = posixpath.join(BASE_PATH, '../tmp/')
 
+TMP_DIR_PATH = posixpath.join(BASE_PATH, '../tmp/')
+LOCAL_SCREENSHOT_PATH = posixpath.join(TMP_DIR_PATH, 'bb_capture/')
 LOCAL_SENSOR_DIR_PATH = posixpath.join(TMP_DIR_PATH, 'sensor_data/')
 LOCAL_RECORD_TABLE_PATH = posixpath.join(TMP_DIR_PATH, 'record_table.csv')
+
+DATA_DIR_PATH = posixpath.join(BASE_PATH, '../data/')
+HOME_PATH = posixpath.join(DATA_DIR_PATH, 'alpha/')
+CONNECT_HOST_DIR_PATH = posixpath.join(DATA_DIR_PATH, 'connect_host/')
 
 
 # io.record
@@ -31,7 +33,6 @@ SERVER_TMP_DIR_PATH = posixpath.join(SERVER_PROJECT_PATH, 'tmp/')
 SERVER_SCREENSHOT_PATH = posixpath.join(SERVER_TMP_DIR_PATH, 'uploaded_bb_capture/')
 
 # capture.py
-LOCAL_SCREENSHOT_PATH = posixpath.join(TMP_DIR_PATH, 'bb_capture/')
 
 # image.scoreboard
 BB_CAPTURE_PATH = posixpath.join(BASE_PATH, '../bb_capture_output/')
