@@ -8,7 +8,6 @@ import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
 
-sns.set(font_scale=2)
 
 __all__ = ['plot_play_score']
 
@@ -30,6 +29,7 @@ def plot_play_score(capture_dir_path, song_id, compare_veteran=False, save_image
     })
 
     plt.figure(figsize=(20, 8))
+    sns.set(font_scale=2)
     sns.lineplot(x='timestamp', y='score', data=score_df, hue='who')
 
     if save_image:

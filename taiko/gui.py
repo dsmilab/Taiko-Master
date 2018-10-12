@@ -240,7 +240,7 @@ class _LoadingScreen(Frame):
 
     def __process(self):
         self.after(200, self._process_queue)
-        self._controller.client.upload_screenshot()
+        self._controller.client.process_screenshot()
 
     def _process_queue(self):
         self._prog_bar['value'] = self._controller.client.progress['value']
