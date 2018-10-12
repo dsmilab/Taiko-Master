@@ -457,6 +457,11 @@ class TaikoClient(_Client):
         self._remained_play_times = int(re.search('\d+', pic_path).group(0))
         self._pic_path['score_curve'] = local_curve_path
 
+    def process_radar(self):
+        self._local_sensor_filename['L'] = 'L_2018-09-27_163633.csv'
+        self._local_sensor_filename['R'] = 'R_2018-09-27_163634.csv'
+        
+
     def clear_tmp_dir_png(self):
         local_curve_paths = glob(posixpath.join(TMP_DIR_PATH, '*.png'))
         for local_curve_path in local_curve_paths:
