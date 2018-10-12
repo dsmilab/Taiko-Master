@@ -23,7 +23,7 @@ SONG_TABLE_PATH = posixpath.join(TABLE_PATH, 'taiko_song.csv')
 PLAY_RESULT_TABLE_PATH = posixpath.join(TABLE_PATH, 'taiko_play_result.csv')
 
 # network.client
-REMOTE_BASE_PATH = 'Projects/beagle/'
+REMOTE_BASE_PATH = 'beagle/'
 
 SERVER_PROJECT_PATH = 'PyCharmPojects/Taiko-Master/'
 

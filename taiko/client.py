@@ -41,7 +41,7 @@ LINUX_KILL_COMMAND = "pkill -f python;"
 
 
 class _SSHTaiko(object):
-    WINDOW_SIZE = 1000
+    WINDOW_SIZE = 100
 
     def __init__(self, ssh, socket_, ip_addr, label):
         self._ssh = ssh
@@ -78,12 +78,12 @@ class _SSHTaiko(object):
                     data = pickle.loads(buf)
                 except Exception as e:
                     continue
-
+                    
                 if data[-1] == 'Q':
                     logging.info("client request to quit")
                     break
 
-                elif data[-1] == self._label + '\r':
+                elif data[-1] == self._label:
                     self._analog.add(data[:-2])
 
             except KeyboardInterrupt:
