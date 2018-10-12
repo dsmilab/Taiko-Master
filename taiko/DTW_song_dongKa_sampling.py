@@ -32,7 +32,6 @@ def Main_Execure(Dir): #Dir 為motifs目錄
     Train_data = np.array(Train_data)[:6]
     distances = np.zeros((np.shape(Train_data)[0],np.shape(Train_data)[0]))
 
-
     w = Train_data.shape[1]
 
     start_time = time.time()

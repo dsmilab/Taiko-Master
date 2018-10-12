@@ -4,6 +4,7 @@ from .image import *
 
 import pandas as pd
 import numpy as np
+import posixpath
 from scipy.stats import mode
 
 DELTA_T_DIVIDED_COUNT = 8
@@ -32,27 +33,27 @@ class _Play(object):
             position = filename[0]
             self._play_dict[position] = self.__build_play_df(raw_arm_df, calibrate, resample)
 
-    def crop_near_raw_data(self, who_name, song_id, p_order, delta_t, position, prefix_name):
-        for id_, _ in enumerate(self._events):
-            event_time = self._events[id_][0]
-            hit_type = self._events[id_][1]
+    def crop_near_raw_data(self, delta_t=0.1):
+        for position in ['L', 'R']:
+            for id_, _ in enumerate(self._events):
+                event_time = self._events[id_][0]
+                hit_type = self._events[id_][1]
 
-            if hit_type < 1 or hit_type > 2:
-                continue
+                if hit_type < 1 or hit_type > 2:
+                    continue
 
-            local_start_time = event_time - delta_t
-            local_end_time = event_time + delta_t
-            note_type = 'don' if hit_type == 1 else 'ka'
-            filename = 'motif/%s/song%d/order%d/%s/%s/%s-%03d.csv' % \
-                       (who_name, song_id, p_order, note_type, position, prefix_name, id_)
+                local_start_time = event_time - delta_t
+                local_end_time = event_time + delta_t
+                note_type = 'don' if hit_type == 1 else 'ka'
 
-            os.makedirs(os.path.dirname(filename), exist_ok=True)
-            
-            df = self._play_dict[position]
-            motif_df = df[(df['timestamp'] >= local_start_time) &
-                          (df['timestamp'] <= local_end_time)].copy()
+                filename = posixpath.join(LOCAL_MOTIF_DIR_PATH, note_type, position, '%03d.csv' % id_)
+                os.makedirs(os.path.dirname(filename), exist_ok=True)
 
-            motif_df.to_csv(filename, index=False)
+                df = self._play_dict[position]
+                motif_df = df[(df['timestamp'] >= local_start_time) &
+                              (df['timestamp'] <= local_end_time)].copy()
+
+                motif_df.to_csv(filename, index=False)
 
     def __set_hw_time(self, song_id, play_start_time):
         play_time_length = SONG_LENGTH_DICT[song_id]
@@ -108,7 +109,7 @@ class _Play(object):
         # spot vertical mark lines
         for _, row in note_df.iterrows():
             hit_type = int(row['label'])
-            events.append((self._first_hit_time + row['timestamp'], hit_type))
+            events.append((np.float64(self._first_hit_time + row['timestamp']), hit_type))
 
         return events
 
@@ -133,22 +134,22 @@ class _Play(object):
         return self._events
 
 
-def get_play(record_row, calibrate=True, resample=True):
+def get_play(record_row, calibrate=True, resample=True, from_tmp_dir=False):
     who_name = record_row['drummer_name']
     song_id = record_row['song_id']
     left_arm_filename = record_row['left_sensor_datetime']
     right_arm_filename = record_row['right_sensor_datetime']
     capture_dir_name = record_row['capture_datetime']
 
-    left_arm_df = load_arm_df(who_name, left_arm_filename)
-    right_arm_df = load_arm_df(who_name, right_arm_filename)
+    left_arm_df = load_arm_df(who_name, left_arm_filename, from_tmp_dir)
+    right_arm_df = load_arm_df(who_name, right_arm_filename, from_tmp_dir)
 
-    capture_dir_path = get_capture_dir_path(who_name, capture_dir_name)
+    capture_dir_path = get_capture_dir_path(who_name, capture_dir_name, from_tmp_dir)
     play_start_time = get_play_start_time(capture_dir_path)
 
     raw_arm_df_dict = {
-        left_arm_filename: left_arm_df,
-        right_arm_filename: right_arm_df,
+        left_arm_filename[0]: left_arm_df,
+        right_arm_filename[0]: right_arm_df,
     }
 
     return _Play(song_id, raw_arm_df_dict, play_start_time, calibrate, resample)

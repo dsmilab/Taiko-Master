@@ -8,6 +8,7 @@ import tensorflow as tf
 import keras
 import time
 import posixpath
+import seaborn as sns
 
 from keras import backend as K
 from keras.models import Sequential, Model
@@ -297,9 +298,8 @@ def conservative_train_AAE(data1,data2=[]):
         enc.save_weights(posixpath.join(BASE_PATH, 'external/encoder.h5'))
         vae.save_weights(posixpath.join(BASE_PATH, 'external/vae.h5'))
         preds = vae.predict(x,batch_size=batch_size)
+        gc.collect()
     return vae, enc, gen
-
-    gc.collect()
 
 
 # In[8]:
@@ -314,7 +314,7 @@ def conservative_train_AAE(data1,data2=[]):
 #train(母)串 train(子), then train
 def training(train_set):
     vae, enc, gen  = conservative_train_AAE(data1 = train_set)
-    print (' train data finish!')
+    print ('train data finish!')
     gc.collect()
 
     return vae, enc, gen
@@ -406,7 +406,9 @@ def Rader_compare(Latent_code1,Latent_code2):
     angles=np.concatenate((angles,[angles[0]]))
 
     # 繪圖
-    fig=plt.figure()
+
+    sns.set(font_scale=1.5)
+    fig= plt.figure(figsize=(10, 6))
     ax = fig.add_subplot(111, polar=True)
 
     # 繪製折線圖
@@ -428,8 +430,6 @@ def Rader_compare(Latent_code1,Latent_code2):
     ax.set_thetagrids(angles * 180/np.pi, feature)
     # 設置雷達圖的範圍
     ax.set_ylim(0,100)
-    # 添加標題
-    plt.title('Radar')
 
     # 添加網格線
     ax.grid(True)

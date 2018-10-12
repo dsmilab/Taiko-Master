@@ -3,6 +3,8 @@ from .visualize import *
 from .tools.timestamp import *
 from .tools.converter import *
 from .tools.realtime import *
+from .play import *
+from .AAE_Main_test_Gui import *
 
 from glob import glob
 import pandas as pd
@@ -149,13 +151,13 @@ class _Client(object):
             # 'upload_to_server': 10,
             # 'server_process': 50,
             # 'download_from_server': 10,
-            'process_screenshot': 100,
-            'process_sensor': 50,
+            'process_screenshot': 50,
+            'process_radar': 50,
         }
 
         self._pic_path = {
             'error': posixpath.join(PIC_DIR_PATH, 'curve_not_found.jpg'),
-            'radar': posixpath.join(PIC_DIR_PATH, 'radar.png'),
+            # 'radar': posixpath.join(PIC_DIR_PATH, 'radar.png'),
         }
         for difficulty in _Client.DIFFICULTIES:
             self._pic_path[difficulty] = posixpath.join(PIC_DIR_PATH, difficulty + '.png')
@@ -421,12 +423,6 @@ class TaikoClient(_Client):
             logging.debug('TaikoClient join() download_sensor() => %s' % thread)
             thread.join()
 
-            # this_prog = float(self._prog_max['download_sensor'] / len(threads))
-            # if not this_prog.is_integer():
-            #     raise ValueError('number of threads must be divided by %d' % self._prog_max['download_sensor'])
-            #
-            # self._progress['value'] += int(this_prog)
-
     def record_screenshot(self):
         logging.debug('TaikoClient record_screenshot() => %s' % threading.current_thread())
         self._capture_thread = threading.Thread(target=self._record_screenshot)
@@ -437,14 +433,10 @@ class TaikoClient(_Client):
         if self._capture_thread is not None and self._capture_thread.is_alive():
             self._capture_alive = False
             self._capture_thread.join()
-            print('TaikoClient join() stop_screenshot() =>', self._capture_thread)
+            logging.debug('TaikoClient join() stop_screenshot() =>', self._capture_thread)
 
     def process_screenshot(self):
         logging.debug('TaikoClient process_screenshot() => %s' % threading.current_thread())
-
-        # @debug
-        self._local_capture_dirname = 'capture_2018_09_27_16_36_34'
-        # @debug
 
         local_dir_path = posixpath.join(LOCAL_SCREENSHOT_PATH, self._local_capture_dirname)
         self._progress_tips = 'Processing screenshot for plotting ...'
@@ -458,9 +450,31 @@ class TaikoClient(_Client):
         self._pic_path['score_curve'] = local_curve_path
 
     def process_radar(self):
-        self._local_sensor_filename['L'] = 'L_2018-09-27_163633.csv'
-        self._local_sensor_filename['R'] = 'R_2018-09-27_163634.csv'
-        
+        logging.debug('TaikoClient process_radar() => %s' % threading.current_thread())
+
+        row = {
+            'drummer_name': self.drummer_name,
+            'song_id': self.song_id,
+            'left_sensor_datetime': self._local_sensor_filename['L'],
+            'right_sensor_datetime': self._local_sensor_filename['R'],
+            'capture_datetime': self._local_capture_dirname,
+        }
+
+        self._progress_tips = 'Finding play start time ...'
+        play = get_play(row, from_tmp_dir=True)
+        self._progress['value'] += self._prog_max['process_radar'] // 5 * 2
+        self._progress_tips = 'Cropping raw data in need ...'
+        play.crop_near_raw_data(0.1)
+        self._progress['value'] += self._prog_max['process_radar'] // 5
+
+        self._progress_tips = 'Processing sensor data ...'
+        process_aae(self.song_id)
+        local_radar_path = glob(posixpath.join(TMP_DIR_PATH, 'radar.png'))[0]
+        self._pic_path['radar'] = local_radar_path
+
+        self._progress['value'] += self._prog_max['process_radar'] // 5 * 2
+
+
 
     def clear_tmp_dir_png(self):
         local_curve_paths = glob(posixpath.join(TMP_DIR_PATH, '*.png'))
