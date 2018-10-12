@@ -397,7 +397,7 @@ class TaikoClient(_Client):
         sensor_settings = glob(posixpath.join(SSH_CONFIG_PATH, '*.bb'))
 
         self._progress_tips = 'Downloading raw data from sensors ...'
-        threads = []
+        # threads = []
         for file_path in sensor_settings:
             res = re.search('(\d){,3}.(\d){,3}.(\d){,3}.(\d){,3}.bb', file_path)
             filename = res.group(0)
@@ -410,18 +410,19 @@ class TaikoClient(_Client):
                     pwd = f.readline()[:-1]
                     _prefix = f.readline()[:-1]
 
-                    thread = threading.Thread(target=self._download_sensor, args=(host_ip, username, pwd, _prefix,))
-                    thread.start()
-                    threads.append(thread)
-                    f.close()
+                    self._download_sensor(host_ip, username, pwd, _prefix)
+                    # thread = threading.Thread(target=self._download_sensor, args=(host_ip, username, pwd, _prefix,))
+                    # thread.start()
+                    # threads.append(thread)
+                    # f.close()
 
             except Exception as e:
                 sys.stderr.write('error: %s\n' % str(e))
                 sys.stderr.flush()
-
-        for thread in threads:
-            logging.debug('TaikoClient join() download_sensor() => %s' % thread)
-            thread.join()
+        #
+        # for thread in threads:
+        #     logging.debug('TaikoClient join() download_sensor() => %s' % thread)
+        #     thread.join()
 
     def record_screenshot(self):
         logging.debug('TaikoClient record_screenshot() => %s' % threading.current_thread())
