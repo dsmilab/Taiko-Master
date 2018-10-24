@@ -46,3 +46,20 @@ Belows two animations are some extraced features with the specific entire play, 
 [PDF](docs/taiko_master_v0.3.1_secure.pdf)
 
 In addition, [Taiko-Time-Series-Analytics](https://github.com/taoyilee/Taiko-Time-Series-Analytics) is another related repo analyzing this data.
+
+<br/>
+
+## Install
+
+Before running, execute
+
+```
+python setup.py
+```
+on a machine equipped with GPU as well as [wearable sensors](https://github.com/howeverforever/beagle) for the **left** hand and **right** hand.
+
+Then, run
+
+```
+python demo.py
+```
