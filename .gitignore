@@ -1,24 +1,17 @@
 
 \.idea/
 
-wearable-motion-sensors/
-
 data/
 
-ipynb/\.ipynb_checkpoints/
+**/\.ipynb_checkpoints/
 
-ipynb/__pycache__/
+**/__pycache__/
 
-util/taiko/__pycache__/
+util/
 
-util/taiko/image/__pycache__/
+!util/*.ipynb
+!util/*.py
 
-util/taiko/io/__pycache__/
+tmp/
 
-util/taiko/tools/__pycache__/
-
-util/taiko/preprocessing/__pycache__/
-
-util/\.ipynb_checkpoints/
-
-util/CSV/
+backup/
