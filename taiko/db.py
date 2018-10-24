@@ -108,7 +108,7 @@ def get_score_auc_stat(song_id):
 def get_best_score_board_info(song_id):
     play_result_df = pd.read_csv(PLAY_RESULT_TABLE_PATH)
     df = play_result_df[(play_result_df['song_id'] == song_id)]
-    max_idx = df['auc'].idxmax()
+    max_idx = df['score'].idxmax()
     row = df.loc[max_idx]
     print(row)
 

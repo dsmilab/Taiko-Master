@@ -1,5 +1,6 @@
 import taiko.tools.converter
 import taiko.visualize
+import taiko.AAE_Main_test_Gui
 
 from glob import glob
 import posixpath
@@ -24,6 +25,8 @@ def main(argv):
             file_paths = glob(posixpath.join(output_dir, '*' + type_))
             for file_path in file_paths:
                 os.remove(file_path)
+    if argv[0] == '-e':
+        taiko.AAE_Main_test_Gui.process_aae(1)
 
 
 if __name__ == '__main__':

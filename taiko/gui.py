@@ -9,7 +9,7 @@ import threading
 from PIL import Image, ImageTk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-
+import seaborn as sns
 # if platform.system() == 'Windows':
 #     ACTIVE = 'normal'
 # elif platform.system() == 'Linux':
@@ -152,8 +152,6 @@ class _RunScreen(Frame):
         self.__capture_sensor()
         self.__capture_screenshot()
         self.__update_raw_canvas()
-        # self._draw_thread = threading.Thread(target=self.__update_raw_canvas)
-        # self._draw_thread.start()
 
     def __init_screen(self):
         self.__create_stop_button()
@@ -165,6 +163,7 @@ class _RunScreen(Frame):
         self._buttons['stop'].place(x=280, y=520, width=250, height=70)
 
     def __create_raw_canvas(self):
+        sns.set(font_scale=1)
         f = Figure()
         self._ax = f.subplots(nrows=6, ncols=2, sharex='all')
         self._canvas = FigureCanvasTkAgg(f, self)
@@ -190,7 +189,9 @@ class _RunScreen(Frame):
                 self._ax[i_, handedness].set_ylim(-200, 200)
 
             self._ax[i_, handedness].plot(df['timestamp'], df[col])
-            self._ax[i_, handedness].set_ylabel(col)
+
+            if handedness == 0:
+                self._ax[i_, handedness].set_ylabel(col)
 
         handedness_label = 'Left' if handedness == 0 else 'Right'
         self._ax[0, handedness].set_title(handedness_label + ' raw')
@@ -240,7 +241,8 @@ class _LoadingScreen(Frame):
 
     def __process(self):
         self.after(200, self._process_queue)
-        self._controller.client.upload_screenshot()
+        self._controller.client.process_screenshot()
+        self._controller.client.process_radar()
 
     def _process_queue(self):
         self._prog_bar['value'] = self._controller.client.progress['value']
@@ -282,16 +284,16 @@ class _ResultScreen(Frame):
 
     def __create_radar_canvas(self):
         img = Image.open(self._controller.client.pic_path['radar'])
-        img = img.resize((250, 250), Image.ANTIALIAS)
+        img = img.resize((500, 300), Image.ANTIALIAS)
         self._images['radar'] = ImageTk.PhotoImage(img)
         self._labels['radar'] = Label(self, image=self._images['radar'])
-        self._labels['radar'].place(x=25, y=325, width=250, height=250)
+        self._labels['radar'].place(x=0, y=300, width=500, height=300)
 
     def __create_label_tips(self):
         times = self._controller.client.remained_play_times
         self._labels['remained_times'] = Label(self, text='Need to play %d times more' % times)
-        self._labels['remained_times'].config(font=("Times", 20))
-        self._labels['remained_times'].place(x=300, y=400, width=500, height=50)
+        self._labels['remained_times'].config(font=("Times", 16))
+        self._labels['remained_times'].place(x=500, y=400, width=300, height=50)
 
     def __click_back_button(self, e):
         self._controller.goto_next_screen(self.__class__)

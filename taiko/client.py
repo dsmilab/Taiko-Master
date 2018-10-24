@@ -1,7 +1,10 @@
 from .config import *
+from .visualize import *
 from .tools.timestamp import *
 from .tools.converter import *
 from .tools.realtime import *
+from .play import *
+from .AAE_Main_test_Gui import *
 
 from glob import glob
 import pandas as pd
@@ -41,7 +44,7 @@ LINUX_KILL_COMMAND = "pkill -f python;"
 
 
 class _SSHTaiko(object):
-    WINDOW_SIZE = 1000
+    WINDOW_SIZE = 100
 
     def __init__(self, ssh, socket_, ip_addr, label):
         self._ssh = ssh
@@ -83,7 +86,7 @@ class _SSHTaiko(object):
                     logging.info("client request to quit")
                     break
 
-                elif data[-1] == self._label + '\r':
+                elif data[-1] == self._label:
                     self._analog.add(data[:-2])
 
             except KeyboardInterrupt:
@@ -144,15 +147,17 @@ class _Client(object):
         self._progress_tips = ''
 
         self._prog_max = {
-            'compress_screenshot': 30,
-            'upload_to_server': 10,
-            'server_process': 50,
-            'download_from_server': 10,
+            # 'compress_screenshot': 30,
+            # 'upload_to_server': 10,
+            # 'server_process': 50,
+            # 'download_from_server': 10,
+            'process_screenshot': 50,
+            'process_radar': 50,
         }
 
         self._pic_path = {
             'error': posixpath.join(PIC_DIR_PATH, 'curve_not_found.jpg'),
-            'radar': posixpath.join(PIC_DIR_PATH, 'radar.png'),
+            # 'radar': posixpath.join(PIC_DIR_PATH, 'radar.png'),
         }
         for difficulty in _Client.DIFFICULTIES:
             self._pic_path[difficulty] = posixpath.join(PIC_DIR_PATH, difficulty + '.png')
@@ -228,7 +233,6 @@ class _Client(object):
             sys.stdout.flush()
 
             sftp.get(remote_file, local_file)
-            self._progress['value'] += 10
             self._local_sensor_filename[prefix_] = prefix_ + '_' + remote_filename
 
             sys.stdout.write('Reading %s done.\n' % host_ip_)
@@ -274,73 +278,6 @@ class _Client(object):
             sys.stdout.write('[%s] Stop capturing.\n' % st)
             sys.stdout.flush()
 
-    def _upload_screenshot(self, host_ip_, username_, pwd_, command_, upload_tasks_, remote_dir_):
-        logging.debug('_Client _upload_screenshot() => %s' % threading.current_thread())
-        try:
-            ssh = paramiko.SSHClient()
-            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            ssh.connect(host_ip_, username=username_, password=pwd_)
-            sftp = ssh.open_sftp()
-
-            # try to create tmp dir if it does not exit
-            try:
-                sftp.mkdir(remote_dir_)
-            except IOError:
-                pass
-
-            self._progress_tips = 'Uploading screenshots to server ...'
-            # first delete remote files in tmp dir.
-            remote_files = sftp.listdir(remote_dir_)
-            for remote_file in remote_files:
-                sftp.remove(posixpath.join(remote_dir_, remote_file))
-
-            sys.stdout.write('Uploading screenshot to %s ...\n' % host_ip_)
-            sys.stdout.flush()
-
-            for local_file_, remote_file_ in upload_tasks_:
-                print(local_file_, remote_file_)
-                sftp.put(local_file_, remote_file_)
-
-            self._progress['value'] += self._prog_max['upload_to_server']
-
-            sys.stdout.write('Upload screenshot done.\n')
-            sys.stdout.flush()
-
-            sys.stdout.write('Processing screenshot on GPU....\n')
-            sys.stdout.flush()
-
-            self._progress_tips = 'Server is busying in processing data ...'
-            _, stdout_, _ = ssh.exec_command(GPU_LOGIN_COMMAND + command_, get_pty=True)
-            for line in stdout_.readlines():
-                sys.stdout.write(str(line))
-                sys.stdout.flush()
-
-            self._progress['value'] += self._prog_max['server_process']
-
-            self._progress_tips = 'Downloading result from server ...'
-            remote_files = sftp.listdir(SERVER_TMP_DIR_PATH)
-            pic_filename = [filename for filename in remote_files if re.match('^curve_(\d)+.png$', filename)][0]
-
-            remote_pic_file = posixpath.join(SERVER_TMP_DIR_PATH, pic_filename)
-            local_pic_file = posixpath.join(TMP_DIR_PATH, pic_filename)
-
-            self._remained_play_times = int(re.search('\d+', pic_filename).group(0))
-            self._pic_path['score_curve'] = local_pic_file
-
-            sftp.get(remote_pic_file, local_pic_file)
-            sftp.remove(remote_pic_file)
-
-            self._progress['value'] += self._prog_max['download_from_server']
-            sys.stdout.write('Download result from GPU, ok!\n')
-            sys.stdout.flush()
-
-            sftp.close()
-            ssh.close()
-
-        except Exception as e:
-            sys.stderr.write('SSH connection error: %s\n' % str(e))
-            sys.stderr.flush()
-
     @property
     def remained_play_times(self):
         return self._remained_play_times
@@ -374,6 +311,7 @@ class TaikoClient(_Client):
     def clear(self):
         self.stop_sensor()
         self.stop_screenshot()
+        self.clear_tmp_dir_png()
         self._progress = {
             'maximum': 100,
             'value': 0,
@@ -459,7 +397,7 @@ class TaikoClient(_Client):
         sensor_settings = glob(posixpath.join(SSH_CONFIG_PATH, '*.bb'))
 
         self._progress_tips = 'Downloading raw data from sensors ...'
-        threads = []
+        # threads = []
         for file_path in sensor_settings:
             res = re.search('(\d){,3}.(\d){,3}.(\d){,3}.(\d){,3}.bb', file_path)
             filename = res.group(0)
@@ -472,24 +410,19 @@ class TaikoClient(_Client):
                     pwd = f.readline()[:-1]
                     _prefix = f.readline()[:-1]
 
-                    thread = threading.Thread(target=self._download_sensor, args=(host_ip, username, pwd, _prefix,))
-                    thread.start()
-                    threads.append(thread)
-                    f.close()
+                    self._download_sensor(host_ip, username, pwd, _prefix)
+                    # thread = threading.Thread(target=self._download_sensor, args=(host_ip, username, pwd, _prefix,))
+                    # thread.start()
+                    # threads.append(thread)
+                    # f.close()
 
             except Exception as e:
                 sys.stderr.write('error: %s\n' % str(e))
                 sys.stderr.flush()
-
-        for thread in threads:
-            logging.debug('TaikoClient join() download_sensor() => %s' % thread)
-            thread.join()
-
-            # this_prog = float(self._prog_max['download_sensor'] / len(threads))
-            # if not this_prog.is_integer():
-            #     raise ValueError('number of threads must be divided by %d' % self._prog_max['download_sensor'])
-            #
-            # self._progress['value'] += int(this_prog)
+        #
+        # for thread in threads:
+        #     logging.debug('TaikoClient join() download_sensor() => %s' % thread)
+        #     thread.join()
 
     def record_screenshot(self):
         logging.debug('TaikoClient record_screenshot() => %s' % threading.current_thread())
@@ -501,60 +434,53 @@ class TaikoClient(_Client):
         if self._capture_thread is not None and self._capture_thread.is_alive():
             self._capture_alive = False
             self._capture_thread.join()
-            print('TaikoClient join() stop_screenshot() =>', self._capture_thread)
+            logging.debug('TaikoClient join() stop_screenshot() =>', self._capture_thread)
 
-    def upload_screenshot(self):
-        logging.debug('TaikoClient upload_screenshot() => %s' % threading.current_thread())
-        server_settings = glob(posixpath.join(SSH_CONFIG_PATH, '*.gpu'))
+    def process_screenshot(self):
+        logging.debug('TaikoClient process_screenshot() => %s' % threading.current_thread())
 
-        for file_path in server_settings:
-            res = re.search('(\d){,3}.(\d){,3}.(\d){,3}.(\d){,3}.gpu', file_path)
-            filename = res.group(0)
+        local_dir_path = posixpath.join(LOCAL_SCREENSHOT_PATH, self._local_capture_dirname)
+        self._progress_tips = 'Processing screenshot for plotting ...'
+        plot_play_score(local_dir_path, self._song_id, True, True)
+        logging.debug('TaikoClient join() process_screenshot() => %s' % self._capture_thread)
+        self._progress['value'] += self._prog_max['process_screenshot']
 
-            host_ip = filename[:-4]
-            try:
-                with open(file_path, 'r') as f:
-                    username = f.readline()[:-1]
-                    pwd = f.readline()[:-1]
+        local_curve_path = glob(posixpath.join(TMP_DIR_PATH, '*.png'))[0]
+        pic_path = re.search('curve_(\d)+.png$', local_curve_path).group(0)
+        self._remained_play_times = int(re.search('\d+', pic_path).group(0))
+        self._pic_path['score_curve'] = local_curve_path
 
-                    # @debug
-                    self._local_capture_dirname = 'capture_2018_09_27_16_36_34'
-                    # @debug
+    def process_radar(self):
+        logging.debug('TaikoClient process_radar() => %s' % threading.current_thread())
 
-                    local_dir_path = posixpath.join(LOCAL_SCREENSHOT_PATH, self._local_capture_dirname)
+        row = {
+            'drummer_name': self.drummer_name,
+            'song_id': self.song_id,
+            'left_sensor_datetime': self._local_sensor_filename['L'],
+            'right_sensor_datetime': self._local_sensor_filename['R'],
+            'capture_datetime': self._local_capture_dirname,
+        }
 
-                    self._progress_tips = 'Compressing screenshots ...'
+        self._progress_tips = 'Finding play start time ...'
+        play = get_play(row, from_tmp_dir=True)
+        self._progress['value'] += self._prog_max['process_radar'] // 5 * 2
+        self._progress_tips = 'Cropping raw data in need ...'
+        play.crop_near_raw_data(0.1)
+        self._progress['value'] += self._prog_max['process_radar'] // 5
 
-                    convert_images_to_video(local_dir_path, local_dir_path)
+        self._progress_tips = 'Processing sensor data ...'
+        process_aae(self.song_id)
+        local_radar_path = glob(posixpath.join(TMP_DIR_PATH, 'radar.png'))[0]
+        self._pic_path['radar'] = local_radar_path
 
-                    self._progress['value'] += self._prog_max['compress_screenshot']
+        self._progress['value'] += self._prog_max['process_radar'] // 5 * 2
 
-                    remote_dir_path = SERVER_SCREENSHOT_PATH
 
-                    flv_filename = self._local_capture_dirname + '.flv'
-                    csv_filename = self._local_capture_dirname + '.csv'
 
-                    files = [flv_filename, csv_filename]
-                    upload_tasks = []
-                    for filename_ in files:
-                        local_file = posixpath.join(local_dir_path, filename_)
-                        remote_file = posixpath.join(remote_dir_path, filename_)
-                        upload_tasks.append((local_file, remote_file))
-
-                    command = LINUX_SERVER_EXE_COMMAND + " %s %s %d" % (upload_tasks[0][1],
-                                                                        remote_dir_path,
-                                                                        self._song_id)
-
-                    thread = threading.Thread(target=self._upload_screenshot,
-                                              args=(host_ip, username, pwd, command, upload_tasks, remote_dir_path))
-                    thread.start()
-                    thread.join()
-                    f.close()
-                    logging.debug('TaikoClient join() upload_screenshot() => %s' % self._capture_thread)
-
-            except Exception as e:
-                sys.stderr.write('error: %s\n' % str(e))
-                sys.stderr.flush()
+    def clear_tmp_dir_png(self):
+        local_curve_paths = glob(posixpath.join(TMP_DIR_PATH, '*.png'))
+        for local_curve_path in local_curve_paths:
+            os.remove(local_curve_path)
 
     def update_local_record_table(self):
         left_sensor_datetime = self._local_sensor_filename['L']

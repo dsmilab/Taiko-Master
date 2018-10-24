@@ -10,11 +10,13 @@ PIC_DIR_PATH = posixpath.join(BASE_PATH, '../assets/')
 TMP_DIR_PATH = posixpath.join(BASE_PATH, '../tmp/')
 LOCAL_SCREENSHOT_PATH = posixpath.join(TMP_DIR_PATH, 'bb_capture/')
 LOCAL_SENSOR_DIR_PATH = posixpath.join(TMP_DIR_PATH, 'sensor_data/')
+LOCAL_MOTIF_DIR_PATH = posixpath.join(TMP_DIR_PATH, 'motif/')
 LOCAL_RECORD_TABLE_PATH = posixpath.join(TMP_DIR_PATH, 'record_table.csv')
 
 DATA_DIR_PATH = posixpath.join(BASE_PATH, '../data/')
 HOME_PATH = posixpath.join(DATA_DIR_PATH, 'alpha/')
 CONNECT_HOST_DIR_PATH = posixpath.join(DATA_DIR_PATH, 'connect_host/')
+MOTIF_DIR_PATH = posixpath.join(DATA_DIR_PATH, 'motif/')
 
 
 # io.record
@@ -23,7 +25,7 @@ SONG_TABLE_PATH = posixpath.join(TABLE_PATH, 'taiko_song.csv')
 PLAY_RESULT_TABLE_PATH = posixpath.join(TABLE_PATH, 'taiko_play_result.csv')
 
 # network.client
-REMOTE_BASE_PATH = 'Projects/beagle/'
+REMOTE_BASE_PATH = 'beagle/'
 
 SERVER_PROJECT_PATH = 'PyCharmPojects/Taiko-Master/'
 
@@ -39,6 +41,8 @@ BB_CAPTURE_PATH = posixpath.join(BASE_PATH, '../bb_capture_output/')
 
 MNIST_MODEL_PATH = posixpath.join(BASE_PATH, 'external/mnist_model.h5')
 DRUM_IMG_MODEL_PATH = posixpath.join(BASE_PATH, 'external/drum_img_model.h5')
+ENCODER_MODEL_PATH = posixpath.join(BASE_PATH, 'external/encdoer.h5')
+VAE_MODEL_PATH = posixpath.join(BASE_PATH, 'external/vae.h5')
 
 # connect.ssh
 SSH_CONFIG_PATH = posixpath.join(BASE_PATH, '../data/connect_host/')
