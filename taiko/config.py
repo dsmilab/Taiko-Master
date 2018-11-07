@@ -17,7 +17,7 @@ DATA_DIR_PATH = posixpath.join(BASE_PATH, '../data/')
 HOME_PATH = posixpath.join(DATA_DIR_PATH, 'alpha/')
 CONNECT_HOST_DIR_PATH = posixpath.join(DATA_DIR_PATH, 'connect_host/')
 MOTIF_DIR_PATH = posixpath.join(DATA_DIR_PATH, 'motif/')
-
+PROFILE_DIR_PATH = posixpath.join(DATA_DIR_PATH, 'alpha_profile/')
 
 # io.record
 TABLE_PATH = posixpath.join(BASE_PATH, '../data/taiko_tables/')
