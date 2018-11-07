@@ -53,6 +53,9 @@ ENTRY_SUCCESS = '@0@'
 # preprocessing.primitive
 RMS_COLS = ['a_rms', 'g_rms', 'imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz']
 
+PREFIX_COLS = ['A', 'G', 'AX', 'AY', 'AZ', 'GX', 'GY', 'GZ']
+SUFFIX_COLS = ['AI', 'VI', 'MMI', 'SDI', 'IQR', 'FR', 'MDCR', 'MCR', 'ZCR']
+
 ZERO_ADJ_COL = ['imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz']
 
 ALL_COLUMNS = ['timestamp', 'wall_time', 'imu_temp',
