@@ -14,7 +14,7 @@ class Primitive(object):
         self._features = self._featurize()
 
     def __convert_to_df(self, window):
-        df = pd.DataFrame(window, columns=ZERO_ADJ_COL)
+        df = pd.DataFrame(list(window), columns=SENSOR_COLUMNS)
         rms_df = df[RMS_COLS[2:]].copy()
 
         # acceleration movement intensity (AMI)
@@ -31,19 +31,19 @@ class Primitive(object):
 
     def _featurize(self):
         ai_s = [self.__get_ai(col) for col in RMS_COLS]
-        vi_s = [self.__get_vi(col, ai) for col, ai in zip(RMS_COLS, ai_s)]
+        # vi_s = [self.__get_vi(col, ai) for col, ai in zip(RMS_COLS, ai_s)]
         mmi_s = [self.__get_mdmi(col)for col in RMS_COLS]
 
         asma = self.__get_sma(RMS_COLS[2:5])
         gsma = self.__get_sma(RMS_COLS[5:8])
 
-        aae = self.__get_ae(RMS_COLS[0])
-        are = self.__get_ae(RMS_COLS[1])
+        # aae = self.__get_ae(RMS_COLS[0])
+        # are = self.__get_ae(RMS_COLS[1])
 
         # standard deviation intensity
-        sdi_s = [math.sqrt(sdi) for sdi in vi_s]
+        # sdi_s = [math.sqrt(sdi) for sdi in vi_s]
 
-        iqr_s = [self.__get_iqr(col) for col in RMS_COLS]
+        # iqr_s = [self.__get_iqr(col) for col in RMS_COLS]
         fr_s = [self.__get_full_range(col) for col in RMS_COLS]
 
         median_cross_s = [self.__get_median_cross(col, mmi) for col, mmi in zip(RMS_COLS, mmi_s)]
@@ -58,9 +58,9 @@ class Primitive(object):
         g_yz_corr = self.__get_corr(RMS_COLS[6], RMS_COLS[7])
         g_zx_corr = self.__get_corr(RMS_COLS[7], RMS_COLS[5])
 
-        return ai_s + vi_s + mmi_s +\
-               [asma, gsma, aae, are] +\
-               sdi_s + iqr_s + fr_s +\
+        return ai_s +\
+               [asma, gsma] +\
+               fr_s +\
                median_cross_s +\
                mean_cross_s +\
                zero_cross_s +\

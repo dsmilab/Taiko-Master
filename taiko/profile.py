@@ -1,14 +1,15 @@
 from .config import *
 from .primitive import *
+from collections import deque
 import pandas as pd
 import numpy as np
 from glob import glob
 from scipy.stats import mode
 
-__all__ = ['Profile']
+__all__ = ['get_profile']
 
 
-class Profile(object):
+class _Profile(object):
     _SAMPLING_RATE = '0.01S'
 
     _LABELS = {
@@ -35,9 +36,9 @@ class Profile(object):
     def __build(self):
         self._profile = {}
 
-        for label_kwd in Profile._LABELS.keys():
+        for label_kwd in _Profile._LABELS.keys():
             self._profile[label_kwd] = {}
-            for handedness_kwd, handedness_label in Profile._HANDEDNESS.items():
+            for handedness_kwd, handedness_label in _Profile._HANDEDNESS.items():
                 self._profile[label_kwd][handedness_label] = []
                 files = glob(posixpath.join(PROFILE_DIR_PATH, label_kwd, handedness_kwd, self._drummer_name + '_*.csv'))
                 for file_ in files:
@@ -54,7 +55,7 @@ class Profile(object):
             play_df.loc[:, 'timestamp'] = pd.to_datetime(play_df['timestamp'], unit='s')
             play_df.loc[:, 'timestamp'] = play_df['timestamp'].apply(
                 lambda x: x.tz_localize('UTC').tz_convert('Asia/Taipei'))
-            play_df = play_df.set_index('timestamp').resample(Profile._SAMPLING_RATE).mean()
+            play_df = play_df.set_index('timestamp').resample(_Profile._SAMPLING_RATE).mean()
             play_df = play_df.interpolate(method='linear')
             play_df.reset_index(inplace=True)
             play_df.loc[:, 'timestamp'] = play_df['timestamp'].apply(lambda x: x.timestamp())
@@ -79,24 +80,35 @@ class Profile(object):
 
     def __build_primitive_df(self):
         profile_primitive_df = pd.DataFrame()
-        for label_kwd, label in Profile._LABELS.items():
+        for label_kwd, label in _Profile._LABELS.items():
             primitive_df = pd.DataFrame()
-            for _, handedness_label in Profile._HANDEDNESS.items():
+            for _, handedness_label in _Profile._HANDEDNESS.items():
+                window = deque()
                 tmp_primitive_mat = []
                 for df in self._profile[label_kwd][handedness_label]:
+                    play_mat = df.values
+                    play_id = 0
                     start_time = df['timestamp'].iloc[0]
                     end_time = df['timestamp'].iloc[-1]
                     delta_t = 0.2
-                    shift_t = 0.02
 
                     now_time = start_time
                     while now_time + delta_t <= end_time:
                         window_start_time = now_time
                         window_end_time = now_time + delta_t
-                        window_df = df[(df['timestamp'] >= window_start_time) &
-                                       (df['timestamp'] <= window_end_time)].copy()
 
-                        feature_row = Primitive(window_df).features
+                        if len(window) == 0:
+                            window.append(play_mat[play_id])
+                            play_id += 1
+
+                        while play_id < len(play_mat) and play_mat[play_id][0] < window_end_time:
+                            window.append(play_mat[play_id])
+                            play_id += 1
+
+                        while window[0][0] < window_start_time:
+                            window.popleft()
+
+                        feature_row = Primitive(window).features
                         tmp_primitive_mat.append(feature_row)
 
                         now_time += delta_t
@@ -117,3 +129,17 @@ class Profile(object):
     @property
     def profile_primitive_df(self):
         return self._profile_primitive_df
+
+
+def get_profile(drummer_name, forcibly=False):
+    profile_csv_path = posixpath.join(PROFILE_EP_DIR_PATH, drummer_name + '.csv')
+    if not forcibly and os.path.isfile(profile_csv_path):
+        profile_ep_df = pd.read_csv(profile_csv_path)
+        return profile_ep_df
+    else:
+        profile_ep_df = _Profile(drummer_name).profile_primitive_df
+        profile_csv_dir_path = os.path.dirname(profile_csv_path)
+        os.makedirs(profile_csv_dir_path, exist_ok=True)
+        profile_ep_df.to_csv(profile_csv_path, index=False, float_format='%.4f')
+
+    return profile_ep_df

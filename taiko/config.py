@@ -18,6 +18,7 @@ HOME_PATH = posixpath.join(DATA_DIR_PATH, 'alpha/')
 CONNECT_HOST_DIR_PATH = posixpath.join(DATA_DIR_PATH, 'connect_host/')
 MOTIF_DIR_PATH = posixpath.join(DATA_DIR_PATH, 'motif/')
 PROFILE_DIR_PATH = posixpath.join(DATA_DIR_PATH, 'alpha_profile/')
+PROFILE_EP_DIR_PATH = posixpath.join(DATA_DIR_PATH, 'alpha_profile_ep/')
 
 # io.record
 TABLE_PATH = posixpath.join(BASE_PATH, '../data/taiko_tables/')
@@ -54,18 +55,14 @@ ENTRY_SUCCESS = '@0@'
 RMS_COLS = ['a_rms', 'g_rms', 'imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz']
 
 PREFIX_COLS = ['A', 'G', 'AX', 'AY', 'AZ', 'GX', 'GY', 'GZ']
-SUFFIX_COLS = ['AI', 'VI', 'MMI', 'SDI', 'IQR', 'FR', 'MDCR', 'MCR', 'ZCR']
+SUFFIX_COLS = ['AI', 'FR', 'MDCR', 'MCR', 'ZCR']
 
 STAT_COLS = [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFIX_COLS[0]] * 8)] +\
+            ['A_SMA', 'G_SMA'] +\
             [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFIX_COLS[1]] * 8)] +\
             [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFIX_COLS[2]] * 8)] +\
-            ['A_SMA', 'G_SMA', 'A_AE', 'G_AE'] +\
             [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFIX_COLS[3]] * 8)] +\
-            [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFIX_COLS[4]] * 8)] +\
-            [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFIX_COLS[5]] * 8)] +\
-            [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFIX_COLS[6]] * 8)] +\
-            [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFIX_COLS[7]] * 8)] +\
-            [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFIX_COLS[8]] * 6)] +\
+            [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS[2:], [SUFFIX_COLS[4]] * 6)] +\
             ['AXY_CORR', 'AYZ_CORR', 'AZX_CORR', 'GXY_CORR', 'GYZ_CORR', 'GZX_CORR']
 
 ZERO_ADJ_COL = ['imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz']
@@ -76,6 +73,7 @@ ALL_COLUMNS = ['timestamp', 'wall_time', 'imu_temp',
                'msu_ax', 'msu_ay', 'msu_az',
                'baro_temp', 'baro']
 
+SENSOR_COLUMNS = [ALL_COLUMNS[0]] + ALL_COLUMNS[3:9]
 
 # plot
 COLORS = ['black', 'red', 'blue', 'yellow', 'green', 'cyan', 'purple', 'magenta']
