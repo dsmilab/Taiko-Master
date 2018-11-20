@@ -3,10 +3,10 @@ import pandas as pd
 import numpy as np
 import math
 
-__all__ = ['Primitive']
+__all__ = ['get_features']
 
 
-class Primitive(object):
+class _Primitive(object):
 
     def __init__(self, window):
         self._window = window
@@ -178,3 +178,7 @@ def get_fft_coef(data):
     freqx = sorted(np.abs(freqx))
 
     return freqx
+
+
+def get_features(window):
+    return _Primitive(window).features

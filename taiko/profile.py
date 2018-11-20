@@ -2,15 +2,18 @@ from .config import *
 from .primitive import *
 from collections import deque
 import pandas as pd
+import re
 import numpy as np
 from glob import glob
 from scipy.stats import mode
+from sklearn import preprocessing
 
 __all__ = ['get_profile']
 
 
 class _Profile(object):
     _SAMPLING_RATE = '0.01S'
+    _WINDOW_T = 0.2
 
     _LABELS = {
         'right_don': 1,
@@ -78,7 +81,7 @@ class _Profile(object):
 
         return play_df
 
-    def __build_primitive_df(self):
+    def __build_primitive_df(self, scale=True):
         profile_primitive_df = pd.DataFrame()
         for label_kwd, label in _Profile._LABELS.items():
             primitive_df = pd.DataFrame()
@@ -88,14 +91,13 @@ class _Profile(object):
                 for df in self._profile[label_kwd][handedness_label]:
                     play_mat = df.values
                     play_id = 0
-                    start_time = df['timestamp'].iloc[0]
+                    start_time = df['timestamp'].iloc[0] + _Profile._WINDOW_T
                     end_time = df['timestamp'].iloc[-1]
-                    delta_t = 0.2
 
                     now_time = start_time
-                    while now_time + delta_t <= end_time:
-                        window_start_time = now_time
-                        window_end_time = now_time + delta_t
+                    while now_time <= end_time:
+                        window_start_time = now_time - _Profile._WINDOW_T
+                        window_end_time = now_time
 
                         if len(window) == 0:
                             window.append(play_mat[play_id])
@@ -108,10 +110,10 @@ class _Profile(object):
                         while window[0][0] < window_start_time:
                             window.popleft()
 
-                        feature_row = Primitive(window).features
+                        feature_row = get_features(window)
                         tmp_primitive_mat.append(feature_row)
 
-                        now_time += delta_t
+                        now_time += _Profile._WINDOW_T
 
                 tmp_primitive_df = pd.DataFrame(data=tmp_primitive_mat,
                                                 columns=[handedness_label + '_' + col for col in STAT_COLS])
@@ -120,6 +122,10 @@ class _Profile(object):
             primitive_df['hit_type'] = label
             profile_primitive_df = pd.concat([profile_primitive_df, primitive_df], ignore_index=True)
 
+        if scale:
+            profile_primitive_df = do_scaling(profile_primitive_df)
+
+        print(profile_primitive_df)
         self._profile_primitive_df = profile_primitive_df
 
     @property
@@ -143,3 +149,23 @@ def get_profile(drummer_name, forcibly=False):
         profile_ep_df.to_csv(profile_csv_path, index=False, float_format='%.4f')
 
     return profile_ep_df
+
+
+def do_scaling(df):
+    """
+    Scale values of required features.
+
+    :return: nothing
+    """
+
+    scaler = preprocessing.StandardScaler()
+    columns = df.columns
+    columns = [col for col in columns if not re.match(NO_SCALE_REGEX, col)]
+
+    subset = df[columns]
+    train_x = [tuple(x) for x in subset.values]
+    train_x = scaler.fit_transform(train_x)
+    new_df = pd.DataFrame(data=train_x, columns=columns)
+    df.update(new_df)
+
+    return df
