@@ -1,5 +1,4 @@
-from .config import *
-from .play import *
+from taiko.tools.config import *
 from .primitive import *
 from collections import deque
 
@@ -7,7 +6,6 @@ import re
 import pandas as pd
 import numpy as np
 from sklearn import preprocessing
-from scipy.stats import mode
 from imblearn.over_sampling import SMOTE
 
 __all__ = ['get_performance', 'do_over_sampled', 'do_scaling']
@@ -57,7 +55,7 @@ class _Performance(object):
         tmp_primitive_mat = []
 
         start_time = self._play.start_time
-        end_time = start_time + 50
+        end_time = self._play.end_time
 
         now_time = start_time + self._WINDOW_T
 
@@ -65,8 +63,7 @@ class _Performance(object):
             local_start_time = now_time - self._WINDOW_T
             local_end_time = now_time
 
-            mean_time = (local_start_time + local_end_time) / 2
-            feature_row = [mean_time]
+            feature_row = [local_end_time]
             for i_ in range(len(self._play.play_dict)):
                 # slide window
                 if len(windows[i_]) == 0 and play_ids[i_] < len(play_mats[i_]):

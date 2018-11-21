@@ -1,4 +1,4 @@
-from .config import *
+from taiko.tools.config import *
 import pandas as pd
 import numpy as np
 import math
@@ -30,6 +30,8 @@ class _Primitive(object):
         self._rms_df = rms_df
 
     def _featurize(self):
+        if len(self._rms_df) == 0:
+            return [np.nan]
         ai_s = [self.__get_ai(col) for col in RMS_COLS]
         # vi_s = [self.__get_vi(col, ai) for col, ai in zip(RMS_COLS, ai_s)]
         mmi_s = [self.__get_mdmi(col)for col in RMS_COLS]

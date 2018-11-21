@@ -1,4 +1,4 @@
-from taiko.config import *
+from taiko.tools.config import *
 from taiko.tools.timestamp import *
 from screenshot import *
 import pandas as pd

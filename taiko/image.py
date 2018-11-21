@@ -1,10 +1,8 @@
-from .config import *
+from taiko.tools.config import *
 from .tools.score import *
 from .tools.singleton import *
 
-import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 
 from abc import abstractmethod
 from glob import glob
@@ -12,7 +10,7 @@ import posixpath
 from keras.models import load_model
 import re
 
-from skimage.io import imshow, imsave, imread
+from skimage.io import imread
 from skimage.transform import resize
 from skimage.color import rgb2grey
 

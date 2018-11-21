@@ -1,4 +1,4 @@
-from taiko.config import *
+from taiko.tools.config import *
 from taiko.play import *
 from taiko.deprecated.primitive import *
 from collections import deque

@@ -1,4 +1,4 @@
-from .config import *
+from taiko.tools.config import *
 from .io import *
 from .image import *
 
@@ -8,7 +8,7 @@ import posixpath
 from scipy.stats import mode
 
 DELTA_T_DIVIDED_COUNT = 8
-DUMMY_TIME_LENGTH = 15
+DUMMY_TIME_LENGTH = 5
 
 __all__ = ['get_play']
 

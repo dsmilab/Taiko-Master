@@ -1,7 +1,7 @@
 import matplotlib
 matplotlib.use('Agg')
 
-from .config import *
+from taiko.tools.config import *
 from .image import *
 from .db import *
 import seaborn as sns

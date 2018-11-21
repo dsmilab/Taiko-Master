@@ -1,10 +1,46 @@
+from .config import *
 import time
+import pandas as pd
+from scipy.stats import mode
 from datetime import datetime, timedelta
 
-__all__ = ['get_hwclock_time',
+__all__ = ['resample_sensor_df',
+           'calibrate_sensor_df',
+           'get_hwclock_time',
            'get_hwclock_time_2',
            'get_datetime',
            'convert_datetime_format']
+
+
+def resample_sensor_df(df):
+    result_df = df.copy()
+
+    # resample for more samples
+    result_df.loc[:, 'timestamp'] = pd.to_datetime(result_df['timestamp'], unit='s')
+    result_df.loc[:, 'timestamp'] = result_df['timestamp'].apply(
+        lambda x: x.tz_localize('UTC').tz_convert('Asia/Taipei'))
+    result_df = result_df.set_index('timestamp').resample(RESAMPLING_RATE).mean()
+    result_df = result_df.interpolate(method='linear')
+    result_df.reset_index(inplace=True)
+    result_df.loc[:, 'timestamp'] = result_df['timestamp'].apply(lambda x: x.timestamp())
+    result_df.fillna(method='ffill', inplace=True)
+
+    return result_df
+
+
+def calibrate_sensor_df(df):
+    modes_dict = {}
+    calibrated_df = df.copy()
+
+    for col in ZERO_ADJ_COL:
+        mode_ = mode(calibrated_df[col])[0]
+        modes_dict[col] = mode_
+
+    # only considered attributes need zero adjust
+    for col in ZERO_ADJ_COL:
+        calibrated_df.loc[:, col] = calibrated_df[col] - modes_dict[col]
+
+    return calibrated_df
 
 
 def get_hwclock_time(local_time, delta=0):
