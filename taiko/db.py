@@ -1,6 +1,6 @@
 from .tools.singleton import *
+from .tools.config import *
 from .image import *
-from .config import *
 
 import pandas as pd
 import numpy as np

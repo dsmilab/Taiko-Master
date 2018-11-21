@@ -1,4 +1,4 @@
-from taiko.config import *
+from taiko.tools.config import *
 import os
 import csv
 import sys
