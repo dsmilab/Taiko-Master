@@ -41,6 +41,7 @@ SERVER_SCREENSHOT_PATH = posixpath.join(SERVER_TMP_DIR_PATH, 'uploaded_bb_captur
 # image.scoreboard
 BB_CAPTURE_PATH = posixpath.join(BASE_PATH, '../bb_capture_output/')
 
+EXTERNAL_PATH = posixpath.join(BASE_PATH, 'external/')
 MNIST_MODEL_PATH = posixpath.join(BASE_PATH, 'external/mnist_model.h5')
 DRUM_IMG_MODEL_PATH = posixpath.join(BASE_PATH, 'external/drum_img_model.h5')
 ENCODER_MODEL_PATH = posixpath.join(BASE_PATH, 'external/encdoer.h5')

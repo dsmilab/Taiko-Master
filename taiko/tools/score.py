@@ -29,4 +29,4 @@ def get_processing_score(pred_score_list):
 def my_f1_score(y_pred, y):
     y = y.get_label()
     y_pred = y_pred.reshape(len(np.unique(y)), -1).argmax(axis=0)
-    return "f1-score", metrics.f1_score(y, y_pred, average="weighted"), True
+    return "f1-score", metrics.f1_score(y, y_pred, average="macro"), True

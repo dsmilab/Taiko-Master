@@ -52,36 +52,10 @@ class _Profile(object):
             self._profile[label_kwd] = {}
             for handedness_kwd, handedness_label in _Profile._HANDEDNESS.items():
                 self._profile[label_kwd][handedness_label] = []
-                files = glob(posixpath.join(PROFILE_DIR_PATH, label_kwd, handedness_kwd, self._drummer_name + '_*.csv'))
+                files = glob(posixpath.join(PROFILE_DIR_PATH, self._drummer_name, handedness_kwd, label_kwd + '_*.csv'))
                 for file_ in files:
                     df = pd.read_csv(file_)
-                    df = self.__build_play_df(df)
                     self._profile[label_kwd][handedness_label].append(df)
-
-    @staticmethod
-    def __build_play_df(raw_arm_df, calibrate=True, resample=True):
-        play_df = raw_arm_df.copy()
-
-        # resample for more samples
-        if resample:
-            play_df = resample_sensor_df(play_df)
-
-        # implement zero adjust for needed columns
-        if calibrate:
-            modes_dict = {}
-            copy_df = play_df.copy()
-
-            for col in ZERO_ADJ_COL:
-                mode_ = mode(copy_df[col])[0]
-                modes_dict[col] = mode_
-
-            # only considered attributes need zero adjust
-            for col in ZERO_ADJ_COL:
-                copy_df.loc[:, col] = copy_df[col] - modes_dict[col]
-
-            play_df = copy_df
-
-        return play_df
 
     def __build_primitive_df(self, window_size):
         profile_primitive_df = pd.DataFrame()
@@ -136,16 +110,22 @@ class _Profile(object):
         return self._profile_primitive_df
 
 
-def get_profile(drummer_name, window_size=0.2, forcibly=False):
-    profile_csv_path = posixpath.join(PROFILE_EP_DIR_PATH, drummer_name + '_' + str(window_size) + '.csv')
-    if not forcibly and os.path.isfile(profile_csv_path):
+def get_profile(drummer_name, window_size=0.2, scale=False, label_group='single_roll'):
+    profile_csv_path = posixpath.join(PROFILE_DIR_PATH, drummer_name, 'profile@' + str(window_size) + '.csv')
+
+    if os.path.isfile(profile_csv_path):
         profile_ep_df = pd.read_csv(profile_csv_path)
-        return profile_ep_df
     else:
         profile_ep_df = _Profile(drummer_name, window_size).profile_primitive_df
         profile_csv_dir_path = os.path.dirname(profile_csv_path)
         os.makedirs(profile_csv_dir_path, exist_ok=True)
         profile_ep_df.to_csv(profile_csv_path, index=False, float_format='%.4f')
+
+    if scale:
+        profile_ep_df = do_scaling(profile_ep_df)
+
+    if label_group in ['single_roll']:
+        profile_ep_df.loc[:, 'hit_type'] = profile_ep_df['hit_type'].apply(transform_hit_type)
 
     return profile_ep_df
 
@@ -158,7 +138,6 @@ def create_profile(drummer_name):
         df = load_arm_df(drummer_name, sensor_name)
         df = resample_sensor_df(df)
         df = calibrate_sensor_df(df)
-        df['handedness'] = label_kwd
 
         for e_id in range(0, len(REF_AVLINE[id_]), 2):
             start_timestamp = REF_AVLINE[id_][e_id]
@@ -172,6 +151,7 @@ def create_profile(drummer_name):
             os.makedirs(dirname, exist_ok=True)
             crop_df.to_csv(filepath, index=False, float_format='%.4f')
 
+        df['handedness'] = label_kwd
         return df
 
     for id_, row in record_df.iterrows():

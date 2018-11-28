@@ -1,4 +1,5 @@
-from taiko.tools.config import *
+from .tools.config import *
+from .tools.timestamp import *
 from .io import *
 from .image import *
 
@@ -14,6 +15,7 @@ __all__ = ['get_play']
 
 
 class _Play(object):
+    _SAMPLING_RATE = '0.01S'
 
     def __init__(self, song_id, raw_arm_df_dict, play_start_time, calibrate, resample):
         # { filename: file_csv, }
@@ -23,8 +25,6 @@ class _Play(object):
         self._first_hit_time = None
 
         self._note_df = load_note_df(song_id)
-        # self._time_unit = mode(self._note_df['time_unit'])[0]
-        self._resampling_rate = '0.01S'
 
         self.__set_hw_time(song_id, play_start_time)
         self._events = self.__retrieve_event(song_id)
@@ -32,28 +32,6 @@ class _Play(object):
         for filename, raw_arm_df in raw_arm_df_dict.items():
             position = filename[0]
             self._play_dict[position] = self.__build_play_df(raw_arm_df, calibrate, resample)
-
-    def crop_near_raw_data(self, delta_t=0.1):
-        for position in ['L', 'R']:
-            for id_, _ in enumerate(self._events):
-                event_time = self._events[id_][0]
-                hit_type = self._events[id_][1]
-
-                if hit_type < 1 or hit_type > 2:
-                    continue
-
-                local_start_time = event_time - delta_t
-                local_end_time = event_time + delta_t
-                note_type = 'don' if hit_type == 1 else 'ka'
-
-                filename = posixpath.join(LOCAL_MOTIF_DIR_PATH, note_type, position, '%03d.csv' % id_)
-                os.makedirs(os.path.dirname(filename), exist_ok=True)
-
-                df = self._play_dict[position]
-                motif_df = df[(df['timestamp'] >= local_start_time) &
-                              (df['timestamp'] <= local_end_time)].copy()
-
-                motif_df.to_csv(filename, index=False)
 
     def __set_hw_time(self, song_id, play_start_time):
         play_time_length = SONG_LENGTH_DICT[song_id]
@@ -69,31 +47,11 @@ class _Play(object):
         play_df = raw_arm_df[(raw_arm_df['timestamp'] >= self._start_time) &
                              (raw_arm_df['timestamp'] <= self._end_time)].copy()
 
-        # resample for more samples
         if resample:
-            play_df.loc[:, 'timestamp'] = pd.to_datetime(play_df['timestamp'], unit='s')
-            play_df.loc[:, 'timestamp'] = play_df['timestamp'].apply(
-                lambda x: x.tz_localize('UTC').tz_convert('Asia/Taipei'))
-            play_df = play_df.set_index('timestamp').resample(self._resampling_rate).mean()
-            play_df = play_df.interpolate(method='linear')
-            play_df.reset_index(inplace=True)
-            play_df.loc[:, 'timestamp'] = play_df['timestamp'].apply(lambda x: x.timestamp())
-            play_df.fillna(method='ffill', inplace=True)
+            play_df = resample_sensor_df(play_df)
 
-        # implement zero adjust for needed columns
         if calibrate:
-            modes_dict = {}
-            copy_df = play_df.copy()
-
-            for col in ZERO_ADJ_COL:
-                mode_ = mode(copy_df[col])[0]
-                modes_dict[col] = mode_
-
-            # only considered attributes need zero adjust
-            for col in ZERO_ADJ_COL:
-                copy_df.loc[:, col] = copy_df[col] - modes_dict[col]
-
-            play_df = copy_df
+            play_df = calibrate_sensor_df(play_df)
 
         return play_df
 

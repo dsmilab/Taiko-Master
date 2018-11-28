@@ -26,21 +26,20 @@ class _Performance(object):
         bar_unit: default is "time_unit x 8"
         delta_t: time interval we consider a local event
     """
-    _WINDOW_T = 0.2
 
-    def __init__(self, play, scale):
+    def __init__(self, play, window_size, scale):
         self._event_primitive_df = None
 
         self._play = play
 
         self._events = self._play.events
 
-        self.__build__primitive_df()
+        self.__build__primitive_df(window_size)
 
         if scale:
             self._performance_primitive_df = do_scaling(self._performance_primitive_df)
 
-    def __build__primitive_df(self):
+    def __build__primitive_df(self, window_size):
         """
         After setting play's dataframe, build dataframe of primitives around events in this play.
 
@@ -57,10 +56,10 @@ class _Performance(object):
         start_time = self._play.start_time
         end_time = self._play.end_time
 
-        now_time = start_time + self._WINDOW_T
+        now_time = start_time + window_size
 
         while now_time <= end_time:
-            local_start_time = now_time - self._WINDOW_T
+            local_start_time = now_time - window_size
             local_end_time = now_time
 
             feature_row = [local_end_time]
@@ -82,7 +81,7 @@ class _Performance(object):
             if not np.isnan(feature_row).any():
                 tmp_primitive_mat.append(feature_row)
 
-            now_time += self._WINDOW_T
+            now_time += window_size / 2.0
 
         columns = ['timestamp'] + [label + '_' + col for col in STAT_COLS for label in labels]
         performance_primitive_df = pd.DataFrame(data=tmp_primitive_mat,
@@ -95,16 +94,17 @@ class _Performance(object):
         return self._performance_primitive_df
 
 
-def get_performance(play, scale=False):
+def get_performance(play,  window_size=0.2, scale=False):
     """
     Get the performance.
 
     :param play:
     :param scale: if "True", scale values of required features
+    :param window_size:
     :return: the desired unique performance
     """
 
-    return _Performance(play, scale).performance_primitive_df
+    return _Performance(play, window_size, scale).performance_primitive_df
 
 
 def do_scaling(df):
