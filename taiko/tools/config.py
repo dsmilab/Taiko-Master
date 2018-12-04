@@ -19,6 +19,7 @@ HOME_PATH = posixpath.join(DATA_DIR_PATH, 'alpha/')
 CONNECT_HOST_DIR_PATH = posixpath.join(DATA_DIR_PATH, 'connect_host/')
 MOTIF_DIR_PATH = posixpath.join(DATA_DIR_PATH, 'motif/')
 PROFILE_DIR_PATH = posixpath.join(DATA_DIR_PATH, 'alpha_profile/')
+PERFORMANCE_DIR_PATH = posixpath.join(DATA_DIR_PATH, 'alpha_performance/')
 PROFILE_EP_DIR_PATH = posixpath.join(DATA_DIR_PATH, 'alpha_profile_ep/')
 
 # io.record

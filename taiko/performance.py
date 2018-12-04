@@ -94,17 +94,31 @@ class _Performance(object):
         return self._performance_primitive_df
 
 
-def get_performance(play,  window_size=0.2, scale=False):
+def get_performance(play=None,  window_size=0.2, scale=False, id_=None):
     """
     Get the performance.
 
     :param play:
     :param scale: if "True", scale values of required features
     :param window_size:
+    :param id_:
     :return: the desired unique performance
     """
+    if id_ is None:
+        return _Performance(play, window_size, scale).performance_primitive_df
 
-    return _Performance(play, window_size, scale).performance_primitive_df
+    performance_csv_path = posixpath.join(PERFORMANCE_DIR_PATH, str(id_) + '_pf@' + str(window_size) + '.csv')
+
+    if os.path.isfile(performance_csv_path):
+        performance_ep_df = pd.read_csv(performance_csv_path)
+    else:
+        performance_ep_df = _Performance(play, window_size, scale).performance_primitive_df
+        performance_csv_dir_path = os.path.dirname(performance_csv_path)
+
+        os.makedirs(performance_csv_dir_path, exist_ok=True)
+        performance_ep_df.to_csv(performance_csv_path, index=False, float_format='%.4f')
+
+    return performance_ep_df
 
 
 def do_scaling(df):
