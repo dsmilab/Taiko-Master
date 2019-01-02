@@ -21,7 +21,7 @@ class GUI(Tk):
     def __init__(self, master=None):
         Tk.__init__(self, master)
         self.title('Taiko Master v0.3.3')
-        self.geometry('800x600')
+        self.geometry('1000x800')
         self.resizable(width=False, height=False)
         self._stage = 0
         self._client = TaikoClient()
@@ -34,7 +34,7 @@ class GUI(Tk):
         self._container.pack(side='top', fill='both', expand=True)
         self._container.grid_rowconfigure(0, weight=1)
         self._container.grid_columnconfigure(0, weight=1)
-        self._switch_screen(_StartScreen)
+        self._switch_screen(_ResultScreen)
 
     def goto_next_screen(self, now_scr):
         if now_scr == _StartScreen:
@@ -89,7 +89,7 @@ class _StartScreen(Frame):
     def __create_buttons(self):
         self._buttons['start'] = Button(self, text='start')
         self._buttons['start'].bind('<Button-1>', self.__click_start_button)
-        self._buttons['start'].place(x=280, y=520, width=250, height=70)
+        self._buttons['start'].place(x=330, y=720, width=350, height=70)
 
         self._var['difficulty'] = StringVar()
         for i_, difficulty in enumerate(self._controller.client.DIFFICULTIES):
@@ -98,29 +98,29 @@ class _StartScreen(Frame):
                                                image=self._images[difficulty],
                                                text=difficulty)
             self._buttons[difficulty].bind('<Button-1>', self.__click_difficulty_button)
-            self._buttons[difficulty].place(x=130 + i_ * 140, y=300, width=120, height=120)
+            self._buttons[difficulty].place(x=230 + i_ * 140, y=450, width=120, height=120)
 
     def __create_entry_tips(self):
         self._labels['drummer_name'] = Label(self, text='drummer\'s name:')
-        self._labels['drummer_name'].place(x=40, y=10, height=80)
+        self._labels['drummer_name'].place(x=340, y=10, height=80)
         self._labels['drummer_name'].config(font=("Times", 30))
 
         vcmd = (self.register(validate_alpha_digit), '%P', '%S')
         self._entries['drummer_name'] = Entry(self, bg='lightgray', validate='key', validatecommand=vcmd)
-        self._entries['drummer_name'].place(x=40, y=80, height=80, width=300)
+        self._entries['drummer_name'].place(x=340, y=80, height=80, width=300)
         self._entries['drummer_name'].config(font=("Times", 30))
 
         self._labels['song_id'] = Label(self, text='song ID:')
-        self._labels['song_id'].place(x=450, y=80)
+        self._labels['song_id'].place(x=340, y=240)
         self._labels['song_id'].config(font=("Times", 25))
 
         vcmd = (self.register(validate_integer), '%P', '%S')
         self._entries['song_id'] = Entry(self, bg='lightblue', validate='key', validatecommand=vcmd)
-        self._entries['song_id'].place(x=600, y=80, height=40, width=70)
+        self._entries['song_id'].place(x=480, y=240, height=40, width=70)
         self._entries['song_id'].config(font=("Times", 20))
 
         self._labels['difficulty'] = Label(self, text='difficulty')
-        self._labels['difficulty'].place(x=330, y=250)
+        self._labels['difficulty'].place(x=430, y=400)
         self._labels['difficulty'].config(font=("Times", 20))
 
     def __click_difficulty_button(self, e):
@@ -160,14 +160,14 @@ class _RunScreen(Frame):
     def __create_stop_button(self):
         self._buttons['stop'] = Button(self, text='stop')
         self._buttons['stop'].bind('<Button-1>', self.__click_stop_button)
-        self._buttons['stop'].place(x=280, y=520, width=250, height=70)
+        self._buttons['stop'].place(x=380, y=720, width=250, height=70)
 
     def __create_raw_canvas(self):
         sns.set(font_scale=1)
         f = Figure()
         self._ax = f.subplots(nrows=6, ncols=2, sharex='all')
         self._canvas = FigureCanvasTkAgg(f, self)
-        self._canvas.get_tk_widget().place(x=0, y=0, width=800, height=500)
+        self._canvas.get_tk_widget().place(x=0, y=0, width=1000, height=700)
 
     def __update_raw_canvas(self):
         self.__draw_raw_canvas(0)
@@ -194,7 +194,7 @@ class _RunScreen(Frame):
                 self._ax[i_, handedness].set_ylabel(col)
 
         handedness_label = 'Left' if handedness == 0 else 'Right'
-        self._ax[0, handedness].set_title(handedness_label + ' raw')
+        self._ax[0, handedness].set_title(handedness_label + ' hand\'s raw signal')
         self._ax[-1, handedness].set_xlabel('timestamp')
 
     def __capture_screenshot(self):
@@ -273,27 +273,32 @@ class _ResultScreen(Frame):
     def __create_back_button(self):
         self._buttons['back'] = Button(self, text='back')
         self._buttons['back'].bind('<Button-1>', self.__click_back_button)
-        self._buttons['back'].place(x=520, y=520, width=250, height=70)
+        self._buttons['back'].place(x=820, y=720, width=150, height=70)
 
     def __create_score_canvas(self):
         img = Image.open(self._controller.client.pic_path['score_curve'])
-        img = img.resize((800, 300), Image.ANTIALIAS)
+        img = img.resize((1000, 400), Image.ANTIALIAS)
         self._images['score_curve'] = ImageTk.PhotoImage(img)
         self._labels['score_curve'] = Label(self, image=self._images['score_curve'])
-        self._labels['score_curve'].place(x=0, y=0, width=800, height=300)
+        self._labels['score_curve'].place(x=0, y=0, width=1000, height=400)
 
     def __create_radar_canvas(self):
         img = Image.open(self._controller.client.pic_path['radar'])
-        img = img.resize((500, 300), Image.ANTIALIAS)
-        self._images['radar'] = ImageTk.PhotoImage(img)
-        self._labels['radar'] = Label(self, image=self._images['radar'])
-        self._labels['radar'].place(x=0, y=300, width=500, height=300)
+        img = img.resize((400, 400), Image.ANTIALIAS)
+        self._images['player_radar'] = ImageTk.PhotoImage(img)
+        self._labels['player_radar'] = Label(self, image=self._images['player_radar'])
+        self._labels['player_radar'].place(x=0, y=400, width=400, height=400)
+
+        self._images['master_radar'] = ImageTk.PhotoImage(img)
+        self._labels['master_radar'] = Label(self, image=self._images['master_radar'])
+        self._labels['master_radar'].place(x=400, y=400, width=400, height=400)
 
     def __create_label_tips(self):
-        times = self._controller.client.remained_play_times
-        self._labels['remained_times'] = Label(self, text='Need to play %d times more' % times)
+        times = 4
+        # self._controller.client.remained_play_times
+        self._labels['remained_times'] = Label(self, text='Need to play\n %d\n times more' % times)
         self._labels['remained_times'].config(font=("Times", 16))
-        self._labels['remained_times'].place(x=500, y=400, width=300, height=50)
+        self._labels['remained_times'].place(x=800, y=400, width=200, height=100)
 
     def __click_back_button(self, e):
         self._controller.goto_next_screen(self.__class__)

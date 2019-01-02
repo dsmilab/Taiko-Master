@@ -103,12 +103,12 @@ class _SSHTaiko(object):
     def get_window_df(self):
         data = {
             'timestamp': [tm for tm in range(_SSHTaiko.WINDOW_SIZE)],
-            'ax': self._analog.window[1],
-            'ay': self._analog.window[2],
-            'az': self._analog.window[3],
-            'gx': self._analog.window[4],
-            'gy': self._analog.window[5],
-            'gz': self._analog.window[6],
+            'acc_x': self._analog.window[1],
+            'acc_y': self._analog.window[2],
+            'acc_z': self._analog.window[3],
+            'gyr_x': self._analog.window[4],
+            'gyr_y': self._analog.window[5],
+            'gyr_z': self._analog.window[6],
         }
 
         df = pd.DataFrame(data=data)
@@ -307,6 +307,10 @@ class TaikoClient(_Client):
         self._taiko_ssh_thread = []
         self._song_id = None
         self._drummer_name = None
+        local_curve_path = posixpath.join(PIC_DIR_PATH, "curve_not_found.jpg")
+        self._pic_path['score_curve'] = local_curve_path
+        local_radar_path = posixpath.join(PIC_DIR_PATH, "radar.png")
+        self._pic_path['radar'] = local_radar_path
 
     def clear(self):
         self.stop_sensor()
@@ -438,7 +442,7 @@ class TaikoClient(_Client):
 
     def process_screenshot(self):
         logging.debug('TaikoClient process_screenshot() => %s' % threading.current_thread())
-
+        self._local_capture_dirname = 'capture_2018_09_29_19_39_24'
         local_dir_path = posixpath.join(LOCAL_SCREENSHOT_PATH, self._local_capture_dirname)
         self._progress_tips = 'Processing screenshot for plotting ...'
         plot_play_score(local_dir_path, self._song_id, True, True)
@@ -474,8 +478,6 @@ class TaikoClient(_Client):
         self._pic_path['radar'] = local_radar_path
 
         self._progress['value'] += self._prog_max['process_radar'] // 5 * 2
-
-
 
     def clear_tmp_dir_png(self):
         local_curve_paths = glob(posixpath.join(TMP_DIR_PATH, '*.png'))
