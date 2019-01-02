@@ -307,10 +307,11 @@ class TaikoClient(_Client):
         self._taiko_ssh_thread = []
         self._song_id = None
         self._drummer_name = None
+        # !!!
         local_curve_path = posixpath.join(PIC_DIR_PATH, "curve_not_found.jpg")
         self._pic_path['score_curve'] = local_curve_path
-        local_radar_path = posixpath.join(PIC_DIR_PATH, "radar.png")
-        self._pic_path['radar'] = local_radar_path
+        local_result_path = posixpath.join(PIC_DIR_PATH, "result.jpg")
+        self._pic_path['result'] = local_result_path
 
     def clear(self):
         self.stop_sensor()

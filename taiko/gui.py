@@ -232,11 +232,11 @@ class _LoadingScreen(Frame):
     def __create_progress_bar(self):
         self._prog_bar = ttk.Progressbar(self, orient="horizontal", mode="determinate")
         self._prog_bar['maximum'] = self._controller.client.progress['maximum']
-        self._prog_bar.place(x=100, y=300, width=600, height=50)
+        self._prog_bar.place(x=200, y=350, width=600, height=100)
 
     def __create_tips(self):
         self._labels['tips'] = Label(self, text=self._controller.client.progress_tips)
-        self._labels['tips'].place(x=100, y=350, width=600, height=80)
+        self._labels['tips'].place(x=100, y=450, width=600, height=80)
         self._labels['tips'].config(font=("Times", 12))
 
     def __process(self):
@@ -283,22 +283,22 @@ class _ResultScreen(Frame):
         self._labels['score_curve'].place(x=0, y=0, width=1000, height=400)
 
     def __create_radar_canvas(self):
-        img = Image.open(self._controller.client.pic_path['radar'])
-        img = img.resize((400, 400), Image.ANTIALIAS)
-        self._images['player_radar'] = ImageTk.PhotoImage(img)
-        self._labels['player_radar'] = Label(self, image=self._images['player_radar'])
-        self._labels['player_radar'].place(x=0, y=400, width=400, height=400)
-
-        self._images['master_radar'] = ImageTk.PhotoImage(img)
-        self._labels['master_radar'] = Label(self, image=self._images['master_radar'])
-        self._labels['master_radar'].place(x=400, y=400, width=400, height=400)
+        img = Image.open(self._controller.client.pic_path['result'])
+        img = img.resize((500, 400), Image.ANTIALIAS)
+        self._images['result'] = ImageTk.PhotoImage(img)
+        self._labels['result'] = Label(self, image=self._images['result'])
+        self._labels['result'].place(x=0, y=400, width=500, height=400)
 
     def __create_label_tips(self):
-        times = 4
+        times = 9999
         # self._controller.client.remained_play_times
-        self._labels['remained_times'] = Label(self, text='Need to play\n %d\n times more' % times)
-        self._labels['remained_times'].config(font=("Times", 16))
-        self._labels['remained_times'].place(x=800, y=400, width=200, height=100)
+        self._labels['quality'] = Label(self, text='Don Quality: %d / 10490' % times)
+        self._labels['quality'].config(font=("Times", 24))
+        self._labels['quality'].place(x=500, y=450, width=500, height=80)
+
+        self._labels['summary'] = Label(self, text='Play with a little force')
+        self._labels['summary'].config(font=("Times", 24), fg='red')
+        self._labels['summary'].place(x=500, y=600, width=500, height=80)
 
     def __click_back_button(self, e):
         self._controller.goto_next_screen(self.__class__)
