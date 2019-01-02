@@ -9,7 +9,7 @@ import posixpath
 from scipy.stats import mode
 
 DELTA_T_DIVIDED_COUNT = 8
-DUMMY_TIME_LENGTH = 5
+DUMMY_TIME_LENGTH = 2
 
 __all__ = ['get_play']
 

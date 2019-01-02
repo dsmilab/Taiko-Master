@@ -58,14 +58,14 @@ ENTRY_SUCCESS = '@0@'
 RMS_COLS = ['a_rms', 'g_rms', 'imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz']
 
 PREFIX_COLS = ['A', 'G', 'AX', 'AY', 'AZ', 'GX', 'GY', 'GZ']
-SUFFIX_COLS = ['AI', 'FR', 'MDCR', 'MCR', 'ZCR']
+SUFFIX_COLS = ['AI', 'VI', 'MMI', 'IQR', 'FR']
 
 STAT_COLS = [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFIX_COLS[0]] * 8)] +\
-            ['A_SMA', 'G_SMA'] +\
             [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFIX_COLS[1]] * 8)] +\
             [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFIX_COLS[2]] * 8)] +\
+            ['A_SMA', 'G_SMA'] +\
             [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFIX_COLS[3]] * 8)] +\
-            [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS[2:], [SUFFIX_COLS[4]] * 6)] +\
+            [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFIX_COLS[4]] * 8)] +\
             ['AXY_CORR', 'AYZ_CORR', 'AZX_CORR', 'GXY_CORR', 'GYZ_CORR', 'GZX_CORR']
 
 ZERO_ADJ_COL = ['imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz']
@@ -92,7 +92,7 @@ SONG_LENGTH_DICT = {
     1: 89,
     2: 109,
     3: 134,
-    4: 134,
+    4: 145,
     99: 500,
 }
 
