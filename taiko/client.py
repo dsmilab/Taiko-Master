@@ -308,10 +308,8 @@ class TaikoClient(_Client):
         self._song_id = None
         self._drummer_name = None
         # !!!
-        # local_curve_path = posixpath.join(PIC_DIR_PATH, "curve_not_found.jpg")
-        # self._pic_path['score_curve'] = local_curve_path
-        # local_result_path = posixpath.join(PIC_DIR_PATH, "result.jpg")
-        # self._pic_path['result'] = local_result_path
+        local_curve_path = posixpath.join(PIC_DIR_PATH, "curve_not_found.jpg")
+        self._pic_path['score_curve'] = local_curve_path
 
     def clear(self):
         self.stop_sensor()
@@ -444,6 +442,7 @@ class TaikoClient(_Client):
 
     def process_screenshot(self):
         logging.debug('TaikoClient process_screenshot() => %s' % threading.current_thread())
+
         local_dir_path = posixpath.join(LOCAL_SCREENSHOT_PATH, self._local_capture_dirname)
         self._progress_tips = 'Processing screenshot for plotting ...'
         plot_play_score(local_dir_path, self._song_id, True, True)
@@ -470,14 +469,17 @@ class TaikoClient(_Client):
         play = get_play(row, from_tmp_dir=True)
         self._progress['value'] += self._prog_max['process_radar'] // 5 * 2
         self._progress_tips = 'Cropping raw data in need ...'
-        play.crop_near_raw_data(0.1)
+
+        local_capture_dir_name_path = posixpath.join(LOCAL_SCREENSHOT_PATH, self._local_capture_dirname)
+        drum_note_path = posixpath.join(TABLE_PATH, 'taiko_song_1_easy_info.csv')
+        play.crop_input(LOCAL_SENSOR_DIR_PATH, local_capture_dir_name_path, drum_note_path, self._song_id);
         self._progress['value'] += self._prog_max['process_radar'] // 5
 
         self._progress_tips = 'Processing sensor data ...'
         idx, sm_temp = execute()
 
         local_radar_path = glob(posixpath.join(TMP_DIR_PATH, 'result.jpg'))[0]
-        self._pic_path['radar'] = local_radar_path
+        self._pic_path['result'] = local_radar_path
 
         self._progress['value'] += self._prog_max['process_radar'] // 5 * 2
 
@@ -487,8 +489,9 @@ class TaikoClient(_Client):
             os.remove(local_curve_path)
 
     def update_local_record_table(self):
-        self._local_sensor_filename['L'] = 'L_2018-09-28_112912'
-        self._local_sensor_filename['R'] = 'R_2018-09-28_112913'
+        self._local_capture_dirname = '1'
+        self._local_sensor_filename['L'] = 'L_1.csv'
+        self._local_sensor_filename['R'] = 'R_1.csv'
         left_sensor_datetime = self._local_sensor_filename['L']
         right_sensor_datetime = self._local_sensor_filename['R']
         capture_datetime = self._local_capture_dirname

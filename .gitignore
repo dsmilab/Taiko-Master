@@ -15,3 +15,4 @@ util/
 tmp/
 
 backup/
+taiko/drum_img_model_prec.h5

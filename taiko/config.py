@@ -41,7 +41,8 @@ BB_CAPTURE_PATH = posixpath.join(BASE_PATH, '../bb_capture_output/')
 
 MNIST_MODEL_PATH = posixpath.join(BASE_PATH, 'external/mnist_model.h5')
 DRUM_IMG_MODEL_PATH = posixpath.join(BASE_PATH, 'external/drum_img_model.h5')
-ENCODER_MODEL_PATH = posixpath.join(BASE_PATH, 'external/encdoer.h5')
+ENCODER_MODEL_PATH = posixpath.join(BASE_PATH, 'external/encoder.h5')
+REGRESSION_MODEL_PATH = posixpath.join(BASE_PATH, 'external/regression.h5')
 VAE_MODEL_PATH = posixpath.join(BASE_PATH, 'external/vae.h5')
 
 # connect.ssh

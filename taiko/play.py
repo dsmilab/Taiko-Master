@@ -6,7 +6,11 @@ import pandas as pd
 import numpy as np
 import posixpath
 from scipy.stats import mode
+import glob as glob
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
+import matplotlib.pyplot as plt
 
+import scipy
 DELTA_T_DIVIDED_COUNT = 8
 DUMMY_TIME_LENGTH = 15
 
@@ -31,9 +35,10 @@ class _Play(object):
 
         for filename, raw_arm_df in raw_arm_df_dict.items():
             position = filename[0]
-            self._play_dict[position] = self.__build_play_df(raw_arm_df, calibrate, resample)
+            # self._play_dict[position] = self.__build_play_df(raw_arm_df, calibrate, resample)
+            self._play_dict[position] = raw_arm_df
 
-    def crop_near_raw_data(self, delta_t=0.1):
+    def crop_near_raw_data(self, delta_t=0.12):
         for position in ['L', 'R']:
             for id_, _ in enumerate(self._events):
                 event_time = self._events[id_][0]
@@ -54,6 +59,150 @@ class _Play(object):
                               (df['timestamp'] <= local_end_time)].copy()
 
                 motif_df.to_csv(filename, index=False)
+
+    def preprocess(self, df):
+
+        df = np.asarray(df, dtype=np.float32)
+        if len(df.shape) == 1:
+            raise ValueError('Data must be a 2-D array')
+
+    #     if np.any(sum(np.isnan(df)) != 0):
+    #         print('Data contains null values. Will be replaced with 0')
+    #         df = np.nan_to_num()
+
+        #standardize data
+        df = StandardScaler().fit_transform(df)
+        #normalize data
+        df = MinMaxScaler().fit_transform(df)
+        return df
+
+    def crop_input(self, Dir_sensData, Dir_captures, Dir_song_spectrum,order):
+        Dir  = Dir_sensData
+        mypath = Dir_captures
+        path1 = posixpath.join(Dir, 'L_*.csv')
+        path2 = posixpath.join(Dir, 'R_*.csv')
+
+        startTime = get_play_start_time(mypath)
+        print(startTime)
+        filenames1 = glob.glob(path1)
+        filenames2 = glob.glob(path2)
+
+        df_left = pd.read_csv(filenames1[0])
+        df_left = df_left[df_left['timestamp']>startTime]
+        df_left = df_left.reset_index()
+        df_left = df_left.drop(['index'],axis=1)
+        df_left = df_left[:-1]
+        df_right =  pd.read_csv(filenames2[0])
+        df_right = df_right[df_right['timestamp']>startTime]
+        df_right = df_right.reset_index()
+        df_right = df_right.drop(['index'],axis=1)
+        df_right = df_right[:-1]
+
+        #timestamp convert to datetime
+        df_left['timestamp'] = pd.to_datetime(df_left['timestamp'], unit='s')
+        df_right['timestamp'] = pd.to_datetime(df_right['timestamp'], unit='s')
+
+        #resampliong
+        df_left = df_left.resample('0.008S', on='timestamp').sum()
+        df_right = df_right.resample('0.008S', on='timestamp').sum()
+
+        #combine two hands
+        df = pd.concat([df_left,df_right],axis=1)
+
+        columns=['L_imu_ax',
+                 'L_imu_ay',
+                 'L_imu_az',
+                 'L_imu_gx',
+                 'L_imu_gy',
+                 'L_imu_gz',
+                 'R_imu_ax',
+                 'R_imu_ay',
+                 'R_imu_az',
+                 'R_imu_gx',
+                 'R_imu_gy',
+                 'R_imu_gz']
+
+        df.columns=columns
+
+        df = df.dropna(axis=0,how='any')
+
+        #scaling
+        df_scaled = self.preprocess(df)
+        df_scaled = pd.DataFrame(df_scaled)
+        df_scaled.columns=columns
+        df_scaled = df_scaled.set_index(df.index)
+        print( 'input finished with Scaling')
+
+        timestamps = df_scaled.index-df_scaled.index[0]
+
+        seconds = []
+        for index in timestamps:
+            second = pd.Timedelta.total_seconds(index)
+            seconds.append(second)
+
+        secondsIndex = pd.Index(seconds)
+        df_secondsIndex = df_scaled.set_index(secondsIndex)
+
+        df_spectrum = pd.read_csv(Dir_song_spectrum)
+
+
+        #cut motifs
+        motifs_don = [] # motifs of don
+        motifs_non = [] # motifs of non
+        motifs_continous = []
+        flag_is_five = 0
+        count_five = 0
+
+        for i in range(len(df_spectrum)):
+            if(df_spectrum['label'][i]==1):
+                time_mid = df_spectrum['Rel_timestemp (s)'][i]+0.4
+                location = df_secondsIndex.index.get_loc(time_mid, method='nearest')
+                lower = location-12
+                upper = location+12
+                df_reset = df_secondsIndex.reset_index() #index重製
+                motif_i = df_reset[lower:upper]
+                motifs_don.append(motif_i)
+                motif_i.to_csv(Dir+'motifs/don/motifs_%d_order_%d.csv'%(i,order))
+
+
+            elif(df_spectrum['label'][i]==0):
+                time_mid = df_spectrum['Rel_timestemp (s)'][i]+0.4
+                location = df_secondsIndex.index.get_loc(time_mid, method='nearest')
+                lower = location-12
+                upper = location+12
+                df_reset = df_secondsIndex.reset_index() #index重製
+                motif_i = df_reset[lower:upper]
+                motifs_non.append(motif_i)
+                motif_i.to_csv(Dir+'motifs/non/motifs_%d_order_%d.csv'%(i,order))
+
+            elif(df_spectrum['label'][i]==2):
+                time_mid = df_spectrum['Rel_timestemp (s)'][i]+0.4
+                location = df_secondsIndex.index.get_loc(time_mid, method='nearest')
+                lower = location-12
+                upper = location+12
+                df_reset = df_secondsIndex.reset_index() #index重製
+                motif_i = df_reset[lower:upper]
+                motifs_non.append(motif_i)
+                motif_i.to_csv(Dir+'motifs/ka/motifs_%d_order_%d.csv'%(i,order))
+
+            if(df_spectrum['label'][i]==5):
+                if(count_five==0):
+                    flag_is_five=1
+                count_five = count_five+1
+            else:
+                if(flag_is_five!=0):
+                    time_end = df_spectrum['Rel_timestemp (s)'][i-1]+0.4
+                    location_end = df_secondsIndex.index.get_loc(time_end, method='nearest')
+                    upper = location_end+12
+                    time_start = df_spectrum['Rel_timestemp (s)'][i-count_five]+0.4
+                    location_start = df_secondsIndex.index.get_loc(time_start, method='nearest')
+                    lower = location_end-12
+                    df_reset = df_secondsIndex.reset_index() #index重製
+                    motif_i = df_reset[lower:upper]
+                    motifs_continous.append(motif_i)
+                    motif_i.to_csv(Dir+'motifs/motifs_%d_order_%d.csv'%(i,order))
+                    print( 'cutting motifs finished !')
+        return df_scaled ,df_spectrum
 
     def __set_hw_time(self, song_id, play_start_time):
         play_time_length = SONG_LENGTH_DICT[song_id]

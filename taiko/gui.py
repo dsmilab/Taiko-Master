@@ -206,7 +206,7 @@ class _RunScreen(Frame):
     def __click_stop_button(self, e):
         self._controller.client.stop_sensor()
         self._controller.client.stop_screenshot()
-        self._controller.client.download_sensor()
+        # self._controller.client.download_sensor()
         self._controller.client.update_local_record_table()
         self._controller.goto_next_screen(self.__class__)
 
@@ -241,8 +241,8 @@ class _LoadingScreen(Frame):
 
     def __process(self):
         self.after(200, self._process_queue)
-        self._controller.client.process_radar()
         self._controller.client.process_screenshot()
+        self._controller.client.process_radar()
 
     def _process_queue(self):
         self._prog_bar['value'] = self._controller.client.progress['value']

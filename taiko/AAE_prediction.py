@@ -25,6 +25,7 @@ from keras.layers import Input
 from keras.layers.core import Flatten, Dense, Dropout, Lambda
 from keras.optimizers import SGD, RMSprop, Adam
 from keras import objectives
+from .config import *
 
 import tensorflow as tf
 from tensorflow.python.client import device_lib
@@ -188,8 +189,8 @@ def AAE_analyze(Dir):
                 latent_dim=20,
                 epsilon_std=1.)
 
-        encoder.load_weights('encoder.h5')
-        regression.load_weights('regression.h5')
+        encoder.load_weights(ENCODER_MODEL_PATH)
+        regression.load_weights(REGRESSION_MODEL_PATH)
 
         encoded_prediction = encoder.predict(X_train)[:,10]# node 11號
         encoded_mean = encoded_prediction.mean()
@@ -217,7 +218,7 @@ def prepare_env():
 def execute():
     prepare_env()
     coordinate = []
-    df = pd.read_csv('veteran.csv')
+    df = pd.read_csv('F:/MingChen/Taiko-Master-go/taiko/veteran.csv')
 
     encoded_mean = df['encoded_mean']
     score_variance = df['score_variance']
@@ -225,12 +226,12 @@ def execute():
     encoded_mean_list = encoded_mean.tolist()
     score_variance_list = score_variance.tolist()
 
-    temp_Dir = 'G:/Taiko-Demo/tmp/sensor_data'
+    temp_Dir = 'F:/MingChen/Taiko-Master-go/tmp/sensor_data'
     ep_temp, sp_temp, em_temp, sm_temp = AAE_analyze(temp_Dir)
     em_temp = em_temp*(-1)  #因為邏輯值大等於小力 所以變號
     variance_temp = np.std(sp_temp)
 
-    encoded_mean_list.append((em_temp+0.1))
+    encoded_mean_list.append((em_temp))
     encoded_mean_array = np.asarray(encoded_mean_list)
     encoded_mean_array = np.interp(encoded_mean_array, (encoded_mean_array.min(), encoded_mean_array.max()), (-1, +1)) #Scale to 0-1
     score_variance_list.append((variance_temp))
@@ -263,7 +264,7 @@ def execute():
     idx = find_nearest_vector(coordinate[0:-1],coordinate[-1])
 
     plt.legend()
-    plt.savefig('result.jpg')
+    plt.savefig(posixpath.join(TMP_DIR_PATH, 'result.jpg'))
 
     return idx+1, sm_temp #打擊者平均don分數
 

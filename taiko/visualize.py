@@ -39,3 +39,5 @@ def plot_play_score(capture_dir_path, song_id, compare_veteran=False, save_image
         plt.savefig(filename)
     else:
         plt.show()
+        
+    sns.set(font_scale=1)
