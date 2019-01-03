@@ -4,7 +4,7 @@ from .tools.timestamp import *
 from .tools.converter import *
 from .tools.realtime import *
 from .play import *
-from .AAE_Main_test_Gui import *
+from .AAE_prediction import *
 
 from glob import glob
 import pandas as pd
@@ -86,7 +86,7 @@ class _SSHTaiko(object):
                     logging.info("client request to quit")
                     break
 
-                elif data[-1] == self._label:
+                elif data[-1] == self._label + '\r':
                     self._analog.add(data[:-2])
 
             except KeyboardInterrupt:
@@ -308,10 +308,10 @@ class TaikoClient(_Client):
         self._song_id = None
         self._drummer_name = None
         # !!!
-        local_curve_path = posixpath.join(PIC_DIR_PATH, "curve_not_found.jpg")
-        self._pic_path['score_curve'] = local_curve_path
-        local_result_path = posixpath.join(PIC_DIR_PATH, "result.jpg")
-        self._pic_path['result'] = local_result_path
+        # local_curve_path = posixpath.join(PIC_DIR_PATH, "curve_not_found.jpg")
+        # self._pic_path['score_curve'] = local_curve_path
+        # local_result_path = posixpath.join(PIC_DIR_PATH, "result.jpg")
+        # self._pic_path['result'] = local_result_path
 
     def clear(self):
         self.stop_sensor()
@@ -362,6 +362,7 @@ class TaikoClient(_Client):
         try:
             taiko_ssh = self._taiko_ssh[label]
             window_df = taiko_ssh.get_window_df()
+
             return window_df
 
         except KeyError:
@@ -443,7 +444,6 @@ class TaikoClient(_Client):
 
     def process_screenshot(self):
         logging.debug('TaikoClient process_screenshot() => %s' % threading.current_thread())
-        self._local_capture_dirname = 'capture_2018_09_29_19_39_24'
         local_dir_path = posixpath.join(LOCAL_SCREENSHOT_PATH, self._local_capture_dirname)
         self._progress_tips = 'Processing screenshot for plotting ...'
         plot_play_score(local_dir_path, self._song_id, True, True)
@@ -474,8 +474,9 @@ class TaikoClient(_Client):
         self._progress['value'] += self._prog_max['process_radar'] // 5
 
         self._progress_tips = 'Processing sensor data ...'
-        process_aae(self.song_id)
-        local_radar_path = glob(posixpath.join(TMP_DIR_PATH, 'radar.png'))[0]
+        idx, sm_temp = execute()
+
+        local_radar_path = glob(posixpath.join(TMP_DIR_PATH, 'result.jpg'))[0]
         self._pic_path['radar'] = local_radar_path
 
         self._progress['value'] += self._prog_max['process_radar'] // 5 * 2
@@ -486,6 +487,8 @@ class TaikoClient(_Client):
             os.remove(local_curve_path)
 
     def update_local_record_table(self):
+        self._local_sensor_filename['L'] = 'L_2018-09-28_112912'
+        self._local_sensor_filename['R'] = 'R_2018-09-28_112913'
         left_sensor_datetime = self._local_sensor_filename['L']
         right_sensor_datetime = self._local_sensor_filename['R']
         capture_datetime = self._local_capture_dirname

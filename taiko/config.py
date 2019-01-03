@@ -10,7 +10,7 @@ PIC_DIR_PATH = posixpath.join(BASE_PATH, '../assets/')
 TMP_DIR_PATH = posixpath.join(BASE_PATH, '../tmp/')
 LOCAL_SCREENSHOT_PATH = posixpath.join(TMP_DIR_PATH, 'bb_capture/')
 LOCAL_SENSOR_DIR_PATH = posixpath.join(TMP_DIR_PATH, 'sensor_data/')
-LOCAL_MOTIF_DIR_PATH = posixpath.join(TMP_DIR_PATH, 'motif/')
+LOCAL_MOTIF_DIR_PATH = posixpath.join(TMP_DIR_PATH, 'motifs/')
 LOCAL_RECORD_TABLE_PATH = posixpath.join(TMP_DIR_PATH, 'record_table.csv')
 
 DATA_DIR_PATH = posixpath.join(BASE_PATH, '../data/')

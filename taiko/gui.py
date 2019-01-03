@@ -34,7 +34,7 @@ class GUI(Tk):
         self._container.pack(side='top', fill='both', expand=True)
         self._container.grid_rowconfigure(0, weight=1)
         self._container.grid_columnconfigure(0, weight=1)
-        self._switch_screen(_ResultScreen)
+        self._switch_screen(_StartScreen)
 
     def goto_next_screen(self, now_scr):
         if now_scr == _StartScreen:
@@ -241,8 +241,8 @@ class _LoadingScreen(Frame):
 
     def __process(self):
         self.after(200, self._process_queue)
-        self._controller.client.process_screenshot()
         self._controller.client.process_radar()
+        self._controller.client.process_screenshot()
 
     def _process_queue(self):
         self._prog_bar['value'] = self._controller.client.progress['value']
