@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[300]:
+# In[1]:
 
 
 import numpy as np
@@ -25,15 +25,25 @@ from keras.layers import Input
 from keras.layers.core import Flatten, Dense, Dropout, Lambda
 from keras.optimizers import SGD, RMSprop, Adam
 from keras import objectives
-from .config import *
 
 import tensorflow as tf
 from tensorflow.python.client import device_lib
 
-__all__ = ['execute']
+
+# 隨時間增加配置 的 GPU 記憶體
+gpu_options = tf.GPUOptions(allow_growth=True)
+sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+# # 只使用 80% 的 GPU 記憶體
+# gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.3)
+# sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+# 設定 Keras 使用的 TensorFlow Session
+
+keras.backend.set_session(sess)
+K.set_learning_phase(1)
+print(device_lib.list_local_devices())
 
 
-# In[208]:
+# In[2]:
 
 
 def create_lstm_vae_first_train(input_dim,
@@ -151,7 +161,7 @@ def create_lstm_vae_first_train(input_dim,
     return encoder, generator, discriminator, model_vae, model_enc_disc, regression, model_vae_regression
 
 
-# In[209]:
+# In[3]:
 
 
 def load_data(Dir):
@@ -175,7 +185,7 @@ def load_data(Dir):
     return X_train
 
 
-# In[210]:
+# In[4]:
 
 
 def AAE_analyze(Dir):
@@ -192,7 +202,7 @@ def AAE_analyze(Dir):
         encoder.load_weights(ENCODER_MODEL_PATH)
         regression.load_weights(REGRESSION_MODEL_PATH)
 
-        encoded_prediction = encoder.predict(X_train)[:,10]# node 11號
+        encoded_prediction = encoder.predict(X_train)[:,13]# node 14號
         encoded_mean = encoded_prediction.mean()
 
         score_prediction = regression.predict(X_train)
@@ -200,23 +210,10 @@ def AAE_analyze(Dir):
         return encoded_prediction, score_prediction, encoded_mean, score_mean
 
 
-# In[489]:
+# In[47]:
 
-def prepare_env():
-    # 隨時間增加配置 的 GPU 記憶體
-    gpu_options = tf.GPUOptions(allow_growth=True)
-    sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
-    # # 只使用 80% 的 GPU 記憶體
-    # gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.3)
-    # sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
-    # 設定 Keras 使用的 TensorFlow Session
 
-    keras.backend.set_session(sess)
-    K.set_learning_phase(1)
-    print(device_lib.list_local_devices())
-
-def execute():
-    prepare_env()
+def excecute():
     coordinate = []
     df = pd.read_csv('F:/MingChen/Taiko-Master-go/taiko/veteran.csv')
 
@@ -226,17 +223,18 @@ def execute():
     encoded_mean_list = encoded_mean.tolist()
     score_variance_list = score_variance.tolist()
 
-    temp_Dir = 'F:/MingChen/Taiko-Master-go/tmp/sensor_data'
+    temp_Dir = 'G:/temp1'
     ep_temp, sp_temp, em_temp, sm_temp = AAE_analyze(temp_Dir)
     em_temp = em_temp*(-1)  #因為邏輯值大等於小力 所以變號
     variance_temp = np.std(sp_temp)
 
     encoded_mean_list.append((em_temp))
     encoded_mean_array = np.asarray(encoded_mean_list)
-    encoded_mean_array = np.interp(encoded_mean_array, (encoded_mean_array.min(), encoded_mean_array.max()), (-1, +1)) #Scale to 0-1
+    encoded_mean_array_scale = np.interp(encoded_mean_array, (encoded_mean_array.min(), encoded_mean_array.max()), (-1, +1)) #Scale to 0-1
     score_variance_list.append((variance_temp))
     score_variance_array = np.asarray(score_variance_list)
-    score_variance_array = np.interp(score_variance_array, (score_variance_array.min(), score_variance_array.max()), (-1, +1)) #Scale to 0-1
+    score_variance_array_scale = np.interp(score_variance_array, (score_variance_array.min(), score_variance_array.max()), (-1, +1)) #Scale to 0-1
+    #非scale圖
 
     plt.figure(dpi=800)
     plt.xlabel('Strength_evaluation')
@@ -249,9 +247,24 @@ def execute():
     for i, txt in enumerate(people):
         plt.annotate(txt, (encoded_mean_array[i], score_variance_array[i]))
 #         plt.annotate(round(score_variance_array[i],3), (encoded_mean_array[i], score_variance_array[i]+0.05))
-        coordinate.append([encoded_mean_array[i], score_variance_array[i]])
 
-    coordinate.append([encoded_mean_array[-1],score_variance_array[-1]])
+    plt.legend()
+    plt.savefig('分類圖.jpg')
+    #scale圖
+    plt.figure(dpi=800)
+    plt.xlabel('Strength_evaluation')
+    plt.ylabel('Stablility(STD),Unit: score')
+    plt.scatter(encoded_mean_array_scale[0:-1],score_variance_array_scale[0:-1],label='veteran')
+    plt.scatter(encoded_mean_array_scale[-1],score_variance_array_scale[-1],c='r',label='you')
+
+    people =['A','B','C','D','E','F','G','H','I','J','K']
+
+    for i, txt in enumerate(people):
+        plt.annotate(txt, (encoded_mean_array_scale[i], score_variance_array_scale[i]))
+#         plt.annotate(round(score_variance_array[i],3), (encoded_mean_array[i], score_variance_array[i]+0.05))
+        coordinate.append([encoded_mean_array_scale[i], score_variance_array_scale[i]])
+
+    coordinate.append([encoded_mean_array_scale[-1],score_variance_array_scale[-1]])
     coordinate = np.array(coordinate)
 
     def find_nearest_vector(array, value):
@@ -264,15 +277,15 @@ def execute():
     idx = find_nearest_vector(coordinate[0:-1],coordinate[-1])
 
     plt.legend()
-    plt.savefig(posixpath.join(TMP_DIR_PATH, 'result.jpg'))
+#     plt.savefig('分類圖.jpg')
 
-    return idx+1, sm_temp #打擊者平均don分數
-
-
-# In[490]:
+    return idx+1, coordinate[idx],  sm_temp #打擊者平均don分數
 
 
-#### idx, sm_temp = excecute()
+# In[48]:
+
+
+idx, coordinate_vertran, sm_temp = excecute()
 
 
 # #老手的資料
