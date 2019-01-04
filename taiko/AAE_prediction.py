@@ -25,22 +25,26 @@ from keras.layers import Input
 from keras.layers.core import Flatten, Dense, Dropout, Lambda
 from keras.optimizers import SGD, RMSprop, Adam
 from keras import objectives
+from .config import *
 
 import tensorflow as tf
 from tensorflow.python.client import device_lib
 
+__all__ = ['execute']
 
-# 隨時間增加配置 的 GPU 記憶體
-gpu_options = tf.GPUOptions(allow_growth=True)
-sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
-# # 只使用 80% 的 GPU 記憶體
-# gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.3)
-# sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
-# 設定 Keras 使用的 TensorFlow Session
 
-keras.backend.set_session(sess)
-K.set_learning_phase(1)
-print(device_lib.list_local_devices())
+def prepare_env():
+    # 隨時間增加配置 的 GPU 記憶體
+    gpu_options = tf.GPUOptions(allow_growth=True)
+    sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+    # # 只使用 80% 的 GPU 記憶體
+    # gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.3)
+    # sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+    # 設定 Keras 使用的 TensorFlow Session
+
+    keras.backend.set_session(sess)
+    K.set_learning_phase(1)
+    print(device_lib.list_local_devices())
 
 
 # In[2]:
@@ -213,7 +217,8 @@ def AAE_analyze(Dir):
 # In[47]:
 
 
-def excecute():
+def execute():
+    prepare_env()
     coordinate = []
     df = pd.read_csv('F:/MingChen/Taiko-Master-go/taiko/veteran.csv')
 
@@ -223,7 +228,7 @@ def excecute():
     encoded_mean_list = encoded_mean.tolist()
     score_variance_list = score_variance.tolist()
 
-    temp_Dir = 'G:/temp1'
+    temp_Dir = 'F:/MingChen/Taiko-Master-go/tmp/sensor_data'
     ep_temp, sp_temp, em_temp, sm_temp = AAE_analyze(temp_Dir)
     em_temp = em_temp*(-1)  #因為邏輯值大等於小力 所以變號
     variance_temp = np.std(sp_temp)
@@ -249,7 +254,7 @@ def excecute():
 #         plt.annotate(round(score_variance_array[i],3), (encoded_mean_array[i], score_variance_array[i]+0.05))
 
     plt.legend()
-    plt.savefig('分類圖.jpg')
+    plt.savefig(posixpath.join(TMP_DIR_PATH, 'result.jpg'))
     #scale圖
     plt.figure(dpi=800)
     plt.xlabel('Strength_evaluation')
@@ -277,15 +282,12 @@ def excecute():
     idx = find_nearest_vector(coordinate[0:-1],coordinate[-1])
 
     plt.legend()
-#     plt.savefig('分類圖.jpg')
 
-    return idx+1, coordinate[idx],  sm_temp #打擊者平均don分數
+    player_coor = (encoded_mean_array[-1], score_variance_array[-1])
+    return idx+1, player_coor, coordinate[idx],  sm_temp #打擊者平均don分數
 
 
 # In[48]:
-
-
-idx, coordinate_vertran, sm_temp = excecute()
 
 
 # #老手的資料

@@ -79,20 +79,24 @@ class _Play(object):
     def crop_input(self, Dir_sensData, Dir_captures, Dir_song_spectrum,order):
         Dir  = Dir_sensData
         mypath = Dir_captures
-        path1 = posixpath.join(Dir, 'L_*.csv')
-        path2 = posixpath.join(Dir, 'R_*.csv')
+        path1 = posixpath.join(Dir, 'L*.csv')
+        path2 = posixpath.join(Dir, 'R*.csv')
 
         startTime = get_play_start_time(mypath)
         print(startTime)
         filenames1 = glob.glob(path1)
         filenames2 = glob.glob(path2)
-
+        print(filenames1)
+        print(filenames2)
+        print(Dir)
         df_left = pd.read_csv(filenames1[0])
         df_left = df_left[df_left['timestamp']>startTime]
+        print(df_left)
         df_left = df_left.reset_index()
         df_left = df_left.drop(['index'],axis=1)
         df_left = df_left[:-1]
         df_right =  pd.read_csv(filenames2[0])
+        print(df_right)
         df_right = df_right[df_right['timestamp']>startTime]
         df_right = df_right.reset_index()
         df_right = df_right.drop(['index'],axis=1)
@@ -162,7 +166,7 @@ class _Play(object):
                 df_reset = df_secondsIndex.reset_index() #index重製
                 motif_i = df_reset[lower:upper]
                 motifs_don.append(motif_i)
-                motif_i.to_csv(Dir+'motifs/don/motifs_%d_order_%d.csv'%(i,order))
+                motif_i.to_csv(Dir+'/motifs/don/motifs_%d_order_%d.csv'%(i,order))
 
 
             elif(df_spectrum['label'][i]==0):
@@ -173,7 +177,7 @@ class _Play(object):
                 df_reset = df_secondsIndex.reset_index() #index重製
                 motif_i = df_reset[lower:upper]
                 motifs_non.append(motif_i)
-                motif_i.to_csv(Dir+'motifs/non/motifs_%d_order_%d.csv'%(i,order))
+                motif_i.to_csv(Dir+'/motifs/non/motifs_%d_order_%d.csv'%(i,order))
 
             elif(df_spectrum['label'][i]==2):
                 time_mid = df_spectrum['Rel_timestemp (s)'][i]+0.4
@@ -183,7 +187,7 @@ class _Play(object):
                 df_reset = df_secondsIndex.reset_index() #index重製
                 motif_i = df_reset[lower:upper]
                 motifs_non.append(motif_i)
-                motif_i.to_csv(Dir+'motifs/ka/motifs_%d_order_%d.csv'%(i,order))
+                motif_i.to_csv(Dir+'/motifs/ka/motifs_%d_order_%d.csv'%(i,order))
 
             if(df_spectrum['label'][i]==5):
                 if(count_five==0):
@@ -200,7 +204,7 @@ class _Play(object):
                     df_reset = df_secondsIndex.reset_index() #index重製
                     motif_i = df_reset[lower:upper]
                     motifs_continous.append(motif_i)
-                    motif_i.to_csv(Dir+'motifs/motifs_%d_order_%d.csv'%(i,order))
+                    motif_i.to_csv(Dir+'/motifs/motifs_%d_order_%d.csv'%(i,order))
                     print( 'cutting motifs finished !')
         return df_scaled ,df_spectrum
 

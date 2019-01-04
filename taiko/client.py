@@ -18,6 +18,7 @@ import socket
 import time
 import pickle
 import logging
+import random
 
 __all__ = ['TaikoClient']
 
@@ -134,7 +135,8 @@ class _Client(object):
         self._local_sensor_filename = {}
         self._local_capture_dirname = None
         self._capture_alive = False
-        self._remained_play_times = None
+        self._don_quality = None
+        self._summary_text = None
         self._taiko_ssh = {}
         self._ip_addr = '127.0.0.1'
         self._port = {}
@@ -279,8 +281,12 @@ class _Client(object):
             sys.stdout.flush()
 
     @property
-    def remained_play_times(self):
-        return self._remained_play_times
+    def don_quality(self):
+        return self._don_quality
+
+    @property
+    def summary_text(self):
+        return self._summary_text
 
     @property
     def pic_path(self):
@@ -451,7 +457,7 @@ class TaikoClient(_Client):
 
         local_curve_path = glob(posixpath.join(TMP_DIR_PATH, '*.png'))[0]
         pic_path = re.search('curve_(\d)+.png$', local_curve_path).group(0)
-        self._remained_play_times = int(re.search('\d+', pic_path).group(0))
+        # self._remained_play_times = int(re.search('\d+', pic_path).group(0))
         self._pic_path['score_curve'] = local_curve_path
 
     def process_radar(self):
@@ -472,11 +478,17 @@ class TaikoClient(_Client):
 
         local_capture_dir_name_path = posixpath.join(LOCAL_SCREENSHOT_PATH, self._local_capture_dirname)
         drum_note_path = posixpath.join(TABLE_PATH, 'taiko_song_1_easy_info.csv')
+
         play.crop_input(LOCAL_SENSOR_DIR_PATH, local_capture_dir_name_path, drum_note_path, self._song_id);
         self._progress['value'] += self._prog_max['process_radar'] // 5
 
         self._progress_tips = 'Processing sensor data ...'
-        idx, sm_temp = execute()
+        idx, player_coor, nearest_coor, sm_temp = execute()
+        self._don_quality = sm_temp
+        if player_coor[0] > nearest_coor[0]:
+            self._summary_text = 'Play with a litte force, please.'
+        else:
+            self._summary_text = 'Please beat harder.'
 
         local_radar_path = glob(posixpath.join(TMP_DIR_PATH, 'result.jpg'))[0]
         self._pic_path['result'] = local_radar_path
@@ -489,12 +501,17 @@ class TaikoClient(_Client):
             os.remove(local_curve_path)
 
     def update_local_record_table(self):
+        # cap_list = ['1', '2', '3', '4']
+        # l_list = ['L1.csv', 'L2.csv' ,'L3.csv', 'L4.csv']
+        # r_list = ['R1.csv', 'R2.csv', 'R3.csv', 'R4.csv']
+        # num = random.randint(0, 3)
         self._local_capture_dirname = '1'
-        self._local_sensor_filename['L'] = 'L_1.csv'
-        self._local_sensor_filename['R'] = 'R_1.csv'
+        self._local_sensor_filename['L'] = 'L1.csv'
+        self._local_sensor_filename['R'] = 'R1.csv'
         left_sensor_datetime = self._local_sensor_filename['L']
         right_sensor_datetime = self._local_sensor_filename['R']
         capture_datetime = self._local_capture_dirname
+        print(left_sensor_datetime, right_sensor_datetime)
 
         try:
             record_df = pd.read_csv(LOCAL_RECORD_TABLE_PATH)

@@ -10,6 +10,7 @@ from PIL import Image, ImageTk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import seaborn as sns
+import random
 # if platform.system() == 'Windows':
 #     ACTIVE = 'normal'
 # elif platform.system() == 'Linux':
@@ -237,7 +238,7 @@ class _LoadingScreen(Frame):
     def __create_tips(self):
         self._labels['tips'] = Label(self, text=self._controller.client.progress_tips)
         self._labels['tips'].place(x=100, y=450, width=600, height=80)
-        self._labels['tips'].config(font=("Times", 12))
+        self._labels['tips'].config(font=("Times", 20))
 
     def __process(self):
         self.after(200, self._process_queue)
@@ -290,13 +291,12 @@ class _ResultScreen(Frame):
         self._labels['result'].place(x=0, y=400, width=500, height=400)
 
     def __create_label_tips(self):
-        times = 9999
         # self._controller.client.remained_play_times
-        self._labels['quality'] = Label(self, text='Don Quality: %d / 10490' % times)
+        self._labels['quality'] = Label(self, text='Don Quality: %d / 10490' % self._controller.client.don_quality)
         self._labels['quality'].config(font=("Times", 24))
         self._labels['quality'].place(x=500, y=450, width=500, height=80)
 
-        self._labels['summary'] = Label(self, text='Play with a little force')
+        self._labels['summary'] = Label(self, text=self._controller.client.summary_text)
         self._labels['summary'].config(font=("Times", 24), fg='red')
         self._labels['summary'].place(x=500, y=600, width=500, height=80)
 
