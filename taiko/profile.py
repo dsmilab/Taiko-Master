@@ -3,6 +3,7 @@ from .tools.timestamp import *
 from .tools.database import *
 from .primitive import *
 from .io import *
+from .visualize import *
 
 from collections import deque
 import seaborn as sns
@@ -98,7 +99,6 @@ class _Profile(object):
             primitive_df['hit_type'] = label
             profile_primitive_df = pd.concat([profile_primitive_df, primitive_df], ignore_index=True)
 
-        print(profile_primitive_df)
         self._profile_primitive_df = profile_primitive_df
 
     @property
@@ -137,7 +137,7 @@ def create_profile(drummer_name):
     def __create_key_act_profile(label_kwd, sensor_name):
         df = load_arm_df(drummer_name, sensor_name)
         df = resample_sensor_df(df)
-        df = calibrate_sensor_df(df)
+        # df = calibrate_sensor_df(df)
 
         for e_id in range(0, len(REF_AVLINE[id_]), 2):
             start_timestamp = REF_AVLINE[id_][e_id]
@@ -155,6 +155,13 @@ def create_profile(drummer_name):
         return df
 
     for id_, row in record_df.iterrows():
+        profile_filename = 'profile_' + str(id_) + '.csv'
+        profile_filepath = posixpath.join(PROFILE_DIR_PATH, drummer_name, profile_filename)
+
+        # if file exists, pass
+        if os.path.isfile(profile_filepath):
+            continue
+
         left_sensor_name = row['left_sensor_datetime']
         right_sensor_name = row['right_sensor_datetime']
 
@@ -163,27 +170,34 @@ def create_profile(drummer_name):
 
         profile_df = pd.concat([left_df, right_df], ignore_index=True)
         profile_df.dropna(inplace=True)
-        profile_filename = 'profile_' + str(id_) + '.csv'
-        profile_filepath = posixpath.join(PROFILE_DIR_PATH, drummer_name, profile_filename)
         profile_df.to_csv(profile_filepath, index=False, float_format='%.4f')
 
 
 def plot_profile(drummer_name):
+    """
+
+    :param drummer_name:
+    :return:
+    """
+
     profiles = glob(posixpath.join(PROFILE_DIR_PATH, drummer_name, 'profile_*.csv'))
     for profile_ in profiles:
         profile_df = pd.read_csv(profile_)
-        res = re.search('profile_\d+.csv', profile_)
+        res = re.search('profile_\\d+.csv', profile_)
         id_ = int(res.group(0)[8:-4])
-        print(id_)
-        for col in ZERO_ADJ_COL:
-            plt.figure(figsize=(15, 8))
-            sns.lineplot(x='timestamp', y=col, data=profile_df, hue='handedness')
-            for e_id, x_ in enumerate(REF_AVLINE[id_]):
-                color_ = 'black'
-                if e_id // 2 % 2 == 0:
-                    color_ = 'red'
-                plt.axvline(x=x_, color=color_)
-            plt.show()
+
+        marks = []
+        for e_id, x_ in enumerate(REF_AVLINE[id_]):
+            color_ = 'black'
+            if e_id // 2 % 2 == 0:
+                color_ = 'red'
+            marks.append((x_, color_))
+
+        left_df = profile_df[profile_df['handedness'] == 'left']
+        right_df = profile_df[profile_df['handedness'] == 'right']
+        title = '%s , id = %d' % (drummer_name, id_)
+        plot_raw_acc_signal(left_df, right_df, marks, title)
+        plot_raw_gyr_signal(left_df, right_df, marks, title)
 
 
 def do_scaling(df):
