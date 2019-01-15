@@ -14,8 +14,11 @@ import re
 from glob import glob
 from scipy.stats import mode
 from sklearn import preprocessing
+import multiprocessing
+from tqdm import tqdm
 
 __all__ = ['create_profile',
+           'create_all_drummer_profiles',
            'plot_profile',
            'get_profile']
 
@@ -110,7 +113,7 @@ class _Profile(object):
         return self._profile_primitive_df
 
 
-def get_profile(drummer_name, window_size=0.2, scale=False, label_group='single_roll'):
+def get_profile(drummer_name, window_size=0.2, scale=False, label_group=None):
     profile_csv_path = posixpath.join(PROFILE_DIR_PATH, drummer_name, 'profile@' + str(window_size) + '.csv')
 
     if os.path.isfile(profile_csv_path):
@@ -137,7 +140,7 @@ def create_profile(drummer_name):
     def __create_key_act_profile(label_kwd, sensor_name):
         df = load_arm_df(drummer_name, sensor_name)
         df = resample_sensor_df(df)
-        # df = calibrate_sensor_df(df)
+        df = calibrate_sensor_df(df)
 
         for e_id in range(0, len(REF_AVLINE[id_]), 2):
             start_timestamp = REF_AVLINE[id_][e_id]
@@ -171,6 +174,13 @@ def create_profile(drummer_name):
         profile_df = pd.concat([left_df, right_df], ignore_index=True)
         profile_df.dropna(inplace=True)
         profile_df.to_csv(profile_filepath, index=False, float_format='%.4f')
+
+
+def create_all_drummer_profiles():
+    with multiprocessing.Pool() as p:
+        drummers = get_all_drummers()
+        for _ in tqdm(p.imap_unordered(create_profile, drummers), total=len(drummers)):
+            pass
 
 
 def plot_profile(drummer_name):

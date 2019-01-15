@@ -58,14 +58,12 @@ ENTRY_SUCCESS = '@0@'
 RMS_COLS = ['a_rms', 'g_rms', 'imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz']
 
 PREFIX_COLS = ['A', 'G', 'AX', 'AY', 'AZ', 'GX', 'GY', 'GZ']
-SUFFIX_COLS = ['AI', 'VI', 'MMI', 'IQR', 'FR']
+SUFFIX_COLS = ['AI', 'MMI', 'FR']
 
 STAT_COLS = [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFIX_COLS[0]] * 8)] +\
             [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFIX_COLS[1]] * 8)] +\
-            [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFIX_COLS[2]] * 8)] +\
             ['A_SMA', 'G_SMA'] +\
-            [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFIX_COLS[3]] * 8)] +\
-            [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFIX_COLS[4]] * 8)] +\
+            [prefix + '_' + suffix for prefix, suffix in zip(PREFIX_COLS, [SUFFIX_COLS[2]] * 8)] +\
             ['AXY_CORR', 'AYZ_CORR', 'AZX_CORR', 'GXY_CORR', 'GYZ_CORR', 'GZX_CORR']
 
 ZERO_ADJ_COL = ['imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz']
@@ -82,11 +80,11 @@ SENSOR_COLUMNS = [ALL_COLUMNS[0]] + ALL_COLUMNS[3:9]
 COLORS = ['black', 'red', 'blue', 'yellow', 'green', 'cyan', 'purple', 'magenta']
 
 # regex
-ACC_REGEX = '^\w*_A[XYZ]{0,2}_\w*$'
-GYR_REGEX = '^\w*_G[XYZ]{0,2}_\w*$'
-NEAR_REGEX = '^[LR]\d+$'
-HIT_TYPE_REGEX = '^(hit_type|[A-Z]+\d)$'
-NO_SCALE_REGEX = '^(\w*_CORR|hit_type|[A-Z]+\d|timestamp)$'
+ACC_REGEX = '^\\w*_A[XYZ]{0,2}_\\w*$'
+GYR_REGEX = '^\\w*_G[XYZ]{0,2}_\\w*$'
+NEAR_REGEX = '^[LR]\\d+$'
+HIT_TYPE_REGEX = '^(hit_type|[A-Z]+\\d)$'
+NO_SCALE_REGEX = '^(\\w*_CORR|hit_type|[A-Z]+\\d|timestamp)$'
 
 SONG_LENGTH_DICT = {
     1: 89,

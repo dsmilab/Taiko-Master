@@ -33,7 +33,7 @@ class _Primitive(object):
         if len(self._rms_df) == 0:
             return [np.nan]
         ai_s = [self.__get_ai(col) for col in RMS_COLS]
-        vi_s = [self.__get_vi(col, ai) for col, ai in zip(RMS_COLS, ai_s)]
+        # vi_s = [self.__get_vi(col, ai) for col, ai in zip(RMS_COLS, ai_s)]
         mmi_s = [self.__get_mdmi(col)for col in RMS_COLS]
 
         asma = self.__get_sma(RMS_COLS[2:5])
@@ -45,7 +45,7 @@ class _Primitive(object):
         # standard deviation intensity
         # sdi_s = [math.sqrt(sdi) for sdi in vi_s]
 
-        iqr_s = [self.__get_iqr(col) for col in RMS_COLS]
+        # iqr_s = [self.__get_iqr(col) for col in RMS_COLS]
         fr_s = [self.__get_full_range(col) for col in RMS_COLS]
 
         # median_cross_s = [self.__get_median_cross(col, mmi) for col, mmi in zip(RMS_COLS, mmi_s)]
@@ -61,13 +61,11 @@ class _Primitive(object):
         g_zx_corr = self.__get_corr(RMS_COLS[7], RMS_COLS[5])
 
         return ai_s + \
-               vi_s + \
-               mmi_s + \
-               [asma, gsma] + \
-               iqr_s + \
-               fr_s + \
-               [a_xy_corr, a_yz_corr, a_zx_corr,
-                g_xy_corr, g_yz_corr, g_zx_corr]
+            mmi_s + \
+            [asma, gsma] + \
+            fr_s + \
+            [a_xy_corr, a_yz_corr, a_zx_corr,
+             g_xy_corr, g_yz_corr, g_zx_corr]
 
     def __get_ai(self, col):
         #  average intensity (AI)

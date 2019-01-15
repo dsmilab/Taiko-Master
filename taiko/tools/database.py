@@ -3,7 +3,8 @@ import pandas as pd
 
 __all__ = ['load_record_df',
            'get_all_drummers',
-           'transform_hit_type']
+           'transform_hit_type',
+           'transform_drum_note_hit_type']
 
 
 def load_record_df(**kwargs):
@@ -40,3 +41,10 @@ def transform_hit_type(label):
         return 5
 
     return 0
+
+
+def transform_drum_note_hit_type(label):
+    if label in [5, 6, 7]:
+        return 5
+
+    return label

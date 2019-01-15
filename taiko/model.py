@@ -14,7 +14,7 @@ from sklearn.metrics import classification_report
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
 import posixpath
-
+import multiprocessing
 
 __all__ = ['LGBM', 'KNN']
 
@@ -25,11 +25,11 @@ class _Model(object):
 
     def _load_profiles(self):
         pfs = []
-        for who_id, who in enumerate(tqdm(get_all_drummers())):
-            print(who)
-            pf = get_profile(who)
-            pf['who'] = who_id
-            pfs.append(pf)
+        with multiprocessing.Pool() as p:
+            drummers = get_all_drummers()
+            for id_, pf in tqdm(enumerate(p.imap(get_profile, drummers)), total=len(drummers)):
+                pf['who'] = id_
+                pfs.append(pf)
 
         self._pf = pd.concat(pfs, ignore_index=True)
 
