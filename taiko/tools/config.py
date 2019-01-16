@@ -101,6 +101,13 @@ INTRO_LENGTH_DICT = {
     4: 1.94 - 1.8,
 }
 
+SCORE_UNIT_DICT = {
+    1: 10490,
+    2: 7180,
+    3: 3900,
+    4: 2940,
+}
+
 RESULT_BOARD_INFO_COLUMNS = ['score', 'good', 'ok', 'bad', 'max_combo', 'drumroll']
 
 PREFIX = ['right_don', 'left_don', 'right_ka', 'left_ka', 'big_don', 'big_ka', 'pause', 'drumroll']

@@ -1,18 +1,14 @@
 from .tools.config import *
 from .tools.timestamp import *
-from .tools.database import *
+from .database import *
 from .primitive import *
 from .io import *
 from .visualize import *
 
 from collections import deque
-import seaborn as sns
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 import re
 from glob import glob
-from scipy.stats import mode
 from sklearn import preprocessing
 import multiprocessing
 from tqdm import tqdm
@@ -25,7 +21,7 @@ __all__ = ['create_profile',
 
 class _Profile(object):
     _SAMPLING_RATE = '0.01S'
-    _WINDOW_T = 0.2
+    _WINDOW_T = 0.1
 
     _LABELS = {
         'right_don': 1,

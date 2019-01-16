@@ -1,5 +1,5 @@
 from .profile import *
-from .tools.database import *
+from .database import *
 from .tools.score import *
 from .tools.config import *
 
@@ -8,8 +8,6 @@ import numpy as np
 import pandas as pd
 import lightgbm as lgb
 from sklearn import metrics
-from abc import abstractmethod
-from sklearn.svm import SVC
 from sklearn.metrics import classification_report
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
@@ -40,8 +38,8 @@ class LGBM(_Model):
         self._params = dict({
             'learning_rate': 0.2,
             'application': 'multiclass',
-            'max_depth': 5,
-            'num_leaves': 2 ** 5,
+            'max_depth': 8,
+            'num_leaves': 2 ** 8,
             'verbosity': 0
         })
 
@@ -64,7 +62,7 @@ class LGBM(_Model):
             model = lgb.train(my_params,
                               train_set=train_set,
                               valid_sets=watchlist,
-                              num_boost_round=100,
+                              num_boost_round=500,
                               verbose_eval=5,
                               early_stopping_rounds=100,
                               feval=my_f1_score)
