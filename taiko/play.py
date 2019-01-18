@@ -46,11 +46,11 @@ class _Play(object):
         play_df = raw_arm_df[(raw_arm_df['timestamp'] >= self._start_time) &
                              (raw_arm_df['timestamp'] <= self._end_time)].copy()
 
-        if resample:
-            play_df = resample_sensor_df(play_df)
-
         if calibrate:
             play_df = calibrate_sensor_df(play_df)
+
+        if resample:
+            play_df = resample_sensor_df(play_df)
 
         return play_df
 

@@ -153,13 +153,20 @@ class _DrumProcessor(_Processor, metaclass=_Singleton):
 def get_play_start_time(capture_dir_path):
     files = glob(posixpath.join(capture_dir_path, '*'))
 
+    cont_drum_count = 0
+    timestamp = None
     for pic_path in sorted(files):
         is_drum = _DrumProcessor().process(pic_path)
         if is_drum:
-            res = re.search('(\d){4}-(\d)+.(\d)+.png', pic_path)
-            filename = res.group(0)
-            timestamp = float(filename[5:-4])
-            return timestamp
+            if cont_drum_count == 0:
+                res = re.search('(\\d){4}-(\\d)+.(\\d)+.png', pic_path)
+                filename = res.group(0)
+                timestamp = float(filename[5:-4])
+            cont_drum_count += 1
+            if cont_drum_count >= 5:
+                return timestamp
+        else:
+            cont_drum_count = 0
 
     raise Exception('unknown drum detected')
 

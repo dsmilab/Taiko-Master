@@ -1,5 +1,11 @@
-from taiko.tools.config import *
-from .primitive import *
+from .tools.config import *
+from .tools.score import get_gained_score_multiplier
+from .primitive import get_features
+from .database import load_record_df, transform_hit_type
+from .play import get_play
+from .model import LGBM
+from scipy.stats import mode
+
 from collections import deque
 
 import re
@@ -8,7 +14,7 @@ import numpy as np
 from sklearn import preprocessing
 from imblearn.over_sampling import SMOTE
 
-__all__ = ['get_performance', 'do_over_sampled', 'do_scaling']
+__all__ = ['get_performance', 'do_over_sampled', 'do_scaling', 'predict_score']
 
 
 class _Performance(object):
@@ -93,8 +99,12 @@ class _Performance(object):
     def performance_primitive_df(self):
         return self._performance_primitive_df
 
+    @property
+    def play(self):
+        return self._play
 
-def get_performance(play=None,  window_size=0.2, scale=False, id_=None):
+
+def get_performance(play=None,  window_size=0.1, scale=False, id_=None):
     """
     Get the performance.
 
@@ -112,6 +122,11 @@ def get_performance(play=None,  window_size=0.2, scale=False, id_=None):
     if os.path.isfile(performance_csv_path):
         performance_ep_df = pd.read_csv(performance_csv_path)
     else:
+        # if play is None:
+        #     record_df = load_record_df()
+        #     record_row = record_df.loc[id_]
+        #     play = get_play(record_row)
+
         performance_ep_df = _Performance(play, window_size, scale).performance_primitive_df
         performance_csv_dir_path = os.path.dirname(performance_csv_path)
 
@@ -162,3 +177,45 @@ def do_over_sampled(df):
     new_df = new_df[df.columns]
 
     return new_df
+
+
+def predict_score(record_id, model):
+    record_df = load_record_df()
+    record_row = record_df.loc[record_id]
+    play = get_play(record_row)
+    pf = get_performance(play, id_=record_id)
+
+    train_df = pf.copy()
+    x = train_df.drop('timestamp', axis=1)
+    ts = train_df['timestamp']
+    hit_type_x = model.predict(x)
+    train_df['hit_type'] = hit_type_x
+
+    pred_df = pd.DataFrame(data={
+        'timestamp': ts,
+        'hit_type': hit_type_x
+    })
+
+    pred_ptr = 0
+    pred_pool = deque([0] * 10)
+    song_score = 0
+    hit_count = 0
+
+    pred_hit_types = []
+    true_hit_types = []
+    for event_time, hit_type in play.events:
+        while pred_df.loc[pred_ptr].timestamp <= event_time + 0.24:
+            pred_hit_type = int(pred_df.loc[pred_ptr].hit_type)
+            pred_hit_type = transform_hit_type(pred_hit_type)
+            pred_pool.popleft()
+            pred_pool.append(pred_hit_type)
+            pred_ptr += 1
+
+        pool_hit_type = mode(pred_pool)[0]
+
+        multiplier = get_gained_score_multiplier(pool_hit_type, hit_type)
+        if multiplier > 0:
+            hit_count += 1
+            song_score += SCORE_UNIT_DICT[1] * multiplier
+
+    return song_score, hit_count

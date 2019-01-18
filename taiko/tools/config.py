@@ -37,15 +37,13 @@ SERVER_EXE_PATH = posixpath.join(SERVER_PROJECT_PATH, 'server_exe.py')
 SERVER_TMP_DIR_PATH = posixpath.join(SERVER_PROJECT_PATH, 'tmp/')
 SERVER_SCREENSHOT_PATH = posixpath.join(SERVER_TMP_DIR_PATH, 'uploaded_bb_capture/')
 
-# capture.py
-
 # image.scoreboard
 BB_CAPTURE_PATH = posixpath.join(BASE_PATH, '../bb_capture_output/')
 
 EXTERNAL_PATH = posixpath.join(BASE_PATH, 'external/')
 MNIST_MODEL_PATH = posixpath.join(BASE_PATH, 'external/mnist_model.h5')
 DRUM_IMG_MODEL_PATH = posixpath.join(BASE_PATH, 'external/drum_img_model.h5')
-ENCODER_MODEL_PATH = posixpath.join(BASE_PATH, 'external/encdoer.h5')
+ENCODER_MODEL_PATH = posixpath.join(BASE_PATH, 'external/encoder.h5')
 VAE_MODEL_PATH = posixpath.join(BASE_PATH, 'external/vae.h5')
 
 # connect.ssh

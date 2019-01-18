@@ -12,7 +12,7 @@ __all__ = ['convert_images_to_video',
 
 
 def convert_images_to_video(input_dir_path, output_dir_path):
-    res = re.search('capture_(\d){4}_(\d){2}_(\d){2}_(\d){2}_(\d){2}_(\d){2}', input_dir_path)
+    res = re.search('capture_(\\d){4}_(\\d){2}_(\\d){2}_(\\d){2}_(\\d){2}_(\\d){2}', input_dir_path)
 
     input_dir_name = res.group(0)
     input_file_pattern = posixpath.join(input_dir_path, '*.png')
@@ -24,7 +24,7 @@ def convert_images_to_video(input_dir_path, output_dir_path):
 
     timestamps = []
     for file_path in input_file_paths:
-        res = re.search('(\d){4}-(\d)+.(\d)+.png', file_path)
+        res = re.search('(\\d){4}-(\\d)+.(\\d)+.png', file_path)
         filename = res.group(0)
         timestamps.append(filename[5: -4])
 

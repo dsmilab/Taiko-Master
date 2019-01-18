@@ -36,8 +36,14 @@ def my_f1_score(y_pred, y):
 def get_gained_score_multiplier(y_pred, y_test):
     if y_test == 0:
         return 0
-    if y_test in [1, 2] and y_test == y_pred:
-        return 1
+    if y_test == 1:
+        if y_pred in [1, 3]:
+            return 1
+        return 0
+    if y_test == 2:
+        if y_pred in [2, 4]:
+            return 1
+        return 0
     if y_test == 3:
         if y_pred == 1:
             return 1

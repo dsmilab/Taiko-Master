@@ -135,8 +135,8 @@ def create_profile(drummer_name):
 
     def __create_key_act_profile(label_kwd, sensor_name):
         df = load_arm_df(drummer_name, sensor_name)
-        df = resample_sensor_df(df)
         df = calibrate_sensor_df(df)
+        df = resample_sensor_df(df)
 
         for e_id in range(0, len(REF_AVLINE[id_]), 2):
             start_timestamp = REF_AVLINE[id_][e_id]

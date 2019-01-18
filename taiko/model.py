@@ -18,16 +18,21 @@ __all__ = ['LGBM', 'KNN']
 
 
 class _Model(object):
-    def __init__(self):
-        self._load_profiles()
+    def __init__(self, verbose=0):
+        self._load_profiles(verbose)
 
-    def _load_profiles(self):
+    def _load_profiles(self, verbose):
         pfs = []
         with multiprocessing.Pool() as p:
             drummers = get_all_drummers()
-            for id_, pf in tqdm(enumerate(p.imap(get_profile, drummers)), total=len(drummers)):
-                pf['who'] = id_
-                pfs.append(pf)
+            if verbose > 0:
+                for id_, pf in tqdm(enumerate(p.imap(get_profile, drummers)), total=len(drummers)):
+                    pf['who'] = id_
+                    pfs.append(pf)
+            else:
+                for id_, pf in enumerate(p.imap(get_profile, drummers)):
+                    pf['who'] = id_
+                    pfs.append(pf)
 
         self._pf = pd.concat(pfs, ignore_index=True)
 
