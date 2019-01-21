@@ -2,8 +2,15 @@ import os
 import posixpath
 # constant
 RESAMPLING_RATE = '0.01S'
+
 RIGHT_HAND = 0
 LEFT_HAND = 1
+
+INTRO_DUMMY_TIME_LENGTH = 2
+PLAY_ENDS_DUMMY_TIME_LENGTH = 3
+SYNC_TIME_SHIFT = 1.8
+
+
 BASE_PATH = posixpath.join(os.path.dirname(os.path.realpath(__file__)), '..').replace('\\', '/')
 
 PIC_DIR_PATH = posixpath.join(BASE_PATH, '../assets/')
@@ -43,6 +50,7 @@ BB_CAPTURE_PATH = posixpath.join(BASE_PATH, '../bb_capture_output/')
 EXTERNAL_PATH = posixpath.join(BASE_PATH, 'external/')
 MNIST_MODEL_PATH = posixpath.join(BASE_PATH, 'external/mnist_model.h5')
 DRUM_IMG_MODEL_PATH = posixpath.join(BASE_PATH, 'external/drum_img_model.h5')
+SPIRIT_IMG_MODEL_PATH = posixpath.join(BASE_PATH, 'external/spirit_img_model.h5')
 ENCODER_MODEL_PATH = posixpath.join(BASE_PATH, 'external/encoder.h5')
 VAE_MODEL_PATH = posixpath.join(BASE_PATH, 'external/vae.h5')
 
@@ -84,19 +92,11 @@ NEAR_REGEX = '^[LR]\\d+$'
 HIT_TYPE_REGEX = '^(hit_type|[A-Z]+\\d)$'
 NO_SCALE_REGEX = '^(\\w*_CORR|hit_type|[A-Z]+\\d|timestamp)$'
 
-SONG_LENGTH_DICT = {
-    1: 89,
-    2: 109,
-    3: 134,
-    4: 145,
-    99: 500,
-}
-
-INTRO_LENGTH_DICT = {
-    1: 2.18 - 1.8,
-    2: 2.00 - 1.8,
-    3: 1.82 - 1.8,
-    4: 1.94 - 1.8,
+FIRST_HIT_ALIGN_DICT = {
+    1: 90.25,  # doraemon
+    2: 105.95,  # RPG
+    3: 132.20,  # sakura
+    4: 153.01,  # let it go
 }
 
 SCORE_UNIT_DICT = {

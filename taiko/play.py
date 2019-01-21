@@ -8,8 +8,6 @@ import numpy as np
 import posixpath
 from scipy.stats import mode
 
-DUMMY_TIME_LENGTH = 2
-
 __all__ = ['get_play']
 
 
@@ -33,12 +31,11 @@ class _Play(object):
             self._play_dict[position] = self.__build_play_df(raw_arm_df, calibrate, resample)
 
     def __set_hw_time(self, song_id, play_start_time):
-        play_time_length = SONG_LENGTH_DICT[song_id]
-        intro_time_length = INTRO_LENGTH_DICT[song_id]
+        play_start_time -= SYNC_TIME_SHIFT
 
-        self._start_time = play_start_time - DUMMY_TIME_LENGTH
-        self._end_time = play_start_time + play_time_length + DUMMY_TIME_LENGTH
-        self._first_hit_time = play_start_time + intro_time_length
+        self._first_hit_time = play_start_time + INTRO_DUMMY_TIME_LENGTH
+        self._start_time = play_start_time - PLAY_ENDS_DUMMY_TIME_LENGTH
+        self._end_time = play_start_time + FIRST_HIT_ALIGN_DICT[song_id] + PLAY_ENDS_DUMMY_TIME_LENGTH
 
     def __build_play_df(self, raw_arm_df, calibrate, resample):
 
@@ -102,7 +99,7 @@ def get_play(record_row, calibrate=True, resample=True, from_tmp_dir=False):
     right_arm_df = load_arm_df(who_name, right_arm_filename, from_tmp_dir)
 
     capture_dir_path = get_capture_dir_path(who_name, capture_dir_name, from_tmp_dir)
-    play_start_time = get_play_start_time(capture_dir_path)
+    play_start_time = get_play_start_time(capture_dir_path, song_id)
 
     raw_arm_df_dict = {
         left_arm_filename[0]: left_arm_df,

@@ -109,7 +109,7 @@ class _Profile(object):
         return self._profile_primitive_df
 
 
-def get_profile(drummer_name, window_size=0.2, scale=False, label_group=None):
+def get_profile(drummer_name, window_size=0.1, scale=False, label_group=None):
     profile_csv_path = posixpath.join(PROFILE_DIR_PATH, drummer_name, 'profile@' + str(window_size) + '.csv')
 
     if os.path.isfile(profile_csv_path):
@@ -130,8 +130,7 @@ def get_profile(drummer_name, window_size=0.2, scale=False, label_group=None):
 
 
 def create_profile(drummer_name):
-    record_df = load_record_df(drummer_name=drummer_name,
-                               song_id=99)
+    record_df = load_record_df(drummer_name=drummer_name, song_id=99)
 
     def __create_key_act_profile(label_kwd, sensor_name):
         df = load_arm_df(drummer_name, sensor_name)

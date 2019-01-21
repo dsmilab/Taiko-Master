@@ -4,13 +4,14 @@ from .tools.singleton import *
 
 import numpy as np
 
+import matplotlib.pyplot as plt
 from abc import abstractmethod
 from glob import glob
 import posixpath
 from keras.models import load_model
 import re
 
-from skimage.io import imread
+from skimage.io import imread, imshow
 from skimage.transform import resize
 from skimage.color import rgb2grey
 
@@ -125,50 +126,45 @@ class _ResultProcessor(_Processor, metaclass=_Singleton):
         return result_dict
 
 
-class _DrumProcessor(_Processor, metaclass=_Singleton):
-    X_ANCHOR = 95
-    Y_ANCHOR = 85
+class _SpiritProcessor(_Processor, metaclass=_Singleton):
+    X_ANCHOR = 65
+    Y_ANCHOR = 567
 
-    IMG_ROW = 65
-    IMG_COL = 65
+    IMG_ROW = 45
+    IMG_COL = 45
 
     def __init__(self):
-        super(_DrumProcessor, self).__init__()
-        self._model = load_model(DRUM_IMG_MODEL_PATH)
+        super(_SpiritProcessor, self).__init__()
+        self._model = load_model(SPIRIT_IMG_MODEL_PATH)
 
     def process(self, pic_path):
-        dp = _DrumProcessor
+        sp = _SpiritProcessor
 
         img = imread(pic_path)
-        cropped = img[dp.X_ANCHOR:dp.X_ANCHOR + dp.IMG_ROW, dp.Y_ANCHOR:dp.Y_ANCHOR + dp.IMG_COL]
+        cropped = img[sp.X_ANCHOR:sp.X_ANCHOR + sp.IMG_ROW, sp.Y_ANCHOR:sp.Y_ANCHOR + sp.IMG_COL]
+        # imshow(cropped)
+        # plt.show()
         cropped = rgb2grey(cropped)
         x_train = [cropped]
         x_train = np.asarray(x_train)
-        x_train = x_train.reshape(x_train.shape[0], dp.IMG_ROW, dp.IMG_COL, 1)
+        x_train = x_train.reshape(x_train.shape[0], sp.IMG_ROW, sp.IMG_COL, 1)
         x = self._model.predict_classes(x_train, verbose=0)[0]
 
         return True if x == 1 else False
 
 
-def get_play_start_time(capture_dir_path):
+def get_play_start_time(capture_dir_path, song_id):
     files = glob(posixpath.join(capture_dir_path, '*'))
 
-    cont_drum_count = 0
-    timestamp = None
-    for pic_path in sorted(files):
-        is_drum = _DrumProcessor().process(pic_path)
-        if is_drum:
-            if cont_drum_count == 0:
-                res = re.search('(\\d){4}-(\\d)+.(\\d)+.png', pic_path)
-                filename = res.group(0)
-                timestamp = float(filename[5:-4])
-            cont_drum_count += 1
-            if cont_drum_count >= 5:
-                return timestamp
-        else:
-            cont_drum_count = 0
+    for pic_path in reversed(sorted(files)):
+        is_spirit = _SpiritProcessor().process(pic_path)
+        if not is_spirit:
+            res = re.search('(\\d){4}-(\\d)+.(\\d)+.png', pic_path)
+            filename = res.group(0)
+            timestamp = float(filename[5:-4])
+            return timestamp - FIRST_HIT_ALIGN_DICT[song_id] - INTRO_DUMMY_TIME_LENGTH
 
-    raise Exception('unknown drum detected')
+    raise Exception('unknown spirit detected')
 
 
 def read_result_board_info(capture_dir_path):
@@ -184,9 +180,9 @@ def read_result_board_info(capture_dir_path):
 
 def read_score_board_info(capture_dir_path, song_id, timestamp_calibrate=True, raise_exception=False):
     file_paths = glob(posixpath.join(capture_dir_path, '*.png'))
-    files = sorted([re.search('(\d){4}-(\d)+.(\d)+.png', file_path).group(0) for file_path in file_paths])
+    files = sorted([re.search('(\\d){4}-(\\d)+.(\\d)+.png', file_path).group(0) for file_path in file_paths])
 
-    play_start_time = get_play_start_time(capture_dir_path)
+    play_start_time = get_play_start_time(capture_dir_path, song_id)
     play_end_time = play_start_time + SONG_LENGTH_DICT[song_id]
 
     play_start_frame = -1
@@ -208,7 +204,7 @@ def read_score_board_info(capture_dir_path, song_id, timestamp_calibrate=True, r
     for pic_path in sorted(file_paths)[play_start_frame: play_end_frame]:
         score = _ScoreProcessor().process(pic_path)
 
-        if score is None or score < img_scores[-1] or score > img_scores[-1] + 15000:
+        if score is None or score < img_scores[-1] or score > img_scores[-1] + 25000:
             if raise_exception:
                 raise RuntimeError('unknown score info detected')
             else:
