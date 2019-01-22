@@ -4,7 +4,7 @@ import posixpath
 # constant
 RESAMPLING_RATE = '0.01S'
 WINDOW_T = 0.2
-OVERLAPPING_RATE = 0
+OVERLAPPING_RATE = 0.75
 
 RIGHT_HAND = 0
 LEFT_HAND = 1
