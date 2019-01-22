@@ -2,7 +2,8 @@ import numpy as np
 from sklearn import metrics
 
 __all__ = ['get_processing_score',
-           'my_f1_score']
+           'my_f1_score',
+           'get_gained_score_multiplier']
 
 
 def get_processing_score(pred_score_list):
@@ -29,4 +30,28 @@ def get_processing_score(pred_score_list):
 def my_f1_score(y_pred, y):
     y = y.get_label()
     y_pred = y_pred.reshape(len(np.unique(y)), -1).argmax(axis=0)
-    return "f1-score", metrics.f1_score(y, y_pred, average="weighted"), True
+    return "f1-score", metrics.f1_score(y, y_pred, average="macro"), True
+
+
+def get_gained_score_multiplier(y_pred, y_test):
+    if y_test == 0:
+        return 0
+    if y_test == 1:
+        if y_pred in [1, 3]:
+            return 1
+        return 0
+    if y_test == 2:
+        if y_pred in [2, 4]:
+            return 1
+        return 0
+    if y_test == 3:
+        if y_pred == 1:
+            return 1
+        elif y_pred == 3:
+            return 2
+    if y_test == 4:
+        if y_pred == 2:
+            return 1
+        elif y_pred == 4:
+            return 2
+    return 0

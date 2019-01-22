@@ -1,18 +1,17 @@
-from .config import *
+from taiko.tools.config import *
 from .tools.score import *
 from .tools.singleton import *
 
-import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 
+import matplotlib.pyplot as plt
 from abc import abstractmethod
 from glob import glob
 import posixpath
 from keras.models import load_model
 import re
 
-from skimage.io import imshow, imsave, imread
+from skimage.io import imread, imshow
 from skimage.transform import resize
 from skimage.color import rgb2grey
 
@@ -127,43 +126,60 @@ class _ResultProcessor(_Processor, metaclass=_Singleton):
         return result_dict
 
 
-class _DrumProcessor(_Processor, metaclass=_Singleton):
-    X_ANCHOR = 95
-    Y_ANCHOR = 85
+class _SpiritProcessor(_Processor, metaclass=_Singleton):
+    X_ANCHOR = 65
+    Y_ANCHOR = 567
 
-    IMG_ROW = 65
-    IMG_COL = 65
+    IMG_ROW = 45
+    IMG_COL = 45
 
     def __init__(self):
-        super(_DrumProcessor, self).__init__()
-        self._model = load_model(DRUM_IMG_MODEL_PATH)
+        super(_SpiritProcessor, self).__init__()
+        self._model = load_model(SPIRIT_IMG_MODEL_PATH)
 
     def process(self, pic_path):
-        dp = _DrumProcessor
+        sp = _SpiritProcessor
 
         img = imread(pic_path)
-        cropped = img[dp.X_ANCHOR:dp.X_ANCHOR + dp.IMG_ROW, dp.Y_ANCHOR:dp.Y_ANCHOR + dp.IMG_COL]
+        cropped = img[sp.X_ANCHOR:sp.X_ANCHOR + sp.IMG_ROW, sp.Y_ANCHOR:sp.Y_ANCHOR + sp.IMG_COL]
         cropped = rgb2grey(cropped)
         x_train = [cropped]
         x_train = np.asarray(x_train)
-        x_train = x_train.reshape(x_train.shape[0], dp.IMG_ROW, dp.IMG_COL, 1)
+        x_train = x_train.reshape(x_train.shape[0], sp.IMG_ROW, sp.IMG_COL, 1)
         x = self._model.predict_classes(x_train, verbose=0)[0]
 
         return True if x == 1 else False
 
 
-def get_play_start_time(capture_dir_path):
+def get_play_start_time(capture_dir_path, song_id):
     files = glob(posixpath.join(capture_dir_path, '*'))
 
-    for pic_path in sorted(files):
-        is_drum = _DrumProcessor().process(pic_path)
-        if is_drum:
-            res = re.search('(\d){4}-(\d)+.(\d)+.png', pic_path)
-            filename = res.group(0)
-            timestamp = float(filename[5:-4])
-            return timestamp
+    # handle sync case between date 2018-09-24 and date 2018-09-29, inclusively.
+    res = re.search('\\d{4}_\\d{2}_\\d{2}_\\d{2}_\\d{2}_\\d{2}', capture_dir_path)
+    date = res.group(0)[:10]
+    sync_offset = 0
+    if date == '2018_09_25':
+        sync_offset = -2.3
+    elif date == '2018_09_26':
+        sync_offset = -0.8
+    elif date == '2018_09_27':
+        sync_offset = -1.1
+    elif date == '2018_09_28':
+        sync_offset = -1.4
+    elif date == '2018_09_29':
+        sync_offset = -1.8
+    elif date == '2018_10_01':
+        sync_offset = -0.2
 
-    raise Exception('unknown drum detected')
+    for pic_path in reversed(sorted(files)):
+        is_spirit = _SpiritProcessor().process(pic_path)
+        if not is_spirit:
+            res = re.search('(\\d){4}-(\\d)+.(\\d)+.png', pic_path)
+            filename = res.group(0)
+            timestamp = float(filename[5:-4]) + sync_offset
+            return timestamp - FIRST_HIT_ALIGN_DICT[song_id] - INTRO_DUMMY_TIME_LENGTH
+
+    raise Exception('unknown spirit detected')
 
 
 def read_result_board_info(capture_dir_path):
@@ -179,10 +195,10 @@ def read_result_board_info(capture_dir_path):
 
 def read_score_board_info(capture_dir_path, song_id, timestamp_calibrate=True, raise_exception=False):
     file_paths = glob(posixpath.join(capture_dir_path, '*.png'))
-    files = sorted([re.search('(\d){4}-(\d)+.(\d)+.png', file_path).group(0) for file_path in file_paths])
+    files = sorted([re.search('(\\d){4}-(\\d)+.(\\d)+.png', file_path).group(0) for file_path in file_paths])
 
-    play_start_time = get_play_start_time(capture_dir_path)
-    play_end_time = play_start_time + SONG_LENGTH_DICT[song_id]
+    play_start_time = get_play_start_time(capture_dir_path, song_id)
+    play_end_time = play_start_time + FIRST_HIT_ALIGN_DICT[song_id]
 
     play_start_frame = -1
     play_end_frame = -1
@@ -203,7 +219,7 @@ def read_score_board_info(capture_dir_path, song_id, timestamp_calibrate=True, r
     for pic_path in sorted(file_paths)[play_start_frame: play_end_frame]:
         score = _ScoreProcessor().process(pic_path)
 
-        if score is None or score < img_scores[-1] or score > img_scores[-1] + 15000:
+        if score is None or score < img_scores[-1] or score > img_scores[-1] + 25000:
             if raise_exception:
                 raise RuntimeError('unknown score info detected')
             else:

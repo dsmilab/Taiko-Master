@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from .config import *
+from taiko.tools.config import *
 from glob import glob
 
 __all__ = ['load_arm_df',
@@ -47,8 +47,6 @@ class _ArmData(object):
         self.__load_arm_csv(who_name, arm_filename, from_tmp_dir)
 
     def __load_arm_csv(self, who_name, arm_filename, from_tmp_dir):
-        arm_path = None
-
         if from_tmp_dir:
             arm_path = posixpath.join(LOCAL_SENSOR_DIR_PATH, arm_filename)
         else:
@@ -82,11 +80,8 @@ def load_arm_df(who_name, arm_filename, from_tmp_dir=False):
 
 
 def get_capture_dir_path(who_name, capture_dir_name, from_tmp_dir=False):
-    capture_dir_path = None
-
     if from_tmp_dir:
         capture_dir_path = posixpath.join(LOCAL_SCREENSHOT_PATH, capture_dir_name)
-
     else:
         files = glob(posixpath.join(HOME_PATH, who_name, 'day[0-9]', 'bb_capture', capture_dir_name))
 
