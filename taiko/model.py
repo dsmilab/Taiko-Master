@@ -43,8 +43,8 @@ class LGBM(_Model):
         self._params = dict({
             'learning_rate': 0.2,
             'application': 'multiclass',
-            'max_depth': 8,
-            'num_leaves': 2 ** 8,
+            'max_depth': 3,
+            'num_leaves': 2 ** 3,
             'verbosity': 0
         })
 

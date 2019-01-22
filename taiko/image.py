@@ -142,8 +142,6 @@ class _SpiritProcessor(_Processor, metaclass=_Singleton):
 
         img = imread(pic_path)
         cropped = img[sp.X_ANCHOR:sp.X_ANCHOR + sp.IMG_ROW, sp.Y_ANCHOR:sp.Y_ANCHOR + sp.IMG_COL]
-        # imshow(cropped)
-        # plt.show()
         cropped = rgb2grey(cropped)
         x_train = [cropped]
         x_train = np.asarray(x_train)
@@ -156,12 +154,29 @@ class _SpiritProcessor(_Processor, metaclass=_Singleton):
 def get_play_start_time(capture_dir_path, song_id):
     files = glob(posixpath.join(capture_dir_path, '*'))
 
+    # handle sync case between date 2018-09-24 and date 2018-09-29, inclusively.
+    res = re.search('\\d{4}_\\d{2}_\\d{2}_\\d{2}_\\d{2}_\\d{2}', capture_dir_path)
+    date = res.group(0)[:10]
+    sync_offset = 0
+    if date == '2018_09_25':
+        sync_offset = -2.3
+    elif date == '2018_09_26':
+        sync_offset = -0.8
+    elif date == '2018_09_27':
+        sync_offset = -1.1
+    elif date == '2018_09_28':
+        sync_offset = -1.4
+    elif date == '2018_09_29':
+        sync_offset = -1.8
+    elif date == '2018_10_01':
+        sync_offset = -0.2
+
     for pic_path in reversed(sorted(files)):
         is_spirit = _SpiritProcessor().process(pic_path)
         if not is_spirit:
             res = re.search('(\\d){4}-(\\d)+.(\\d)+.png', pic_path)
             filename = res.group(0)
-            timestamp = float(filename[5:-4])
+            timestamp = float(filename[5:-4]) + sync_offset
             return timestamp - FIRST_HIT_ALIGN_DICT[song_id] - INTRO_DUMMY_TIME_LENGTH
 
     raise Exception('unknown spirit detected')
@@ -183,7 +198,7 @@ def read_score_board_info(capture_dir_path, song_id, timestamp_calibrate=True, r
     files = sorted([re.search('(\\d){4}-(\\d)+.(\\d)+.png', file_path).group(0) for file_path in file_paths])
 
     play_start_time = get_play_start_time(capture_dir_path, song_id)
-    play_end_time = play_start_time + SONG_LENGTH_DICT[song_id]
+    play_end_time = play_start_time + FIRST_HIT_ALIGN_DICT[song_id]
 
     play_start_frame = -1
     play_end_frame = -1

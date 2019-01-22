@@ -20,9 +20,6 @@ __all__ = ['create_profile',
 
 
 class _Profile(object):
-    _SAMPLING_RATE = '0.01S'
-    _WINDOW_T = 0.1
-
     _LABELS = {
         'right_don': 1,
         'left_don': 2,
@@ -67,12 +64,12 @@ class _Profile(object):
                 for df in self._profile[label_kwd][handedness_label]:
                     play_mat = df.values
                     play_id = 0
-                    start_time = df['timestamp'].iloc[0] + _Profile._WINDOW_T
+                    start_time = df['timestamp'].iloc[0] + WINDOW_T
                     end_time = df['timestamp'].iloc[-1]
 
                     now_time = start_time
                     while now_time <= end_time:
-                        window_start_time = now_time - _Profile._WINDOW_T
+                        window_start_time = now_time - WINDOW_T
                         window_end_time = now_time
 
                         if len(window) == 0:
@@ -89,7 +86,7 @@ class _Profile(object):
                         feature_row = get_features(window)
                         tmp_primitive_mat.append(feature_row)
 
-                        now_time += window_size / 2.0
+                        now_time += window_size * (1.0 - OVERLAPPING_RATE)
 
                 tmp_primitive_df = pd.DataFrame(data=tmp_primitive_mat,
                                                 columns=[handedness_label + '_' + col for col in STAT_COLS])
@@ -109,7 +106,7 @@ class _Profile(object):
         return self._profile_primitive_df
 
 
-def get_profile(drummer_name, window_size=0.1, scale=False, label_group=None):
+def get_profile(drummer_name, window_size=WINDOW_T, scale=False, label_group=None):
     profile_csv_path = posixpath.join(PROFILE_DIR_PATH, drummer_name, 'profile@' + str(window_size) + '.csv')
 
     if os.path.isfile(profile_csv_path):

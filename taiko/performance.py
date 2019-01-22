@@ -87,7 +87,7 @@ class _Performance(object):
             if not np.isnan(feature_row).any():
                 tmp_primitive_mat.append(feature_row)
 
-            now_time += window_size / 2.0
+            now_time += window_size * (1.0 - OVERLAPPING_RATE)
 
         columns = ['timestamp'] + [label + '_' + col for col in STAT_COLS for label in labels]
         performance_primitive_df = pd.DataFrame(data=tmp_primitive_mat,
@@ -104,7 +104,7 @@ class _Performance(object):
         return self._play
 
 
-def get_performance(play=None,  window_size=0.1, scale=False, id_=None):
+def get_performance(play=None,  window_size=WINDOW_T, scale=False, id_=None):
     """
     Get the performance.
 
@@ -201,8 +201,6 @@ def predict_score(record_id, model):
     song_score = 0
     hit_count = 0
 
-    pred_hit_types = []
-    true_hit_types = []
     for event_time, hit_type in play.events:
         while pred_df.loc[pred_ptr].timestamp <= event_time + 0.24:
             pred_hit_type = int(pred_df.loc[pred_ptr].hit_type)

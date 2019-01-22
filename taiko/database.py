@@ -2,7 +2,9 @@ from .tools.config import *
 from .image import read_result_board_info
 from glob import glob
 import pandas as pd
+import numpy as np
 import sys
+import posixpath
 
 __all__ = ['load_record_df',
            'get_all_drummers',
@@ -14,9 +16,9 @@ SONGS = 4
 
 
 def load_record_df(**kwargs):
-    record_files = glob('../data/alpha/*/*/record_table.csv')
+    record_files = glob(posixpath.join(HOME_PATH, '*', '*', 'record_table.csv'))
     record_dfs = []
-    for record_file_path in record_files:
+    for record_file_path in sorted(record_files):
         record_df = pd.read_csv(record_file_path)
         record_dfs.append(record_df)
     record_df = pd.concat(record_dfs, ignore_index=True)

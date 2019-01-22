@@ -12,7 +12,6 @@ __all__ = ['get_play']
 
 
 class _Play(object):
-    _SAMPLING_RATE = '0.01S'
 
     def __init__(self, song_id, raw_arm_df_dict, play_start_time, calibrate, resample):
         # { filename: file_csv, }
@@ -31,8 +30,6 @@ class _Play(object):
             self._play_dict[position] = self.__build_play_df(raw_arm_df, calibrate, resample)
 
     def __set_hw_time(self, song_id, play_start_time):
-        play_start_time -= SYNC_TIME_SHIFT
-
         self._first_hit_time = play_start_time + INTRO_DUMMY_TIME_LENGTH
         self._start_time = play_start_time - PLAY_ENDS_DUMMY_TIME_LENGTH
         self._end_time = play_start_time + FIRST_HIT_ALIGN_DICT[song_id] + PLAY_ENDS_DUMMY_TIME_LENGTH
