@@ -140,7 +140,10 @@ class _SpiritProcessor(_Processor, metaclass=_Singleton):
     def process(self, pic_path):
         sp = _SpiritProcessor
 
-        img = imread(pic_path)
+        try:
+            img = imread(pic_path)
+        except ValueError:
+            return False
         cropped = img[sp.X_ANCHOR:sp.X_ANCHOR + sp.IMG_ROW, sp.Y_ANCHOR:sp.Y_ANCHOR + sp.IMG_COL]
         cropped = rgb2grey(cropped)
         x_train = [cropped]
