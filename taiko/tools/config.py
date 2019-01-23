@@ -94,6 +94,13 @@ NEAR_REGEX = '^[LR]\\d+$'
 HIT_TYPE_REGEX = '^(hit_type|[A-Z]+\\d)$'
 NO_SCALE_REGEX = '^(\\w*_CORR|hit_type|[A-Z]+\\d|timestamp)$'
 
+ALL_NOTE_COUNT_DICT = {
+    1: 86,
+    2: 127,
+    3: 231,
+    4: 286,
+}
+
 FIRST_HIT_ALIGN_DICT = {
     1: 90.25,  # doraemon
     2: 105.95,  # RPG

@@ -3,12 +3,15 @@ from .tools.timestamp import *
 from .io import *
 from .image import *
 
+from scipy.spatial.distance import euclidean
+from fastdtw import fastdtw
 import pandas as pd
 import numpy as np
 import posixpath
 from scipy.stats import mode
 
-__all__ = ['get_play']
+__all__ = ['get_play',
+           'get_similarity']
 
 
 class _Play(object):
@@ -31,8 +34,8 @@ class _Play(object):
 
     def __set_hw_time(self, song_id, play_start_time):
         self._first_hit_time = play_start_time + INTRO_DUMMY_TIME_LENGTH
-        self._start_time = play_start_time - PLAY_ENDS_DUMMY_TIME_LENGTH
-        self._end_time = play_start_time + FIRST_HIT_ALIGN_DICT[song_id] + PLAY_ENDS_DUMMY_TIME_LENGTH
+        self._start_time = play_start_time
+        self._end_time = play_start_time + FIRST_HIT_ALIGN_DICT[song_id]
 
     def __build_play_df(self, raw_arm_df, calibrate, resample):
 
@@ -104,3 +107,29 @@ def get_play(record_row, calibrate=True, resample=True, from_tmp_dir=False):
     }
 
     return _Play(song_id, raw_arm_df_dict, play_start_time, calibrate, resample)
+
+
+def get_similarity(play1, play2):
+    def __retrieve_columns(left_df, right_df, columns):
+        left_df = left_df[columns]
+        right_df = right_df[columns]
+
+        comb_df = pd.concat([left_df, right_df], axis=1, ignore_index=True)
+        comb_df.dropna(inplace=True)
+        return comb_df
+
+    def __get_dtw(df1, df2):
+        x = df1.values
+        y = df2.values
+        distance, _ = fastdtw(x, y, dist=euclidean)
+        return distance
+
+    acc_comb1_df = __retrieve_columns(play1.play_dict['L'], play1.play_dict['R'], ZERO_ADJ_COL[:3])
+    acc_comb2_df = __retrieve_columns(play2.play_dict['L'], play2.play_dict['R'], ZERO_ADJ_COL[:3])
+    acc_dist = __get_dtw(acc_comb1_df, acc_comb2_df)
+
+    gyr_comb1_df = __retrieve_columns(play1.play_dict['L'], play1.play_dict['R'], ZERO_ADJ_COL[3:6])
+    gyr_comb2_df = __retrieve_columns(play2.play_dict['L'], play2.play_dict['R'], ZERO_ADJ_COL[3:6])
+    gyr_dist = __get_dtw(gyr_comb1_df, gyr_comb2_df)
+
+    return acc_dist, gyr_dist
