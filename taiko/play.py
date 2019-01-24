@@ -35,7 +35,8 @@ class _Play(object):
     def __set_hw_time(self, song_id, play_start_time):
         self._first_hit_time = play_start_time + INTRO_DUMMY_TIME_LENGTH
         self._start_time = play_start_time
-        self._end_time = play_start_time + FIRST_HIT_ALIGN_DICT[song_id]
+        self._end_time = play_start_time + INTRO_DUMMY_TIME_LENGTH + FIRST_HIT_ALIGN_DICT[song_id]
+        # self._end_time = play_start_time + 20
 
     def __build_play_df(self, raw_arm_df, calibrate, resample):
 
@@ -110,26 +111,34 @@ def get_play(record_row, calibrate=True, resample=True, from_tmp_dir=False):
 
 
 def get_similarity(play1, play2):
-    def __retrieve_columns(left_df, right_df, columns):
-        left_df = left_df[columns]
-        right_df = right_df[columns]
+    _K = 370
+    # def __get_dtw(df1, df2):
+    #     x = df1.values
+    #     y = df2.values
+    #     distance, _ = fastdtw(x, y, dist=euclidean)
+    #     return distance
 
-        comb_df = pd.concat([left_df, right_df], axis=1, ignore_index=True)
-        comb_df.dropna(inplace=True)
-        return comb_df
+    def __get_l2_norms(df1, df2, columns):
+        l2_norms = []
+        bins = np.linspace(0, len(df1), _K + 1)
+        for i_ in range(len(bins) - 1):
+            zmin = int(bins[i_])
+            zmax = int(bins[i_ + 1])
+            for col in columns:
+                x = df1[col].values[zmin: zmax]
+                y = df2[col].values[zmin: zmax]
 
-    def __get_dtw(df1, df2):
-        x = df1.values
-        y = df2.values
-        distance, _ = fastdtw(x, y, dist=euclidean)
-        return distance
+                if x.shape[0] < y.shape[0]:
+                    y = y[:x.shape[0]]
+                elif x.shape[0] > y.shape[0]:
+                    x = x[:y.shape[0]]
 
-    acc_comb1_df = __retrieve_columns(play1.play_dict['L'], play1.play_dict['R'], ZERO_ADJ_COL[:3])
-    acc_comb2_df = __retrieve_columns(play2.play_dict['L'], play2.play_dict['R'], ZERO_ADJ_COL[:3])
-    acc_dist = __get_dtw(acc_comb1_df, acc_comb2_df)
+                distance = np.linalg.norm(x - y)
+                l2_norms.append(distance)
 
-    gyr_comb1_df = __retrieve_columns(play1.play_dict['L'], play1.play_dict['R'], ZERO_ADJ_COL[3:6])
-    gyr_comb2_df = __retrieve_columns(play2.play_dict['L'], play2.play_dict['R'], ZERO_ADJ_COL[3:6])
-    gyr_dist = __get_dtw(gyr_comb1_df, gyr_comb2_df)
+        return l2_norms
 
-    return acc_dist, gyr_dist
+    left_dists = __get_l2_norms(play1.play_dict['L'], play2.play_dict['L'], ZERO_ADJ_COL)
+    right_dists = __get_l2_norms(play1.play_dict['R'], play2.play_dict['R'], ZERO_ADJ_COL)
+
+    return left_dists + right_dists
