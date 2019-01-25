@@ -104,29 +104,13 @@ class _Performance(object):
         return self._play
 
 
-def get_performance(play=None,  window_size=WINDOW_T, scale=False, id_=None):
-    """
-    Get the performance.
-
-    :param play:
-    :param scale: if "True", scale values of required features
-    :param window_size:
-    :param id_:
-    :return: the desired unique performance
-    """
-    if id_ is None:
-        return _Performance(play, window_size, scale).performance_primitive_df
-
-    performance_csv_path = posixpath.join(PERFORMANCE_DIR_PATH, str(id_) + '_pf@' + str(window_size) + '.csv')
+def get_performance(pid, window_size=WINDOW_T, scale=False):
+    performance_csv_path = posixpath.join(PERFORMANCE_DIR_PATH, str(pid) + '_pf@' + str(window_size) + '.csv')
 
     if os.path.isfile(performance_csv_path):
         performance_ep_df = pd.read_csv(performance_csv_path)
     else:
-        # if play is None:
-        #     record_df = load_record_df()
-        #     record_row = record_df.loc[id_]
-        #     play = get_play(record_row)
-
+        play = get_play(pid)
         performance_ep_df = _Performance(play, window_size, scale).performance_primitive_df
         performance_csv_dir_path = os.path.dirname(performance_csv_path)
 

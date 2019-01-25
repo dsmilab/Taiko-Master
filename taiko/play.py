@@ -1,8 +1,10 @@
 from .tools.config import *
 from .tools.timestamp import *
-from .io import *
+from .database import load_record_df
+from .io import load_arm_df, load_note_df, get_capture_dir_path
 from .image import *
 
+from typing import Tuple, List
 from scipy.spatial.distance import euclidean
 from fastdtw import fastdtw
 import pandas as pd
@@ -17,9 +19,10 @@ __all__ = ['get_play',
 class _Play(object):
 
     def __init__(self, song_id, raw_arm_df_dict, play_start_time, calibrate, resample):
-        # { filename: file_csv, }
 
+        # { filename: file_csv, }
         self._play_dict = {}
+
         self._start_time, self._end_time = None, None
         self._first_hit_time = None
 
@@ -36,7 +39,6 @@ class _Play(object):
         self._first_hit_time = play_start_time + INTRO_DUMMY_TIME_LENGTH
         self._start_time = play_start_time
         self._end_time = play_start_time + INTRO_DUMMY_TIME_LENGTH + FIRST_HIT_ALIGN_DICT[song_id]
-        # self._end_time = play_start_time + 20
 
     def __build_play_df(self, raw_arm_df, calibrate, resample):
 
@@ -53,12 +55,6 @@ class _Play(object):
         return play_df
 
     def __retrieve_event(self, song_id):
-        """
-        Retrieve event which means note occurs of the song.
-
-        :return: 2D array
-        """
-
         events = []
         note_df = load_note_df(song_id)
         # spot vertical mark lines
@@ -69,38 +65,38 @@ class _Play(object):
         return events
 
     @property
-    def play_dict(self):
+    def play_dict(self) -> dict:
         return self._play_dict
 
     @property
-    def start_time(self):
+    def start_time(self) -> float:
         return self._start_time
 
     @property
-    def end_time(self):
+    def end_time(self) -> float:
         return self._end_time
 
     @property
-    def first_hit_time(self):
+    def first_hit_time(self) -> float:
         return self._first_hit_time
 
     @property
-    def events(self):
+    def events(self) -> List[Tuple[float, int]]:
         return self._events
 
 
-def get_play(record_row, calibrate=True, resample=True, from_tmp_dir=False):
-    who_name = record_row['drummer_name']
+def get_play(pid, calibrate=True, resample=True):
+    record_df = load_record_df()
+    record_row = record_df.loc[pid]
+    drummer_name = record_row['drummer_name']
     song_id = record_row['song_id']
     left_arm_filename = record_row['left_sensor_datetime']
     right_arm_filename = record_row['right_sensor_datetime']
-    capture_dir_name = record_row['capture_datetime']
 
-    left_arm_df = load_arm_df(who_name, left_arm_filename, from_tmp_dir)
-    right_arm_df = load_arm_df(who_name, right_arm_filename, from_tmp_dir)
+    left_arm_df = load_arm_df(drummer_name, left_arm_filename)
+    right_arm_df = load_arm_df(drummer_name, right_arm_filename)
 
-    capture_dir_path = get_capture_dir_path(who_name, capture_dir_name, from_tmp_dir)
-    play_start_time = get_play_start_time(capture_dir_path, song_id)
+    play_start_time = __get_start_time_from_cache(pid, record_row)
 
     raw_arm_df_dict = {
         left_arm_filename[0]: left_arm_df,
@@ -110,13 +106,30 @@ def get_play(record_row, calibrate=True, resample=True, from_tmp_dir=False):
     return _Play(song_id, raw_arm_df_dict, play_start_time, calibrate, resample)
 
 
+def __get_start_time_from_cache(pid, record_row):
+    drummer_name = record_row['drummer_name']
+
+    start_time_cache_path = posixpath.join(PLAY_DIR_PATH, drummer_name + '-' + str(pid) + '.tk')
+
+    if os.path.isfile(start_time_cache_path):
+        with open(start_time_cache_path) as f:
+            play_start_time = float(f.readline())
+    else:
+        capture_dir_name = record_row['capture_datetime']
+        song_id = record_row['song_id']
+        capture_dir_path = get_capture_dir_path(drummer_name, capture_dir_name)
+        play_start_time = get_play_start_time(capture_dir_path, song_id)
+
+        start_time_cache_dir_path = os.path.dirname(start_time_cache_path)
+        os.makedirs(start_time_cache_dir_path, exist_ok=True)
+        with open(start_time_cache_path, 'w') as fw:
+            fw.write(str(play_start_time))
+
+    return play_start_time
+
+
 def get_similarity(play1, play2):
     _K = 370
-    # def __get_dtw(df1, df2):
-    #     x = df1.values
-    #     y = df2.values
-    #     distance, _ = fastdtw(x, y, dist=euclidean)
-    #     return distance
 
     def __get_l2_norms(df1, df2, columns):
         l2_norms = []
