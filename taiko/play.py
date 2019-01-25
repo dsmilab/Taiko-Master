@@ -128,32 +128,35 @@ def __get_start_time_from_cache(pid, record_row):
     return play_start_time
 
 
-def get_similarity(pf1, pf2):
+def get_similarity(play1, play2):
+    _K = 370
+    # def __get_dtw(df1, df2):
+    #     x = df1.values
+    #     y = df2.values
+    #     distance, _ = fastdtw(x, y, dist=euclidean)
+    #     return distance
 
-    # def __get_l2_norms(df1, df2):
-    #     l2_norms = []
-    #     bins = np.linspace(0, len(df1), _K + 1)
-    #     for i_ in range(len(bins) - 1):
-    #         zmin = int(bins[i_])
-    #         zmax = int(bins[i_ + 1])
-    #         for col in columns:
-    #             x = df1[col].values[zmin: zmax]
-    #             y = df2[col].values[zmin: zmax]
-    #
-    #             if x.shape[0] < y.shape[0]:
-    #                 y = y[:x.shape[0]]
-    #             elif x.shape[0] > y.shape[0]:
-    #                 x = x[:y.shape[0]]
-    #
-    #             distance = np.linalg.norm(x - y)
-    #             l2_norms.append(distance)
-    #
-    #     return l2_norms
+    def __get_l2_norms(df1, df2, columns):
+        l2_norms = []
+        bins = np.linspace(0, len(df1), _K + 1)
+        for i_ in range(len(bins) - 1):
+            zmin = int(bins[i_])
+            zmax = int(bins[i_ + 1])
+            for col in columns:
+                x = df1[col].values[zmin: zmax]
+                y = df2[col].values[zmin: zmax]
 
-    assert(len(pf1) == len(pf2))
-    x = pf1.values
-    y = pf2.values
-    sims = []
-    for row in x - y:
-        sims.extend(row)
-    return sims
+                if x.shape[0] < y.shape[0]:
+                    y = y[:x.shape[0]]
+                elif x.shape[0] > y.shape[0]:
+                    x = x[:y.shape[0]]
+
+                distance = np.linalg.norm(x - y)
+                l2_norms.append(distance)
+
+        return l2_norms
+
+    left_dists = __get_l2_norms(play1.play_dict['L'], play2.play_dict['L'], ZERO_ADJ_COL)
+    right_dists = __get_l2_norms(play1.play_dict['R'], play2.play_dict['R'], ZERO_ADJ_COL)
+
+    return left_dists + right_dists
