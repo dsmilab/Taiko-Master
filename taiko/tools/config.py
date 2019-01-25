@@ -32,6 +32,7 @@ CONNECT_HOST_DIR_PATH = posixpath.join(DATA_DIR_PATH, 'connect_host/')
 PROFILE_DIR_PATH = posixpath.join(DATA_DIR_PATH, 'alpha_profile/')
 PERFORMANCE_DIR_PATH = posixpath.join(DATA_DIR_PATH, 'alpha_performance/')
 PLAY_DIR_PATH = posixpath.join(DATA_DIR_PATH, 'alpha_play/')
+RAW_PLAY_FIG_DIR_PATH = posixpath.join(DATA_DIR_PATH, 'alpha_raw_play_fig/')
 TABLE_PATH = posixpath.join(DATA_DIR_PATH, 'taiko_tables/')
 
 # data/table
