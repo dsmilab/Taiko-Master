@@ -11,6 +11,7 @@ import pandas as pd
 import numpy as np
 import posixpath
 from scipy.stats import mode
+from glob import glob
 
 __all__ = ['get_play',
            'get_similarity']
@@ -18,22 +19,71 @@ __all__ = ['get_play',
 
 class _Play(object):
 
-    def __init__(self, song_id, raw_arm_df_dict, play_start_time, calibrate, resample):
-
-        # { filename: file_csv, }
+    def __init__(self, pid, calibrate, resample):
         self._play_dict = {}
-
         self._start_time, self._end_time = None, None
         self._first_hit_time = None
 
-        self._note_df = load_note_df(song_id)
+        play_cache_dir_path = posixpath.join(PLAY_DIR_PATH, str(pid))
+        if not os.path.isdir(play_cache_dir_path):
+            self.__construct_without_cache(pid, calibrate, resample)
+        self.__construct(pid, play_cache_dir_path)
 
-        self.__set_hw_time(song_id, play_start_time)
+    def __construct(self, pid, play_cache_dir_path):
+        record_df = load_record_df()
+        record_row = record_df.loc[pid]
+        song_id = record_row['song_id']
+        files = glob(posixpath.join(play_cache_dir_path, '*.csv'))
+        for file_path in files:
+            arm_play_df = pd.read_csv(file_path)
+            label = os.path.basename(file_path)[0]
+            self._play_dict[label] = arm_play_df
+
+        start_time_cache_path = posixpath.join(play_cache_dir_path, str(pid) + '.tk')
+        with open(start_time_cache_path) as f:
+            play_start_time = float(f.readline())
+            self.__set_hw_time(song_id, play_start_time)
+            f.close()
+
+        self._note_df = load_note_df(song_id)
         self._events = self.__retrieve_event(song_id)
+
+    def __construct_without_cache(self, pid, calibrate, resample):
+        record_df = load_record_df()
+        record_row = record_df.loc[pid]
+        drummer_name = record_row['drummer_name']
+        song_id = int(record_row['song_id'])
+        left_arm_filename = record_row['left_sensor_datetime']
+        right_arm_filename = record_row['right_sensor_datetime']
+        capture_dir_name = record_row['capture_datetime']
+
+        left_arm_df = load_arm_df(drummer_name, left_arm_filename)
+        right_arm_df = load_arm_df(drummer_name, right_arm_filename)
+
+        capture_dir_path = get_capture_dir_path(drummer_name, capture_dir_name)
+        play_start_time = get_play_start_time(capture_dir_path, song_id)
+
+        raw_arm_df_dict = {
+            left_arm_filename[0]: left_arm_df,
+            right_arm_filename[0]: right_arm_df,
+        }
+
+        play_cache_dir_path = posixpath.join(PLAY_DIR_PATH, str(pid))
+        self.__set_hw_time(song_id, play_start_time)
+
+        start_time_cache_path = posixpath.join(play_cache_dir_path, str(pid) + '.tk')
+        start_time_cache_dir_path = os.path.dirname(start_time_cache_path)
+        os.makedirs(start_time_cache_dir_path, exist_ok=True)
+        with open(start_time_cache_path, 'w') as fw:
+            fw.write(str(play_start_time))
+            fw.flush()
+            fw.close()
 
         for filename, raw_arm_df in raw_arm_df_dict.items():
             position = filename[0]
-            self._play_dict[position] = self.__build_play_df(raw_arm_df, calibrate, resample)
+            arm_play_df = self.__build_play_df(raw_arm_df, calibrate, resample)
+            arm_play_df_name = posixpath.join(play_cache_dir_path, position + '.csv')
+            arm_play_df.to_csv(arm_play_df_name, index=False, float_format='%.4f')
 
     def __set_hw_time(self, song_id, play_start_time):
         self._first_hit_time = play_start_time + INTRO_DUMMY_TIME_LENGTH
@@ -86,46 +136,7 @@ class _Play(object):
 
 
 def get_play(pid, calibrate=True, resample=True):
-    record_df = load_record_df()
-    record_row = record_df.loc[pid]
-    drummer_name = record_row['drummer_name']
-    song_id = record_row['song_id']
-    left_arm_filename = record_row['left_sensor_datetime']
-    right_arm_filename = record_row['right_sensor_datetime']
-
-    left_arm_df = load_arm_df(drummer_name, left_arm_filename)
-    right_arm_df = load_arm_df(drummer_name, right_arm_filename)
-
-    play_start_time = __get_start_time_from_cache(pid, record_row)
-
-    raw_arm_df_dict = {
-        left_arm_filename[0]: left_arm_df,
-        right_arm_filename[0]: right_arm_df,
-    }
-
-    return _Play(song_id, raw_arm_df_dict, play_start_time, calibrate, resample)
-
-
-def __get_start_time_from_cache(pid, record_row):
-    drummer_name = record_row['drummer_name']
-
-    start_time_cache_path = posixpath.join(PLAY_DIR_PATH, drummer_name + '-' + str(pid) + '.tk')
-
-    if os.path.isfile(start_time_cache_path):
-        with open(start_time_cache_path) as f:
-            play_start_time = float(f.readline())
-    else:
-        capture_dir_name = record_row['capture_datetime']
-        song_id = record_row['song_id']
-        capture_dir_path = get_capture_dir_path(drummer_name, capture_dir_name)
-        play_start_time = get_play_start_time(capture_dir_path, song_id)
-
-        start_time_cache_dir_path = os.path.dirname(start_time_cache_path)
-        os.makedirs(start_time_cache_dir_path, exist_ok=True)
-        with open(start_time_cache_path, 'w') as fw:
-            fw.write(str(play_start_time))
-
-    return play_start_time
+    return _Play(pid, calibrate, resample)
 
 
 def get_similarity(play1, play2):

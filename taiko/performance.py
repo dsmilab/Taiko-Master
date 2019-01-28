@@ -18,21 +18,6 @@ __all__ = ['get_performance', 'do_over_sampled', 'do_scaling', 'predict_score']
 
 
 class _Performance(object):
-    """
-    Handle the specific play and engineer features around hit events.
-
-    :protected attributes:
-        event_primitive_df: dataframe containing of primitives around events in this play.
-
-        note_df: drum note dataframe of the particular song
-        play: dataframe about particular arms of the record
-
-        events: the 2D array which element (time, label) represents a note type "label" occurs at "time"
-        time_unit: the minimum time interval between two notes depending on BPM of a song
-        bar_unit: default is "time_unit x 8"
-        delta_t: time interval we consider a local event
-    """
-
     def __init__(self, play, window_size, scale):
         self._event_primitive_df = None
 
