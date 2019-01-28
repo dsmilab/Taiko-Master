@@ -11,7 +11,7 @@ import posixpath
 from keras.models import load_model
 import re
 
-from skimage.io import imread, imshow
+from skimage.io import imread, imshow, imsave
 from skimage.transform import resize
 from skimage.color import rgb2grey
 
@@ -87,8 +87,11 @@ class _ResultProcessor(_Processor, metaclass=_Singleton):
 
     def process(self, pic_path):
         rp = _ResultProcessor
+        try:
+            img = imread(pic_path)
+        except ValueError:
+            return None
 
-        img = imread(pic_path)
         all_digits = []
         for pos in range(len(rp.DIGIT_COUNTS)):
             digits = []

@@ -46,12 +46,6 @@ class _Performance(object):
             self._performance_primitive_df = do_scaling(self._performance_primitive_df)
 
     def __build__primitive_df(self, window_size):
-        """
-        After setting play's dataframe, build dataframe of primitives around events in this play.
-
-        :return: feature engineered dataframe of primitives
-        """
-
         labels = [label for label, _ in self._play.play_dict.items()]
         windows = [deque() for _ in range(len(self._play.play_dict))]
         play_ids = [0] * len(self._play.play_dict)
