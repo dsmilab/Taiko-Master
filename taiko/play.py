@@ -139,35 +139,109 @@ def get_play(pid, calibrate=True, resample=True):
     return _Play(pid, calibrate, resample)
 
 
-def get_similarity(play1, play2):
-    _K = 370
-    # def __get_dtw(df1, df2):
-    #     x = df1.values
-    #     y = df2.values
-    #     distance, _ = fastdtw(x, y, dist=euclidean)
-    #     return distance
+def get_similarity(play1, play2, mode_='raw_split_euc'):
+    if mode_ == 'raw_merge':
+        return __get_similarity_with_raw_merge(play1, play2)
+    elif mode_ == 'raw_split':
+        return __get_similarity_with_raw_split(play1, play2)
+    elif mode_ == 'raw_merge_euc':
+        return __get_similarity_with_raw_merge_euc(play1, play2)
+    elif mode_ == 'raw_split_euc':
+        return __get_similarity_with_raw_split_euc(play1, play2)
 
-    def __get_l2_norms(df1, df2, columns):
-        l2_norms = []
-        bins = np.linspace(0, len(df1), _K + 1)
-        for i_ in range(len(bins) - 1):
-            zmin = int(bins[i_])
-            zmax = int(bins[i_ + 1])
-            for col in columns:
-                x = df1[col].values[zmin: zmax]
-                y = df2[col].values[zmin: zmax]
+    return None
 
-                if x.shape[0] < y.shape[0]:
-                    y = y[:x.shape[0]]
-                elif x.shape[0] > y.shape[0]:
-                    x = x[:y.shape[0]]
 
-                distance = np.linalg.norm(x - y)
-                l2_norms.append(distance)
+def __get_similarity_with_raw_merge(play1, play2):
+    def __retrieve_columns(left_df, right_df, columns):
+        left_df = left_df[columns]
+        right_df = right_df[columns]
 
-        return l2_norms
+        comb_df = pd.concat([left_df, right_df], axis=1, ignore_index=True)
+        comb_df.dropna(inplace=True)
+        return comb_df
 
-    left_dists = __get_l2_norms(play1.play_dict['L'], play2.play_dict['L'], ZERO_ADJ_COL)
-    right_dists = __get_l2_norms(play1.play_dict['R'], play2.play_dict['R'], ZERO_ADJ_COL)
+    def __get_dtw(df1, df2):
+        x = df1.values
+        y = df2.values
+        distance, _ = fastdtw(x, y, dist=euclidean)
+        return distance
 
-    return left_dists + right_dists
+    acc_comb1_df = __retrieve_columns(play1.play_dict['L'], play1.play_dict['R'], ZERO_ADJ_COL[:3])
+    acc_comb2_df = __retrieve_columns(play2.play_dict['L'], play2.play_dict['R'], ZERO_ADJ_COL[:3])
+    acc_dist = __get_dtw(acc_comb1_df, acc_comb2_df)
+
+    gyr_comb1_df = __retrieve_columns(play1.play_dict['L'], play1.play_dict['R'], ZERO_ADJ_COL[3:6])
+    gyr_comb2_df = __retrieve_columns(play2.play_dict['L'], play2.play_dict['R'], ZERO_ADJ_COL[3:6])
+    gyr_dist = __get_dtw(gyr_comb1_df, gyr_comb2_df)
+
+    return acc_dist, gyr_dist
+
+
+def __get_similarity_with_raw_split(play1, play2):
+
+    def __get_dtw(df1, df2):
+        x = df1.values
+        y = df2.values
+        distance, _ = fastdtw(x, y, dist=euclidean)
+        return distance
+
+    left_acc_dtw = __get_dtw(play1.play_dict['L'][ZERO_ADJ_COL[:3]], play2.play_dict['L'][ZERO_ADJ_COL[:3]])
+    left_gyr_dtw = __get_dtw(play1.play_dict['L'][ZERO_ADJ_COL[3:6]], play2.play_dict['L'][ZERO_ADJ_COL[3:6]])
+
+    right_acc_dtw = __get_dtw(play1.play_dict['R'][ZERO_ADJ_COL[:3]], play2.play_dict['R'][ZERO_ADJ_COL[:3]])
+    right_gyr_dtw = __get_dtw(play1.play_dict['R'][ZERO_ADJ_COL[3:6]], play2.play_dict['R'][ZERO_ADJ_COL[3:6]])
+
+    return left_acc_dtw, left_gyr_dtw, right_acc_dtw, right_gyr_dtw
+
+
+def __get_similarity_with_raw_merge_euc(play1, play2):
+    def __retrieve_columns(left_df, right_df, columns):
+        left_df = left_df[columns]
+        right_df = right_df[columns]
+
+        comb_df = pd.concat([left_df, right_df], axis=1, ignore_index=True)
+        comb_df.dropna(inplace=True)
+        return comb_df
+
+    def __get_l2_norms(df1, df2):
+        x = df1.values
+        y = df2.values
+        if x.shape[0] < y.shape[0]:
+            y = y[:x.shape[0]]
+        elif x.shape[0] > y.shape[0]:
+            x = x[:y.shape[0]]
+
+        distance = np.linalg.norm(x - y)
+        return distance
+
+    acc_comb1_df = __retrieve_columns(play1.play_dict['L'], play1.play_dict['R'], ZERO_ADJ_COL[:3])
+    acc_comb2_df = __retrieve_columns(play2.play_dict['L'], play2.play_dict['R'], ZERO_ADJ_COL[:3])
+    acc_dist = __get_l2_norms(acc_comb1_df, acc_comb2_df)
+
+    gyr_comb1_df = __retrieve_columns(play1.play_dict['L'], play1.play_dict['R'], ZERO_ADJ_COL[3:6])
+    gyr_comb2_df = __retrieve_columns(play2.play_dict['L'], play2.play_dict['R'], ZERO_ADJ_COL[3:6])
+    gyr_dist = __get_l2_norms(gyr_comb1_df, gyr_comb2_df)
+
+    return acc_dist, gyr_dist
+
+
+def __get_similarity_with_raw_split_euc(play1, play2):
+    def __get_l2_norms(df1, df2):
+        x = df1.values
+        y = df2.values
+        if x.shape[0] < y.shape[0]:
+            y = y[:x.shape[0]]
+        elif x.shape[0] > y.shape[0]:
+            x = x[:y.shape[0]]
+
+        distance = np.linalg.norm(x - y)
+        return distance
+
+    left_acc_l2 = __get_l2_norms(play1.play_dict['L'][ZERO_ADJ_COL[:3]], play2.play_dict['L'][ZERO_ADJ_COL[:3]])
+    left_gyr_l2 = __get_l2_norms(play1.play_dict['L'][ZERO_ADJ_COL[3:6]], play2.play_dict['L'][ZERO_ADJ_COL[3:6]])
+
+    right_acc_dtw = __get_l2_norms(play1.play_dict['R'][ZERO_ADJ_COL[:3]], play2.play_dict['R'][ZERO_ADJ_COL[:3]])
+    right_gyr_dtw = __get_l2_norms(play1.play_dict['R'][ZERO_ADJ_COL[3:6]], play2.play_dict['R'][ZERO_ADJ_COL[3:6]])
+
+    return left_acc_l2, left_gyr_l2, right_acc_dtw, right_gyr_dtw
