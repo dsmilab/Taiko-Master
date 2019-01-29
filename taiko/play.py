@@ -5,8 +5,8 @@ from .io import load_arm_df, load_note_df, get_capture_dir_path
 from .image import *
 
 from typing import Tuple, List
-from scipy.spatial.distance import euclidean
-from fastdtw import fastdtw
+from scipy.spatial.distance import euclidean, cosine
+from fastdtw import fastdtw, dtw
 import pandas as pd
 import numpy as np
 import posixpath
@@ -139,7 +139,7 @@ def get_play(pid, calibrate=True, resample=True):
     return _Play(pid, calibrate, resample)
 
 
-def get_similarity(play1, play2, mode_='raw_split_euc'):
+def get_similarity(play1, play2, mode_='raw_merge'):
     if mode_ == 'raw_merge':
         return __get_similarity_with_raw_merge(play1, play2)
     elif mode_ == 'raw_split':
@@ -164,7 +164,7 @@ def __get_similarity_with_raw_merge(play1, play2):
     def __get_dtw(df1, df2):
         x = df1.values
         y = df2.values
-        distance, _ = fastdtw(x, y, dist=euclidean)
+        distance, _ = fastdtw(x, y, radius=1, dist=cosine)
         return distance
 
     acc_comb1_df = __retrieve_columns(play1.play_dict['L'], play1.play_dict['R'], ZERO_ADJ_COL[:3])
@@ -183,7 +183,7 @@ def __get_similarity_with_raw_split(play1, play2):
     def __get_dtw(df1, df2):
         x = df1.values
         y = df2.values
-        distance, _ = fastdtw(x, y, dist=euclidean)
+        distance, _ = fastdtw(x, y, radius=1, dist=euclidean)
         return distance
 
     left_acc_dtw = __get_dtw(play1.play_dict['L'][ZERO_ADJ_COL[:3]], play2.play_dict['L'][ZERO_ADJ_COL[:3]])
