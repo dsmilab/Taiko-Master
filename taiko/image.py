@@ -11,7 +11,7 @@ import posixpath
 from keras.models import load_model
 import re
 
-from skimage.io import imread, imshow
+from skimage.io import imread, imshow, imsave
 from skimage.transform import resize
 from skimage.color import rgb2grey
 
@@ -87,8 +87,11 @@ class _ResultProcessor(_Processor, metaclass=_Singleton):
 
     def process(self, pic_path):
         rp = _ResultProcessor
+        try:
+            img = imread(pic_path)
+        except ValueError:
+            return None
 
-        img = imread(pic_path)
         all_digits = []
         for pos in range(len(rp.DIGIT_COUNTS)):
             digits = []
@@ -140,7 +143,10 @@ class _SpiritProcessor(_Processor, metaclass=_Singleton):
     def process(self, pic_path):
         sp = _SpiritProcessor
 
-        img = imread(pic_path)
+        try:
+            img = imread(pic_path)
+        except ValueError:
+            return True
         cropped = img[sp.X_ANCHOR:sp.X_ANCHOR + sp.IMG_ROW, sp.Y_ANCHOR:sp.Y_ANCHOR + sp.IMG_COL]
         cropped = rgb2grey(cropped)
         x_train = [cropped]
@@ -158,7 +164,9 @@ def get_play_start_time(capture_dir_path, song_id):
     res = re.search('\\d{4}_\\d{2}_\\d{2}_\\d{2}_\\d{2}_\\d{2}', capture_dir_path)
     date = res.group(0)[:10]
     sync_offset = 0
-    if date == '2018_09_25':
+    if date == '2018_09_21':
+        sync_offset = -1.5
+    elif date == '2018_09_25':
         sync_offset = -2.3
     elif date == '2018_09_26':
         sync_offset = -0.8

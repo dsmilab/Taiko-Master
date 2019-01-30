@@ -7,32 +7,20 @@ from .model import LGBM
 from scipy.stats import mode
 
 from collections import deque
+from itertools import product
 
+from scipy.spatial.distance import euclidean
+from fastdtw import fastdtw
 import re
 import pandas as pd
 import numpy as np
 from sklearn import preprocessing
 from imblearn.over_sampling import SMOTE
 
-__all__ = ['get_performance', 'do_over_sampled', 'do_scaling', 'predict_score']
+__all__ = ['get_performance', 'do_over_sampled', 'do_scaling', 'get_pf_similarity']
 
 
 class _Performance(object):
-    """
-    Handle the specific play and engineer features around hit events.
-
-    :protected attributes:
-        event_primitive_df: dataframe containing of primitives around events in this play.
-
-        note_df: drum note dataframe of the particular song
-        play: dataframe about particular arms of the record
-
-        events: the 2D array which element (time, label) represents a note type "label" occurs at "time"
-        time_unit: the minimum time interval between two notes depending on BPM of a song
-        bar_unit: default is "time_unit x 8"
-        delta_t: time interval we consider a local event
-    """
-
     def __init__(self, play, window_size, scale):
         self._event_primitive_df = None
 
@@ -46,12 +34,6 @@ class _Performance(object):
             self._performance_primitive_df = do_scaling(self._performance_primitive_df)
 
     def __build__primitive_df(self, window_size):
-        """
-        After setting play's dataframe, build dataframe of primitives around events in this play.
-
-        :return: feature engineered dataframe of primitives
-        """
-
         labels = [label for label, _ in self._play.play_dict.items()]
         windows = [deque() for _ in range(len(self._play.play_dict))]
         play_ids = [0] * len(self._play.play_dict)
@@ -89,7 +71,7 @@ class _Performance(object):
 
             now_time += window_size * (1.0 - OVERLAPPING_RATE)
 
-        columns = ['timestamp'] + [label + '_' + col for col in STAT_COLS for label in labels]
+        columns = ['timestamp'] + [a + '_' + b for a, b in product(labels, STAT_COLS)]
         performance_primitive_df = pd.DataFrame(data=tmp_primitive_mat,
                                                 columns=columns)
 
@@ -104,29 +86,13 @@ class _Performance(object):
         return self._play
 
 
-def get_performance(play=None,  window_size=WINDOW_T, scale=False, id_=None):
-    """
-    Get the performance.
-
-    :param play:
-    :param scale: if "True", scale values of required features
-    :param window_size:
-    :param id_:
-    :return: the desired unique performance
-    """
-    if id_ is None:
-        return _Performance(play, window_size, scale).performance_primitive_df
-
-    performance_csv_path = posixpath.join(PERFORMANCE_DIR_PATH, str(id_) + '_pf@' + str(window_size) + '.csv')
+def get_performance(pid, window_size=WINDOW_T, scale=False):
+    performance_csv_path = posixpath.join(PERFORMANCE_DIR_PATH, str(pid) + '_pf@' + str(window_size) + '.csv')
 
     if os.path.isfile(performance_csv_path):
         performance_ep_df = pd.read_csv(performance_csv_path)
     else:
-        # if play is None:
-        #     record_df = load_record_df()
-        #     record_row = record_df.loc[id_]
-        #     play = get_play(record_row)
-
+        play = get_play(pid)
         performance_ep_df = _Performance(play, window_size, scale).performance_primitive_df
         performance_csv_dir_path = os.path.dirname(performance_csv_path)
 
@@ -179,41 +145,49 @@ def do_over_sampled(df):
     return new_df
 
 
-def predict_score(record_id, model):
-    record_df = load_record_df()
-    record_row = record_df.loc[record_id]
-    play = get_play(record_row)
-    pf = get_performance(play, id_=record_id)
+def get_pf_similarity(pf1, pf2, mode_='pf_split'):
+    # assert(pf1.columns == pf2.columns)
+    assert(len(pf1) == len(pf2))
+    if mode_ == 'pf_merge':
+        pass
+        # return __get_pf_similarity_with_raw_merge(pf1, pf2)
+    elif mode_ == 'pf_split':
+        return __get_pf_similarity_with_raw_split(pf1, pf2)
+    elif mode_ == 'pf_merge_euc':
+        pass
+        # return __get_pf_similarity_with_raw_merge_euc(pf1, pf2)
+    elif mode_ == 'pf_split_euc':
+        return __get_pf_similarity_with_raw_split_euc(pf1, pf2)
 
-    train_df = pf.copy()
-    x = train_df.drop('timestamp', axis=1)
-    ts = train_df['timestamp']
-    hit_type_x = model.predict(x)
-    train_df['hit_type'] = hit_type_x
+    return None
 
-    pred_df = pd.DataFrame(data={
-        'timestamp': ts,
-        'hit_type': hit_type_x
-    })
 
-    pred_ptr = 0
-    pred_pool = deque([0] * 10)
-    song_score = 0
-    hit_count = 0
+def __get_pf_similarity_with_raw_split_euc(pf1, pf2):
+    distances = []
+    for col in pf1.columns:
+        if col == 'timestamp':
+            continue
+        x = pf1[col].values
+        y = pf2[col].values
+        distance = np.linalg.norm(x - y)
+        distances.append(distance)
 
-    for event_time, hit_type in play.events:
-        while pred_df.loc[pred_ptr].timestamp <= event_time + 0.24:
-            pred_hit_type = int(pred_df.loc[pred_ptr].hit_type)
-            pred_hit_type = transform_hit_type(pred_hit_type)
-            pred_pool.popleft()
-            pred_pool.append(pred_hit_type)
-            pred_ptr += 1
+    return distances
 
-        pool_hit_type = mode(pred_pool)[0]
 
-        multiplier = get_gained_score_multiplier(pool_hit_type, hit_type)
-        if multiplier > 0:
-            hit_count += 1
-            song_score += SCORE_UNIT_DICT[1] * multiplier
+def __get_pf_similarity_with_raw_split(pf1, pf2):
 
-    return song_score, hit_count
+    def __get_dtw(df1, df2):
+        x = df1.values
+        y = df2.values
+        distance, _ = fastdtw(x, y, dist=euclidean)
+        return distance
+
+    dtws = []
+    for col in pf1.columns:
+        if col == 'timestamp':
+            continue
+        dtw = __get_dtw(pf1[col], pf2[col])
+        dtws.append(dtw)
+
+    return dtws

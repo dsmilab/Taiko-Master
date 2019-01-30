@@ -15,24 +15,27 @@ PLAY_ENDS_DUMMY_TIME_LENGTH = 3
 
 BASE_PATH = posixpath.join(os.path.dirname(os.path.realpath(__file__)), '..').replace('\\', '/')
 
+# assets
 PIC_DIR_PATH = posixpath.join(BASE_PATH, '../assets/')
 
+# tmp
 TMP_DIR_PATH = posixpath.join(BASE_PATH, '../tmp/')
 LOCAL_SCREENSHOT_PATH = posixpath.join(TMP_DIR_PATH, 'bb_capture/')
 LOCAL_SENSOR_DIR_PATH = posixpath.join(TMP_DIR_PATH, 'sensor_data/')
 LOCAL_MOTIF_DIR_PATH = posixpath.join(TMP_DIR_PATH, 'motif/')
 LOCAL_RECORD_TABLE_PATH = posixpath.join(TMP_DIR_PATH, 'record_table.csv')
 
+# data
 DATA_DIR_PATH = posixpath.join(BASE_PATH, '../data/')
 HOME_PATH = posixpath.join(DATA_DIR_PATH, 'alpha/')
 CONNECT_HOST_DIR_PATH = posixpath.join(DATA_DIR_PATH, 'connect_host/')
-MOTIF_DIR_PATH = posixpath.join(DATA_DIR_PATH, 'motif/')
 PROFILE_DIR_PATH = posixpath.join(DATA_DIR_PATH, 'alpha_profile/')
 PERFORMANCE_DIR_PATH = posixpath.join(DATA_DIR_PATH, 'alpha_performance/')
-PROFILE_EP_DIR_PATH = posixpath.join(DATA_DIR_PATH, 'alpha_profile_ep/')
+PLAY_DIR_PATH = posixpath.join(DATA_DIR_PATH, 'alpha_play/')
+RAW_PLAY_FIG_DIR_PATH = posixpath.join(DATA_DIR_PATH, 'alpha_raw_play_fig/')
+TABLE_PATH = posixpath.join(DATA_DIR_PATH, 'taiko_tables/')
 
-# io.record
-TABLE_PATH = posixpath.join(BASE_PATH, '../data/taiko_tables/')
+# data/table
 SONG_TABLE_PATH = posixpath.join(TABLE_PATH, 'taiko_song.csv')
 PLAY_RESULT_TABLE_PATH = posixpath.join(TABLE_PATH, 'taiko_play_result.csv')
 
@@ -49,18 +52,13 @@ SERVER_SCREENSHOT_PATH = posixpath.join(SERVER_TMP_DIR_PATH, 'uploaded_bb_captur
 # image.scoreboard
 BB_CAPTURE_PATH = posixpath.join(BASE_PATH, '../bb_capture_output/')
 
+# external
 EXTERNAL_PATH = posixpath.join(BASE_PATH, 'external/')
-MNIST_MODEL_PATH = posixpath.join(BASE_PATH, 'external/mnist_model.h5')
-DRUM_IMG_MODEL_PATH = posixpath.join(BASE_PATH, 'external/drum_img_model.h5')
-SPIRIT_IMG_MODEL_PATH = posixpath.join(BASE_PATH, 'external/spirit_img_model.h5')
-ENCODER_MODEL_PATH = posixpath.join(BASE_PATH, 'external/encoder.h5')
-VAE_MODEL_PATH = posixpath.join(BASE_PATH, 'external/vae.h5')
-
-# connect.ssh
-SSH_CONFIG_PATH = posixpath.join(BASE_PATH, '../data/connect_host/')
-
-# .database
-ENTRY_SUCCESS = '@0@'
+MNIST_MODEL_PATH = posixpath.join(EXTERNAL_PATH, 'mnist_model.h5')
+DRUM_IMG_MODEL_PATH = posixpath.join(EXTERNAL_PATH, 'drum_img_model.h5')
+SPIRIT_IMG_MODEL_PATH = posixpath.join(EXTERNAL_PATH, 'spirit_img_model.h5')
+ENCODER_MODEL_PATH = posixpath.join(EXTERNAL_PATH, 'encoder.h5')
+VAE_MODEL_PATH = posixpath.join(EXTERNAL_PATH, 'vae.h5')
 
 # preprocessing.primitive
 RMS_COLS = ['a_rms', 'g_rms', 'imu_ax', 'imu_ay', 'imu_az', 'imu_gx', 'imu_gy', 'imu_gz']
@@ -93,6 +91,13 @@ GYR_REGEX = '^\\w*_G[XYZ]{0,2}_\\w*$'
 NEAR_REGEX = '^[LR]\\d+$'
 HIT_TYPE_REGEX = '^(hit_type|[A-Z]+\\d)$'
 NO_SCALE_REGEX = '^(\\w*_CORR|hit_type|[A-Z]+\\d|timestamp)$'
+
+ALL_NOTE_COUNT_DICT = {
+    1: 86,
+    2: 127,
+    3: 231,
+    4: 286,
+}
 
 FIRST_HIT_ALIGN_DICT = {
     1: 90.25,  # doraemon
