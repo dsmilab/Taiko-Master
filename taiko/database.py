@@ -4,6 +4,7 @@ from .image import read_result_board_info
 from glob import glob
 from typing import List
 from sklearn import preprocessing
+from imblearn.over_sampling import SMOTE
 import pandas as pd
 import numpy as np
 import re
@@ -142,3 +143,26 @@ def scale_performance_df(df):
     df.update(new_df)
 
     return df
+
+
+def oversample_performance_df(df):
+    x_columns, y_columns = [], []
+    for col in df.columns:
+        if re.match('hit_type', col):
+            y_columns.append(col)
+        else:
+            x_columns.append(col)
+
+    x = df.drop(y_columns, axis=1)
+    y = df[y_columns]
+    y = np.ravel(y)
+
+    x_resampled, y_resampled = SMOTE(k_neighbors=3, random_state=0).fit_sample(x, y)
+
+    x_df = pd.DataFrame(columns=x_columns, data=x_resampled)
+    y_df = pd.DataFrame(columns=y_columns, data=y_resampled)
+
+    new_df = pd.concat([x_df, y_df], axis=1)
+    new_df = new_df[df.columns]
+
+    return new_df

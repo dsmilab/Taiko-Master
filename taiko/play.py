@@ -165,7 +165,7 @@ def __get_similarity_with_raw_merge(play1, play2):
     def __get_dtw(df1, df2):
         x = df1.values
         y = df2.values
-        distance, _ = fastdtw(x, y, dist=cosine)
+        distance, _ = fastdtw(x, y, dist=euclidean)
         return distance
 
     acc_comb1_df = __retrieve_columns(play1.play_dict['L'], play1.play_dict['R'], ZERO_ADJ_COL[:3])

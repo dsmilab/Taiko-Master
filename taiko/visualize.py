@@ -22,7 +22,7 @@ def plot_raw_acc_signal(left_df, right_df, marks=None, title=None, figname=None)
         sns.lineplot(data=right_df, x='timestamp', y=col, label='right', ax=axes[i_])
         axes[i_].set_ylabel(col + ' $(9.8\\ m/s^2)$')
         for x_, color_ in marks:
-            axes[i_].axvline(x_, color=color_, alpha=1, lw=0.2)
+            axes[i_].axvline(x_, color=color_, alpha=1, lw=0.5)
     plt.xlabel('timestamp $(s)$')
 
     if figname is None:
@@ -47,7 +47,7 @@ def plot_raw_gyr_signal(left_df, right_df, marks=None, title=None, figname=None)
         sns.lineplot(data=right_df, x='timestamp', y=col, label='right', ax=axes[i_])
         axes[i_].set_ylabel(col + ' $(degree\\/s)$')
         for x_, color_ in marks:
-            axes[i_].axvline(x_, color=color_, alpha=1, lw=0.2)
+            axes[i_].axvline(x_, color=color_, alpha=1, lw=0.5)
     plt.xlabel('timestamp $(s)$')
 
     if figname is None:
