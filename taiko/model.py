@@ -1,16 +1,16 @@
-from .profile import *
-from .database import *
-from .tools.score import *
+from .profile import get_profile
+from .database import get_all_drummers
+from .tools.score import my_f1_score
 from .tools.config import *
 
 from tqdm import tqdm
-import numpy as np
-import pandas as pd
-import lightgbm as lgb
 from sklearn import metrics
 from sklearn.metrics import classification_report
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
+import numpy as np
+import pandas as pd
+import lightgbm as lgb
 import posixpath
 import multiprocessing
 
@@ -21,7 +21,7 @@ class _Model(object):
     def __init__(self, verbose=0):
         self._load_profiles(verbose)
 
-    def _load_profiles(self, verbose):
+    def _load_profiles(self, verbose) -> None:
         pfs = []
         with multiprocessing.Pool() as p:
             drummers = get_all_drummers()
@@ -48,8 +48,10 @@ class LGBM(_Model):
             'verbosity': 0,
             'metric': 'None',
         })
+        self._model_name = 'lgbm.h5'
 
-    def pre_train(self, params=None):
+    def pre_train(self, params=None) -> None:
+        best_score, best_model = -1, None
         for seed_ in range(10):
             seed = 1000 * seed_ + 997
 
@@ -75,59 +77,19 @@ class LGBM(_Model):
 
             y_pred = model.predict(x_test, num_iteration=model.best_iteration)
             y_pred = pd.Series(data=[np.argmax(xx) for xx in y_pred])
-            model_name = 'lgbm_%d.h5' % seed
-            model.save_model(posixpath.join(EXTERNAL_PATH, model_name))
-
+            f1_score = metrics.f1_score(y_test, y_pred, average='macro')
+            if f1_score > best_score:
+                best_score = f1_score
+                best_model = model
             print(classification_report(y_test, y_pred))
 
-    def pre_train_who(self, params=None):
-        for hit_type in range(len(self._pf['hit_type'].unique())):
-            selected_df = self._pf[self._pf['hit_type'] == hit_type].drop(['hit_type'], axis=1)
-            x = selected_df.drop(['who'], axis=1)
-            y = selected_df['who']
+        best_model.save_model(posixpath.join(EXTERNAL_PATH, self._model_name))
 
-            x_train, x_test, y_train, y_test = train_test_split(x, y, random_state=0, test_size=0.5, stratify=y)
-            train_set = lgb.Dataset(x_train, y_train)
-            valid_set = lgb.Dataset(x_test, y_test, free_raw_data=False)
-            watchlist = [valid_set]
-
-            my_params = self._params
-            my_params['num_classes'] = len(y.unique())
-            if params is not None:
-                my_params.update(params)
-            model = lgb.train(my_params,
-                              train_set=train_set,
-                              valid_sets=watchlist,
-                              num_boost_round=100,
-                              verbose_eval=5,
-                              early_stopping_rounds=100,
-                              feval=my_f1_score)
-
-            y_pred = model.predict(x_test, num_iteration=model.best_iteration)
-            y_pred = pd.Series(data=[np.argmax(xx) for xx in y_pred])
-            model_name = 'lgbm_hit_type_%d.h5' % hit_type
-            model.save_model(posixpath.join(EXTERNAL_PATH, model_name))
-
-            print(classification_report(y_test, y_pred))
-
-    def predict(self, x):
-        y_preds = []
-        for seed_ in range(10):
-            seed = 1000 * seed_ + 997
-            model_name = 'lgbm_%d.h5' % seed
-            model = lgb.Booster(model_file=posixpath.join(EXTERNAL_PATH, model_name))
-            y_pred = model.predict(x, num_iteration=model.best_iteration)
-            y_preds.append(y_pred)
-
-        y_pred = sum(y_preds)
-        predictions = pd.Series(data=[np.argmax(xx) for xx in y_pred])
-        return predictions
-
-    def predict_who(self, x, hit_type):
-        model_name = 'lgbm_hit_type_%d.h5' % hit_type
-        model = lgb.Booster(model_file=posixpath.join(EXTERNAL_PATH, model_name))
+    def predict(self, x) -> pd.Series:
+        model = lgb.Booster(model_file=posixpath.join(EXTERNAL_PATH, self._model_name))
         y_pred = model.predict(x, num_iteration=model.best_iteration)
-        predictions = pd.Series(index=x.index, data=[np.argmax(xx) for xx in y_pred])
+        predictions = pd.Series(data=[np.argmax(xx) for xx in y_pred])
+
         return predictions
 
 

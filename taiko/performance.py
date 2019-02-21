@@ -1,10 +1,7 @@
 from .tools.config import *
-from .tools.score import get_gained_score_multiplier
 from .primitive import get_features
-from .database import load_record_df, transform_hit_type
+from .database import scale_performance_df
 from .play import get_play
-from .model import LGBM
-from scipy.stats import mode
 
 from collections import deque
 from itertools import product
@@ -14,10 +11,8 @@ from fastdtw import fastdtw
 import re
 import pandas as pd
 import numpy as np
-from sklearn import preprocessing
-from imblearn.over_sampling import SMOTE
 
-__all__ = ['get_performance', 'do_over_sampled', 'do_scaling', 'get_pf_similarity']
+__all__ = ['get_performance', 'get_pf_similarity']
 
 
 class _Performance(object):
@@ -31,7 +26,7 @@ class _Performance(object):
         self.__build__primitive_df(window_size)
 
         if scale:
-            self._performance_primitive_df = do_scaling(self._performance_primitive_df)
+            self._performance_primitive_df = scale_performance_df(self._performance_primitive_df)
 
     def __build__primitive_df(self, window_size):
         labels = [label for label, _ in self._play.play_dict.items()]
@@ -100,49 +95,6 @@ def get_performance(pid, window_size=WINDOW_T, scale=False):
         performance_ep_df.to_csv(performance_csv_path, index=False, float_format='%.4f')
 
     return performance_ep_df
-
-
-def do_scaling(df):
-    """
-    Scale values of required features.
-
-    :return: nothing
-    """
-
-    scaler = preprocessing.StandardScaler()
-    columns = df.columns
-    columns = [col for col in columns if not re.match(NO_SCALE_REGEX, col)]
-
-    subset = df[columns]
-    train_x = [tuple(x) for x in subset.values]
-    train_x = scaler.fit_transform(train_x)
-    new_df = pd.DataFrame(data=train_x, columns=columns)
-    df.update(new_df)
-
-    return df
-
-
-def do_over_sampled(df):
-    x_columns, y_columns = [], []
-    for col in df.columns:
-        if re.match('hit_type', col):
-            y_columns.append(col)
-        else:
-            x_columns.append(col)
-
-    x = df.drop(y_columns, axis=1)
-    y = df[y_columns]
-    y = np.ravel(y)
-
-    x_resampled, y_resampled = SMOTE(k_neighbors=3, random_state=0).fit_sample(x, y)
-
-    x_df = pd.DataFrame(columns=x_columns, data=x_resampled)
-    y_df = pd.DataFrame(columns=y_columns, data=y_resampled)
-
-    new_df = pd.concat([x_df, y_df], axis=1)
-    new_df = new_df[df.columns]
-
-    return new_df
 
 
 def get_pf_similarity(pf1, pf2, mode_='pf_split'):

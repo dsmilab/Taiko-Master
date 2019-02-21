@@ -1,6 +1,6 @@
-from taiko.tools.config import *
-from .tools.score import *
-from .tools.singleton import *
+from .tools.config import *
+from .tools.score import get_processing_score
+from .tools.singleton import Singleton
 
 import numpy as np
 
@@ -30,7 +30,7 @@ class _Processor(object):
         raise NotImplementedError("Please Implement this method")
 
 
-class _ScoreProcessor(_Processor, metaclass=_Singleton):
+class _ScoreProcessor(_Processor, metaclass=Singleton):
     X_ANCHOR = 178
     Y_ANCHOR = 40
 
@@ -69,7 +69,7 @@ class _ScoreProcessor(_Processor, metaclass=_Singleton):
         return img_score
 
 
-class _ResultProcessor(_Processor, metaclass=_Singleton):
+class _ResultProcessor(_Processor, metaclass=Singleton):
     X_ANCHOR = [275, 258, 279, 300, 258, 279]
     Y_ANCHOR = [279, 438, 438, 438, 561, 561]
 
@@ -129,7 +129,7 @@ class _ResultProcessor(_Processor, metaclass=_Singleton):
         return result_dict
 
 
-class _SpiritProcessor(_Processor, metaclass=_Singleton):
+class _SpiritProcessor(_Processor, metaclass=Singleton):
     X_ANCHOR = 65
     Y_ANCHOR = 567
 

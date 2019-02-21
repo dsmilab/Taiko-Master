@@ -1,17 +1,16 @@
 from .tools.config import *
-from .tools.timestamp import *
-from .database import *
-from .primitive import *
-from .io import *
-from .visualize import *
+from .tools.timestamp import calibrate_sensor_df, resample_sensor_df
+from .database import load_record_df, scale_performance_df, transform_hit_type, get_all_drummers
+from .primitive import get_features
+from .io import load_arm_df
+from .visualize import plot_raw_acc_signal, plot_raw_gyr_signal
 
 from collections import deque
+from glob import glob
+from tqdm import tqdm
 import pandas as pd
 import re
-from glob import glob
-from sklearn import preprocessing
 import multiprocessing
-from tqdm import tqdm
 
 __all__ = ['create_profile',
            'create_all_drummer_profiles',
@@ -98,15 +97,11 @@ class _Profile(object):
         self._profile_primitive_df = profile_primitive_df
 
     @property
-    def profile(self):
-        return self._profile
-
-    @property
-    def profile_primitive_df(self):
+    def profile_primitive_df(self) -> pd.DataFrame:
         return self._profile_primitive_df
 
 
-def get_profile(drummer_name, window_size=WINDOW_T, scale=False, label_group=None):
+def get_profile(drummer_name, window_size=WINDOW_T, scale=False, label_group=None) -> pd.DataFrame:
     profile_csv_path = posixpath.join(PROFILE_DIR_PATH, drummer_name, 'profile@' + str(window_size) + '.csv')
 
     if os.path.isfile(profile_csv_path):
@@ -118,7 +113,7 @@ def get_profile(drummer_name, window_size=WINDOW_T, scale=False, label_group=Non
         profile_ep_df.to_csv(profile_csv_path, index=False, float_format='%.4f')
 
     if scale:
-        profile_ep_df = do_scaling(profile_ep_df)
+        profile_ep_df = scale_performance_df(profile_ep_df)
 
     if label_group in ['single_roll']:
         profile_ep_df.loc[:, 'hit_type'] = profile_ep_df['hit_type'].apply(transform_hit_type)
@@ -126,7 +121,7 @@ def get_profile(drummer_name, window_size=WINDOW_T, scale=False, label_group=Non
     return profile_ep_df
 
 
-def create_profile(drummer_name):
+def create_profile(drummer_name) -> None:
     record_df = load_record_df(drummer_name=drummer_name, song_id=99)
 
     def __create_key_act_profile(label_kwd, sensor_name):
@@ -168,20 +163,14 @@ def create_profile(drummer_name):
         profile_df.to_csv(profile_filepath, index=False, float_format='%.4f')
 
 
-def create_all_drummer_profiles():
+def create_all_drummer_profiles() -> None:
     with multiprocessing.Pool() as p:
         drummers = get_all_drummers()
         for _ in tqdm(p.imap_unordered(create_profile, drummers), total=len(drummers)):
             pass
 
 
-def plot_profile(drummer_name):
-    """
-
-    :param drummer_name:
-    :return:
-    """
-
+def plot_profile(drummer_name) -> None:
     profiles = glob(posixpath.join(PROFILE_DIR_PATH, drummer_name, 'profile_*.csv'))
     for profile_ in profiles:
         profile_df = pd.read_csv(profile_)
@@ -190,9 +179,7 @@ def plot_profile(drummer_name):
 
         marks = []
         for e_id, x_ in enumerate(REF_AVLINE[id_]):
-            color_ = 'black'
-            if e_id // 2 % 2 == 0:
-                color_ = 'red'
+            color_ = 'red' if e_id // 2 % 2 == 0 else 'black'
             marks.append((x_, color_))
 
         left_df = profile_df[profile_df['handedness'] == 'left']
@@ -201,23 +188,4 @@ def plot_profile(drummer_name):
         plot_raw_acc_signal(left_df, right_df, marks, title)
         plot_raw_gyr_signal(left_df, right_df, marks, title)
 
-
-def do_scaling(df):
-    """
-    Scale values of required features.
-
-    :return: nothing
-    """
-
-    scaler = preprocessing.StandardScaler()
-    columns = df.columns
-    columns = [col for col in columns if not re.match(NO_SCALE_REGEX, col)]
-
-    subset = df[columns]
-    train_x = [tuple(x) for x in subset.values]
-    train_x = scaler.fit_transform(train_x)
-    new_df = pd.DataFrame(data=train_x, columns=columns)
-    df.update(new_df)
-
-    return df
 
